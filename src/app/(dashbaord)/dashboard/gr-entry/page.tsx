@@ -24,12 +24,12 @@ export default function GREntryPage() {
   const [form, setForm] = useState({
     grNo: "",
     invoiceNo: "",
-    fromLocation: "",
+    fromLocation: "Pahari Patna",
     toLocation: "",
-    grDate: "",
+    grDate: new Date().toISOString().split('T')[0],
     invoiceDate: "",
     goodsValue: 0,
-    gstPaidBy: "",
+    gstPaidBy: "Consignee",
     consignerName: "",
     consignerGstNo: "",
     consignerMobile: "",
@@ -54,6 +54,7 @@ export default function GREntryPage() {
       description: "",
       weight: 0,
       rate: 0,
+      privateMarker: "",
     },
   ]);
 
@@ -63,7 +64,7 @@ export default function GREntryPage() {
     ddCharge: 0,
     hamali: 0,
     other: 0,
-    stCharge: 0,
+    stCharge: 20,
     grandTotal: 0,
   });
 
@@ -117,6 +118,7 @@ export default function GREntryPage() {
             description: item.description || "",
             weight: item.weight || 0,
             rate: item.rate || 0,
+            privateMarker: item.privateMarker || "",
           })));
         }
 
@@ -148,6 +150,7 @@ export default function GREntryPage() {
         description: "",
         weight: 0,
         rate: 0,
+        privateMarker: "",
       },
     ]);
   };
@@ -174,8 +177,51 @@ const handleFormChange = (key: string, value: any) => {
   }));
 };
 
+const validateForm = () => {
+  const errors: string[] = [];
+
+  // Basic Information validations
+  if (!form.invoiceNo.trim()) errors.push("Invoice No is required");
+  if (!form.invoiceDate) errors.push("Invoice Date is required");
+  if (!form.toLocation.trim()) errors.push("To Location is required");
+
+  // Transport Details validations
+  if (!form.goodsValue || form.goodsValue <= 0) errors.push("Goods Value must be greater than 0");
+  if (!form.truckNo.trim()) errors.push("Truck No is required");
+
+  // Consigner validations
+  if (!form.consignerName.trim()) errors.push("Consigner Name is required");
+  if (!form.consignerMobile.trim()) errors.push("Consigner Mobile is required");
+  else if (!/^\d{10}$/.test(form.consignerMobile)) errors.push("Consigner Mobile must be 10 digits");
+
+  // Consignee validations
+  if (!form.consigneeName.trim()) errors.push("Consignee Name is required");
+  if (!form.consigneeMobile.trim()) errors.push("Consignee Mobile is required");
+  else if (!/^\d{10}$/.test(form.consigneeMobile)) errors.push("Consignee Mobile must be 10 digits");
+  if (!form.consigneeAddress.trim()) errors.push("Consignee Address is required");
+
+  // Goods Details validation
+  if (rows.length === 0) errors.push("At least one goods item is required");
+  rows.forEach((row, index) => {
+    if (!row.article.trim()) errors.push(`Number of Package is required for row ${index + 1}`);
+    if (!row.description.trim()) errors.push(`Description is required for row ${index + 1}`);
+    if (!row.weight || row.weight <= 0) errors.push(`Weight must be greater than 0 for row ${index + 1}`);
+    if (!row.rate || row.rate <= 0) errors.push(`Rate must be greater than 0 for row ${index + 1}`);
+  });
+
+  return errors;
+};
+
 const handleSubmit = async () => {
+  // Validate form
+  const errors = validateForm();
+  if (errors.length > 0) {
+    alert("Please fix the following errors:\n\n" + errors.join("\n"));
+    return;
+  }
+
   try {
+    setLoading(true);
     const billRes: any = await apiService.createGstBill(form);
     const billId = billRes.data.id;
 
@@ -201,9 +247,13 @@ const handleSubmit = async () => {
       stCharge: charges.stCharge,
       grandTotal: charges.grandTotal,
     });
+
+    alert("GR Entry saved successfully! ✓");
   } catch (error: any) {
     console.error(error);
     alert(error.message || "Something went wrong ❌");
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -233,11 +283,11 @@ const handleSubmit = async () => {
   {/* BASIC INFO */}
   <Card title="Basic Information">
     <div className="grid grid-cols-3 gap-4">
-      <Input type="date" label="Date" value={form.grDate} onChange={(e) => handleFormChange("grDate", e.target.value)} />
+      <Input type="date" label="Date" value={form.grDate} onChange={(e) => handleFormChange("grDate", e.target.value)} disabled />
       <Input label="Invoice No" value={form.invoiceNo} onChange={(e) => handleFormChange("invoiceNo", e.target.value)} />
 
       <Input type="date" label="Invoice Date" value={form.invoiceDate} onChange={(e) => handleFormChange("invoiceDate", e.target.value)} />
-      <Input label="From" value={form.fromLocation} onChange={(e) => handleFormChange("fromLocation", e.target.value)} />
+      <Input label="From" value={form.fromLocation} onChange={(e) => handleFormChange("fromLocation", e.target.value)} disabled />
       <Input label="To" value={form.toLocation} onChange={(e) => handleFormChange("toLocation", e.target.value)} />
     </div>
   </Card>
@@ -245,9 +295,14 @@ const handleSubmit = async () => {
   {/* TRANSPORT DETAILS */}
   <Card title="Transport Details">
     <div className="grid grid-cols-3 gap-4">
-      <Input label="Value" value={form.goodsValue} onChange={(e) => handleFormChange("goodsValue", Number(e.target.value))} />
+      <Input 
+        label="Value" 
+        value={form.goodsValue === 0 ? "" : form.goodsValue} 
+        onChange={(e) => handleFormChange("goodsValue", e.target.value ? Number(e.target.value) : 0)} 
+        placeholder="Enter goods value"
+      />
       <Input label="Truck No" value={form.truckNo} onChange={(e) => handleFormChange("truckNo", e.target.value)} />
-      <Input label="GST Paid By" value={form.gstPaidBy} onChange={(e) => handleFormChange("gstPaidBy", e.target.value)} />
+      <Input label="GST Paid By" value={form.gstPaidBy} onChange={(e) => handleFormChange("gstPaidBy", e.target.value)} disabled />
       <Input label="Delivery Status" value={form.deliveryStatus} onChange={(e) => handleFormChange("deliveryStatus", e.target.value)} />
     </div>
   </Card>

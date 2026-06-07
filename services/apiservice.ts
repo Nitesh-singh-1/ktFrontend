@@ -95,5 +95,43 @@ export const apiService = {
   getDashboardRevenue: () => {
     return baseService.get("/Dashboard/revenue");
   },
+
+  /* ---------- CHALLAN ---------- */
+  createChallan: (data: any) => {
+    return baseService.post("/Challan", data);
+  },
+
+  getAllChallans: (page: number = 1, pageSize: number = 10) => {
+    return baseService.get(`/Challan?page=${page}&pageSize=${pageSize}`);
+  },
+
+  getChallanById: (id: number) => {
+    return baseService.get(`/Challan/${id}`);
+  },
+
+  updateChallan: (id: number, data: any) => {
+    return baseService.put(`/Challan/${id}`, data);
+  },
+
+  deleteChallan: (id: number) => {
+    return baseService.delete(`/Challan/${id}`);
+  },
+
+  searchChallans: (params: {
+    searchTerm?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params.searchTerm) queryParams.append("searchTerm", params.searchTerm);
+    if (params.startDate) queryParams.append("startDate", params.startDate);
+    if (params.endDate) queryParams.append("endDate", params.endDate);
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.pageSize) queryParams.append("pageSize", params.pageSize.toString());
+    
+    return baseService.get(`/Challan/search?${queryParams.toString()}`);
+  },
 };
 

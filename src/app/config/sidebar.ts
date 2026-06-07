@@ -12,14 +12,36 @@ export const sidebarItems: SidebarItem[] = [
     path: "/dashboard",
   },
   {
-    title: "GR Entry",
+    title: "GR",
     icon: "package",
-    path: "/dashboard/gr-entry",
+    children: [
+      {
+        title: "View Bills",
+        icon: "list",
+        path: "/dashboard/gr-list",
+      },
+      {
+        title: "GR Entry",
+        icon: "plusCircle",
+        path: "/dashboard/gr-entry",
+      },
+    ],
   },
   {
-    title: "View Bills",
-    icon: "fileText",
-    path: "/dashboard/gr-list",
+    title: "Challan",
+    icon: "truck",
+    children: [
+      {
+        title: "View Challans",
+        icon: "list",
+        path: "/dashboard/challan-list",
+      },
+      {
+        title: "Challan Entry",
+        icon: "plusCircle",
+        path: "/dashboard/challan-entry",
+      },
+    ],
   },
   {
     title: "Reports",

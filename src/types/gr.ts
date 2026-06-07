@@ -3,4 +3,5 @@ export type GoodsRow = {
   description: string;
   weight: number;
   rate: number;
+  privateMarker: string;
 };

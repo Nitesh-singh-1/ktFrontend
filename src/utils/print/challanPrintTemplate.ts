@@ -1,49 +1,42 @@
-interface GREntryData {
+interface ChallanDetail {
   id: number;
-  grNo: string;
-  invoiceNo: string;
-  fromLocation: string;
-  toLocation: string;
-  grDate: string;
-  invoiceDate: string;
-  goodsValue: number;
-  gstPaidBy: string;
-  consignerName: string;
-  consignerGstNo: string;
-  consignerMobile: string;
+  challanId: number;
+  billNo: string;
+  quantity: number;
+  destination: string;
+  freightAmount: number;
+  billTypeId: number;
+  billTypeName: string;
   consigneeName: string;
-  consigneeGstNo: string;
-  consigneeMobile: string;
-  consigneeAddress: string;
-  truckNo: string;
-  deliveryStatus: string;
   remarks: string;
-  paid: number;
-  tbb: number;
-  toPay: number;
-  totalAmount: number;
-  bookingClerk: string;
-  createdByName: string;
-  updatedByName: string | null;
-  createdAt: string;
-  goodsDetails?: Array<{
-    article: string;
-    description: string;
-    weight: number;
-    rate: number;
-  }>;
-  charge?: {
-    freight: number;
-    serviceCharge: number;
-    ddCharge: number;
-    hamali: number;
-    otherCharge: number;
-    stCharge: number;
-    grandTotal: number;
-  };
+  isDeleted: boolean;
+  createdDate: string;
 }
 
-function generateSingleCopy(entry: GREntryData, copyType: string): string {
+interface ChallanData {
+  id: number;
+  challanNo: string;
+  challanDate: string;
+  lorryNo: string;
+  driverName: string;
+  voiceDriverName: string;
+  fromLocation: string;
+  toLocation: string;
+  remarks: string;
+  isDeleted: boolean;
+  createdDate: string;
+  createdBy: number;
+  createdByName: string;
+  modifiedDate: string | null;
+  modifiedBy: number | null;
+  modifiedByName: string | null;
+  challanDetails: ChallanDetail[];
+}
+
+function generateSingleCopy(challan: ChallanData, copyType: string): string {
+  const totalQuantity = challan.challanDetails.reduce((sum, item) => sum + item.quantity, 0);
+  const totalFreight = challan.challanDetails.reduce((sum, item) => sum + item.freightAmount, 0);
+  
   return `
     <div class="container">
       <!-- Company Letterhead -->
@@ -59,202 +52,124 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
       <!-- Copy Type -->
       <div class="copy-type">${copyType}</div>
       
-      <!-- Bill Details Table -->
+      <!-- Challan Details Table -->
       <table class="bill-details">
         <tr>
-          <td class="label">GR No:</td>
-          <td class="value"><strong>${entry.grNo}</strong></td>
-          <td class="label">Invoice No:</td>
-          <td class="value"><strong>${entry.invoiceNo}</strong></td>
+          <td class="label">Challan No:</td>
+          <td class="value"><strong>${challan.challanNo}</strong></td>
+          <td class="label">Challan Date:</td>
+          <td class="value"><strong>${new Date(challan.challanDate).toLocaleDateString('en-IN')}</strong></td>
         </tr>
         <tr>
-          <td class="label">GR Date:</td>
-          <td class="value">${new Date(entry.grDate).toLocaleDateString('en-IN')}</td>
-          <td class="label">Invoice Date:</td>
-          <td class="value">${new Date(entry.invoiceDate).toLocaleDateString('en-IN')}</td>
+          <td class="label">Lorry No:</td>
+          <td class="value"><strong>${challan.lorryNo}</strong></td>
+          <td class="label">Driver Name:</td>
+          <td class="value">${challan.driverName}</td>
         </tr>
+        ${challan.voiceDriverName ? `
+        <tr>
+          <td class="label">Voice Driver:</td>
+          <td class="value" colspan="3">${challan.voiceDriverName}</td>
+        </tr>
+        ` : ''}
       </table>
       
-      <!-- Transport Details -->
-      <div class="section-header">TRANSPORT DETAILS</div>
+      <!-- Route Details -->
+      <div class="section-header">ROUTE DETAILS</div>
       <table class="info-table">
         <tr>
           <td class="label">From Location:</td>
-          <td class="value">${entry.fromLocation}</td>
+          <td class="value">${challan.fromLocation}</td>
           <td class="label">To Location:</td>
-          <td class="value">${entry.toLocation}</td>
+          <td class="value">${challan.toLocation}</td>
         </tr>
+        ${challan.remarks ? `
         <tr>
-          <td class="label">Truck Number:</td>
-          <td class="value">${entry.truckNo}</td>
-          <td class="label">Delivery Status:</td>
-          <td class="value">${entry.deliveryStatus}</td>
+          <td class="label">Remarks:</td>
+          <td class="value" colspan="3">${challan.remarks}</td>
         </tr>
-        <tr>
-          <td class="label">Goods Value:</td>
-          <td class="value">₹${entry.goodsValue.toFixed(2)}</td>
-          <td class="label">GST Paid By:</td>
-          <td class="value">${entry.gstPaidBy}</td>
-        </tr>
+        ` : ''}
       </table>
       
-      <!-- Party Details -->
-      <table class="party-table">
-        <tr>
-          <th colspan="2">CONSIGNER DETAILS</th>
-          <th colspan="2">CONSIGNEE DETAILS</th>
-        </tr>
-        <tr>
-          <td class="label">Name:</td>
-          <td class="value">${entry.consignerName}</td>
-          <td class="label">Name:</td>
-          <td class="value">${entry.consigneeName}</td>
-        </tr>
-        <tr>
-          <td class="label">GST No:</td>
-          <td class="value">${entry.consignerGstNo}</td>
-          <td class="label">GST No:</td>
-          <td class="value">${entry.consigneeGstNo}</td>
-        </tr>
-        <tr>
-          <td class="label">Mobile:</td>
-          <td class="value">${entry.consignerMobile || 'N/A'}</td>
-          <td class="label">Mobile:</td>
-          <td class="value">${entry.consigneeMobile}</td>
-        </tr>
-        <tr>
-          <td class="label">Address:</td>
-          <td class="value">-</td>
-          <td class="label">Address:</td>
-          <td class="value">${entry.consigneeAddress}</td>
-        </tr>
-      </table>
-      
-      <!-- Items Details -->
-      <div class="section-header">ITEMS DETAILS</div>
+      <!-- Consignment Details -->
+      <div class="section-header">CONSIGNMENT DETAILS</div>
       <table class="items-table">
         <thead>
           <tr>
-            <th style="width: 8%">Sr. No.</th>
-            <th style="width: 25%">Article</th>
-            <th style="width: 37%">Description</th>
-            <th style="width: 15%">Weight (kg)</th>
-            <th style="width: 15%">Rate (₹)</th>
+            <th style="width: 6%">Sr. No.</th>
+            <th style="width: 12%">Bill No</th>
+            <th style="width: 10%">Quantity</th>
+            <th style="width: 18%">Destination</th>
+            <th style="width: 15%">Freight (₹)</th>
+            <th style="width: 12%">Bill Type</th>
+            <th style="width: 20%">Consignee Name</th>
+            <th style="width: 7%">Remarks</th>
           </tr>
         </thead>
         <tbody>
-          ${entry.goodsDetails && entry.goodsDetails.length > 0 ? entry.goodsDetails.map((item, index) => `
+          ${challan.challanDetails && challan.challanDetails.length > 0 ? challan.challanDetails.map((item, index) => `
             <tr>
               <td class="text-center">${index + 1}</td>
-              <td>${item.article || '-'}</td>
-              <td>${item.description || '-'}</td>
-              <td class="text-right">${item.weight ? item.weight.toFixed(2) : '0.00'}</td>
-              <td class="text-right">₹${item.rate ? item.rate.toFixed(2) : '0.00'}</td>
+              <td>${item.billNo || '-'}</td>
+              <td class="text-center">${item.quantity || 0}</td>
+              <td>${item.destination || '-'}</td>
+              <td class="text-right">₹${item.freightAmount ? item.freightAmount.toFixed(2) : '0.00'}</td>
+              <td class="text-center">${item.billTypeName || '-'}</td>
+              <td>${item.consigneeName || '-'}</td>
+              <td class="text-center">${item.remarks || '-'}</td>
             </tr>
           `).join('') : `
             <tr>
-              <td colspan="5" class="text-center" style="color: #666; font-style: italic;">No items recorded</td>
+              <td colspan="8" class="text-center" style="color: #666; font-style: italic;">No consignments recorded</td>
             </tr>
           `}
-          ${entry.goodsDetails && entry.goodsDetails.length > 0 ? `
+          ${challan.challanDetails && challan.challanDetails.length > 0 ? `
             <tr class="items-total-row">
-              <td colspan="3" class="text-right" style="font-weight: bold;">Total:</td>
-              <td class="text-right" style="font-weight: bold;">${entry.goodsDetails.reduce((sum, item) => sum + (item.weight || 0), 0).toFixed(2)} kg</td>
+              <td colspan="2" class="text-right" style="font-weight: bold;">Total:</td>
+              <td class="text-center" style="font-weight: bold;">${totalQuantity}</td>
               <td></td>
+              <td class="text-right" style="font-weight: bold;">₹${totalFreight.toFixed(2)}</td>
+              <td colspan="3"></td>
             </tr>
           ` : ''}
         </tbody>
       </table>
       
-      <!-- Charges Details -->
-      ${entry.charge ? `
-      <div class="section-header">CHARGES BREAKDOWN</div>
+      <!-- Summary -->
+      <div class="section-header">SUMMARY</div>
       <table class="payment-table">
         <tr>
-          <td class="label">Freight Charge:</td>
-          <td class="amount">₹${entry.charge.freight.toFixed(2)}</td>
-          <td class="label">Service Charge:</td>
-          <td class="amount">₹${entry.charge.serviceCharge.toFixed(2)}</td>
+          <td class="label">Total Bills:</td>
+          <td class="amount">${challan.challanDetails.length}</td>
+          <td class="label">Total Quantity:</td>
+          <td class="amount">${totalQuantity}</td>
         </tr>
         <tr>
-          <td class="label">DD Charge:</td>
-          <td class="amount">₹${entry.charge.ddCharge.toFixed(2)}</td>
-          <td class="label">Hamali:</td>
-          <td class="amount">₹${entry.charge.hamali.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td class="label">Other Charge:</td>
-          <td class="amount">₹${entry.charge.otherCharge.toFixed(2)}</td>
-          <td class="label">ST Charge:</td>
-          <td class="amount">₹${entry.charge.stCharge.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td class="label total-label" colspan="3">GRAND TOTAL (Charges):</td>
-          <td class="amount total-amount">₹${entry.charge.grandTotal.toFixed(2)}</td>
-        </tr>
-      </table>
-      ` : ''}
-      
-      <!-- Payment Details -->
-      <div class="section-header">PAYMENT DETAILS</div>
-      <table class="payment-table">
-        <tr>
-          <td class="label">Paid Amount:</td>
-          <td class="amount">₹${entry.paid.toFixed(2)}</td>
-          <td class="label">TBB (To Be Billed):</td>
-          <td class="amount">₹${entry.tbb.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td class="label">To Pay:</td>
-          <td class="amount">₹${entry.toPay.toFixed(2)}</td>
-          <td class="label total-label">TOTAL AMOUNT:</td>
-          <td class="amount total-amount">₹${entry.totalAmount.toFixed(2)}</td>
+          <td class="label total-label" colspan="2">TOTAL FREIGHT:</td>
+          <td class="amount total-amount" colspan="2">₹${totalFreight.toFixed(2)}</td>
         </tr>
       </table>
       
       <!-- Additional Information -->
       <table class="info-table">
         <tr>
-          <td class="label">Booking Clerk:</td>
-          <td class="value">${entry.bookingClerk || 'N/A'}</td>
           <td class="label">Created By:</td>
-          <td class="value">${entry.createdByName}</td>
+          <td class="value">${challan.createdByName}</td>
+          <td class="label">Created Date:</td>
+          <td class="value">${new Date(challan.createdDate).toLocaleString('en-IN')}</td>
         </tr>
-        ${entry.remarks ? `
-        <tr>
-          <td class="label">Remarks:</td>
-          <td class="value" colspan="3">${entry.remarks}</td>
-        </tr>
-        ` : ''}
       </table>
-      
-      <!-- Terms and Conditions -->
-      <div class="section-header">TERMS & CONDITIONS</div>
-      <div class="terms-conditions-wrapper">
-        <div class="terms-conditions">
-          <ol>
-            <li>No Claim on Broken, Damage and Leakage.</li>
-            <li>All Disputes to Patna Jurisdiction Only.</li>
-            <li>Insured by Party. Not liable for Damage, Shorting and Leakage.</li>
-            <li>Any sort of enquiry delivery of booking will be entertained within 45 days.</li>
-            <li>Demurrage chargeable after 7 days from the date of arrival @ Rs. 5 per day quintale on charged weight.</li>
-          </ol>
-        </div>
-        <div class="qr-code-container">
-          <img src="/QR.png" alt="QR Code" class="qr-code" />
-        </div>
-      </div>
       
       <!-- Signatures -->
       <table class="signature-table">
         <tr>
           <td>
             <div class="signature-line"></div>
-            <div class="signature-label">Consigner's Signature</div>
+            <div class="signature-label">Driver's Signature</div>
           </td>
           <td>
             <div class="signature-line"></div>
-            <div class="signature-label">Consignee's Signature</div>
+            <div class="signature-label">Received By</div>
           </td>
           <td>
             <div class="signature-line"></div>
@@ -266,12 +181,12 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
   `;
 }
 
-export function generateGRPrintTemplate(entry: GREntryData): string {
+export function generateChallanPrintTemplate(challan: ChallanData): string {
   return `
     <!DOCTYPE html>
     <html>
       <head>
-        <title>GR Entry - ${entry.grNo}</title>
+        <title>Challan - ${challan.challanNo}</title>
         <meta charset="UTF-8">
         <style>
           * {
@@ -427,28 +342,6 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             width: 28%;
           }
           
-          /* Party Table */
-          .party-table th {
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-            color: white;
-            padding: 5px 6px;
-            font-size: 9px;
-            text-align: center;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-          }
-          
-          .party-table .label {
-            font-weight: 600;
-            width: 18%;
-            background: linear-gradient(to right, #ecf0f1 0%, #f8f9fa 100%);
-            color: #2c3e50;
-          }
-          
-          .party-table .value {
-            width: 32%;
-          }
-          
           /* Items Table */
           .items-table {
             margin-top: 4px;
@@ -520,58 +413,6 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             font-size: 12px;
             font-weight: 700;
           }
-          
-          /* Terms and Conditions */
-          .terms-conditions-wrapper {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            align-items: flex-start;
-          }
-          
-          .terms-conditions {
-            flex: 1;
-            border: 1px solid #95a5a6;
-            padding: 8px 10px;
-            background: linear-gradient(to bottom, #fdfefe 0%, #f8f9fa 100%);
-            font-size: 9px;
-            line-height: 1.5;
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-          }
-          
-          .terms-conditions ol {
-            margin: 0;
-            padding-left: 16px;
-          }
-          
-          .terms-conditions li {
-            margin-bottom: 4px;
-            text-align: justify;
-            color: #34495e;
-          }
-          
-          .terms-conditions li:last-child {
-            margin-bottom: 0;
-          }
-          
-          .qr-code-container {
-            flex-shrink: 0;
-            text-align: center;
-            border: 1px solid #95a5a6;
-            padding: 8px;
-            background: white;
-            border-radius: 3px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-          }
-          
-          .qr-code {
-            width: 100px;
-            height: 100px;
-            display: block;
-            margin: 0 auto;
-          }
-          
           /* Signature Table */
           .signature-table {
             margin-top: 12px;
@@ -640,7 +481,6 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             
             /* Ensure colors print well in grayscale */
             .section-header,
-            .party-table th,
             .items-table thead th {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
@@ -665,14 +505,14 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
         </style>
       </head>
       <body>
-        <!-- Consigner Copy -->
-        ${generateSingleCopy(entry, 'CONSIGNER COPY')}
-        
-        <!-- Consignee Copy -->
-        ${generateSingleCopy(entry, 'CONSIGNEE COPY')}
+        <!-- Office Copy -->
+        ${generateSingleCopy(challan, 'OFFICE COPY')}
         
         <!-- Driver Copy -->
-        ${generateSingleCopy(entry, 'DRIVER COPY')}
+        ${generateSingleCopy(challan, 'DRIVER COPY')}
+        
+        <!-- Account Copy -->
+        ${generateSingleCopy(challan, 'ACCOUNT COPY')}
         
         <button class="print-btn" onclick="window.print()">PRINT ALL COPIES</button>
       </body>

@@ -38,11 +38,12 @@ export default function GoodsTable({
       <div className="bg-white rounded-xl border">
 
         {/* COLUMN HEADER */}
-        <div className="grid grid-cols-5 gap-4 px-4 py-2 text-xs font-medium text-gray-500 uppercase">
-          <div>Article</div>
+        <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-500 uppercase">
+          <div>Number Of Package</div>
           <div>Description</div>
           <div>Weight</div>
           <div>Rate</div>
+          <div>Private Marker</div>
           <div className="text-center">Action</div>
         </div>
 
@@ -52,7 +53,7 @@ export default function GoodsTable({
           {rows.map((row, index) => (
             <div
               key={index}
-              className="grid grid-cols-5 gap-4 px-4 py-3 items-center hover:bg-gray-50 transition"
+              className="grid grid-cols-6 gap-4 px-4 py-3 items-center hover:bg-gray-50 transition"
             >
               {/* Article */}
               <Input
@@ -92,6 +93,15 @@ export default function GoodsTable({
                   const val = e.target.value.replace(/[^0-9.]/g, "");
                   handleChange(index, "rate", val ? Number(val) : 0);
                 }}
+              />
+
+              {/* Private Marker */}
+              <Input
+                className="bg-gray-50"
+                value={row.privateMarker || ""}
+                onChange={(e) =>
+                  handleChange(index, "privateMarker", e.target.value)
+                }
               />
 
               {/* Action */}

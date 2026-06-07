@@ -112,6 +112,7 @@ export default function ChargesTable({
             handleChange("stCharge", val ? Number(val) : 0);
           }}
           className="bg-gray-50"
+          disabled
         />
 
         <Input
