@@ -17,7 +17,7 @@ const LoginPage = () => {
 
     setError("");
 
-    
+
     if (!username || !password) {
       setError("Username and password are required");
       return;
@@ -26,13 +26,13 @@ const LoginPage = () => {
     try {
       setLoading(true);
 
-      
+
       const res = await authService.login({ username, password });
       if (res.success) {
-        
+
         localStorage.setItem("isLoggedIn", "true");
 
-        
+
         router.push("/dashboard");
       } else {
         setError("Invalid credentials");
@@ -47,8 +47,8 @@ const LoginPage = () => {
 
   return (
     <div className="bg-surface text-on-surface font-body min-h-screen flex flex-col">
-      
-      
+
+
       <header className="w-full top-0 sticky bg-[#f7f9fb] z-50">
         <nav className="flex justify-between items-center px-8 py-4 w-full max-w-screen-2xl mx-auto">
           <div className="text-2xl font-bold tracking-tighter text-[#002e5d]">
@@ -59,7 +59,7 @@ const LoginPage = () => {
 
       {/* Main */}
       <main className="flex-grow relative flex items-center justify-center overflow-hidden">
-        
+
         {/* Background */}
         <div className="absolute inset-0 z-0">
           <img
@@ -72,7 +72,7 @@ const LoginPage = () => {
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-6xl px-6 grid md:grid-cols-12 gap-0 items-stretch">
-          
+
           {/* Left Side */}
           <div className="hidden md:flex md:col-span-7 flex-col justify-center pr-12 text-white">
             <h1 className="text-6xl lg:text-8xl font-extrabold tracking-tighter mb-6 leading-[0.9]">
@@ -88,7 +88,7 @@ const LoginPage = () => {
           {/* Right Side (Form) */}
           <div className="md:col-span-5">
             <div className="bg-white/90 backdrop-blur-lg rounded-xl p-8 lg:p-12 shadow-2xl border border-white/50">
-              
+
               <div className="mb-10">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
                   System Login
@@ -99,7 +99,7 @@ const LoginPage = () => {
               </div>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
-                
+
                 {/* Username */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-widest text-indigo-700 ml-1">
@@ -107,7 +107,7 @@ const LoginPage = () => {
                   </label>
                   <input
                     className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all duration-200"
-                    placeholder="j.smith@kesari.com"
+                    placeholder="admin@kesari.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
