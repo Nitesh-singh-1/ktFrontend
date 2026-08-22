@@ -1,17 +1,23 @@
 {
   "name": "k-transport",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "main": "electron/main.js",
+  "description": "K-Transport Desktop Application with Live VPS Backend Integration",
+  "author": "K-Transport",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron:dev": "concurrently -k \"cross-env NODE_ENV=development next dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "npm run build && electron-builder --win",
+    "electron:build:dir": "npm run build && electron-builder --dir",
+    "electron:publish": "npm run build && electron-builder --win --publish always"
   },
   "dependencies": {
-    "next": "16.2.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "electron-updater": "^6.8.9",
+    "serve-handler": "^6.1.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
@@ -19,10 +25,60 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.27",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "html2pdf": "^0.0.11",
+    "next": "16.2.2",
     "postcss": "^8.5.8",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.1.0"
+  },
+  "build": {
+    "appId": "com.ktransport.app",
+    "productName": "K-Transport",
+    "npmRebuild": false,
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "out/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "K-Transport",
+      "uninstallDisplayName": "K-Transport Uninstaller"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Nitesh-singh-1",
+        "repo": "ktFrontend"
+      }
+    ]
   }
 }

@@ -37,8 +37,9 @@ const LoginPage = () => {
       } else {
         setError("Invalid credentials");
       }
-    } catch (err) {
-      setError("Something went wrong");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err?.message || "Failed to connect to server. Please check your connection.");
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 // import your reusable components
@@ -15,7 +15,7 @@ import { apiService } from "../../../../../services/apiservice";
 import { numberToWords } from "@/utils/numberToWords";
 
 
-export default function GREntryPage() {
+function GREntryContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
 
@@ -378,5 +378,13 @@ const handleSubmit = async () => {
   </Card>
 
 </div>
+  );
+}
+
+export default function GREntryPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading GR Entry...</div>}>
+      <GREntryContent />
+    </Suspense>
   );
 }

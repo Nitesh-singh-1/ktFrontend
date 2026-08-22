@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 import Input from "@/app/components/ui/Input";
@@ -9,7 +9,7 @@ import ChallanDetailsTable from "@/app/components/challan/ChallanDetailsTable";
 import { ChallanDetailRow } from "@/types/challan";
 import { apiService } from "../../../../../services/apiservice";
 
-export default function ChallanEntryPage() {
+function ChallanEntryContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
 
@@ -336,5 +336,13 @@ export default function ChallanEntryPage() {
       </Card>
 
     </div>
+  );
+}
+
+export default function ChallanEntryPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading Challan Entry...</div>}>
+      <ChallanEntryContent />
+    </Suspense>
   );
 }

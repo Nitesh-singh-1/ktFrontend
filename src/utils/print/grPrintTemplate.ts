@@ -55,10 +55,10 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <div class="company-contact">Phone: +91-9430492601 | Email: info@kesaritransport.com</div>
         </div>
       </div>
-      
+
       <!-- Copy Type -->
       <div class="copy-type">${copyType}</div>
-      
+
       <!-- Bill Details Table -->
       <table class="bill-details">
         <tr>
@@ -74,7 +74,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <td class="value">${new Date(entry.invoiceDate).toLocaleDateString('en-IN')}</td>
         </tr>
       </table>
-      
+
       <!-- Transport Details -->
       <div class="section-header">TRANSPORT DETAILS</div>
       <table class="info-table">
@@ -85,10 +85,10 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <td class="value">${entry.toLocation}</td>
         </tr>
         <tr>
-          <td class="label">Truck Number:</td>
-          <td class="value">${entry.truckNo}</td>
-          <td class="label">Delivery Status:</td>
-          <td class="value">${entry.deliveryStatus}</td>
+          <td class="label" style="display: none;">Truck Number:</td>
+          <td class="value" style="display: none;">${entry.truckNo}</td>
+          <td class="label" style="display: none;">Delivery Status:</td>
+          <td class="value" style="display: none;">${entry.deliveryStatus}</td>
         </tr>
         <tr>
           <td class="label">Goods Value:</td>
@@ -97,7 +97,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <td class="value">${entry.gstPaidBy}</td>
         </tr>
       </table>
-      
+
       <!-- Party Details -->
       <table class="party-table">
         <tr>
@@ -129,7 +129,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <td class="value">${entry.consigneeAddress}</td>
         </tr>
       </table>
-      
+
       <!-- Items Details -->
       <div class="section-header">ITEMS DETAILS</div>
       <table class="items-table">
@@ -165,7 +165,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           ` : ''}
         </tbody>
       </table>
-      
+
       <!-- Charges Details -->
       ${entry.charge ? `
       <div class="section-header">CHARGES BREAKDOWN</div>
@@ -194,7 +194,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
         </tr>
       </table>
       ` : ''}
-      
+
       <!-- Payment Details -->
       <div class="section-header">PAYMENT DETAILS</div>
       <table class="payment-table">
@@ -211,7 +211,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <td class="amount total-amount">₹${entry.totalAmount.toFixed(2)}</td>
         </tr>
       </table>
-      
+
       <!-- Additional Information -->
       <table class="info-table">
         <tr>
@@ -227,7 +227,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
         </tr>
         ` : ''}
       </table>
-      
+
       <!-- Terms and Conditions -->
       <div class="section-header">TERMS & CONDITIONS</div>
       <div class="terms-conditions-wrapper">
@@ -244,7 +244,7 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
           <img src="/QR.png" alt="QR Code" class="qr-code" />
         </div>
       </div>
-      
+
       <!-- Signatures -->
       <table class="signature-table">
         <tr>
@@ -279,7 +279,7 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             padding: 0;
             box-sizing: border-box;
           }
-          
+
           body {
             font-family: 'Segoe UI', 'Arial', 'Helvetica', sans-serif;
             padding: 10px;
@@ -288,7 +288,7 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             font-size: 12px;
             line-height: 1.4;
           }
-          
+
           .container {
             max-width: 210mm;
             margin: 0 auto;
@@ -299,15 +299,15 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             page-break-after: always;
             position: relative;
           }
-          
+
           .container:first-of-type {
             page-break-before: auto;
           }
-          
+
           .container:last-of-type {
             page-break-after: auto;
           }
-          
+
           /* Letterhead */
           .letterhead {
             display: flex;
@@ -320,19 +320,19 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             padding: 8px;
             border-radius: 4px 4px 0 0;
           }
-          
+
           .company-logo {
             width: 60px;
             height: 60px;
             object-fit: contain;
             flex-shrink: 0;
           }
-          
+
           .company-info {
             flex: 1;
             text-align: center;
           }
-          
+
           .company-name {
             font-size: 22px;
             font-weight: 700;
@@ -341,19 +341,19 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             color: #2c3e50;
             text-transform: uppercase;
           }
-          
+
           .company-details {
             font-size: 10px;
             margin-bottom: 2px;
             color: #34495e;
             font-weight: 500;
           }
-          
+
           .company-contact {
             font-size: 9px;
             color: #7f8c8d;
           }
-          
+
           /* Copy Type */
           .copy-type {
             position: absolute;
@@ -369,37 +369,37 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             letter-spacing: 0.5px;
           }
-          
+
           /* Tables */
           table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
           }
-          
+
           table td, table th {
             border: 1px solid #bdc3c7;
             padding: 4px 6px;
             vertical-align: top;
             font-size: 10px;
           }
-          
+
           /* Bill Details Table */
           .bill-details td {
             padding: 5px 6px;
           }
-          
+
           .bill-details .label {
             font-weight: 600;
             width: 20%;
             background: linear-gradient(to right, #ecf0f1 0%, #f8f9fa 100%);
             color: #2c3e50;
           }
-          
+
           .bill-details .value {
             width: 30%;
           }
-          
+
           /* Section Headers */
           .section-header {
             background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
@@ -414,7 +414,7 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             border-left: 3px solid #3498db;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
           }
-          
+
           /* Info Table */
           .info-table .label {
             font-weight: 600;
@@ -422,11 +422,11 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             background: linear-gradient(to right, #ecf0f1 0%, #f8f9fa 100%);
             color: #2c3e50;
           }
-          
+
           .info-table .value {
             width: 28%;
           }
-          
+
           /* Party Table */
           .party-table th {
             background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
@@ -437,24 +437,24 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             font-weight: 700;
             letter-spacing: 0.5px;
           }
-          
+
           .party-table .label {
             font-weight: 600;
             width: 18%;
             background: linear-gradient(to right, #ecf0f1 0%, #f8f9fa 100%);
             color: #2c3e50;
           }
-          
+
           .party-table .value {
             width: 32%;
           }
-          
+
           /* Items Table */
           .items-table {
             margin-top: 4px;
             border: 1px solid #95a5a6;
           }
-          
+
           .items-table thead th {
             background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
             color: white;
@@ -465,47 +465,47 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             letter-spacing: 0.3px;
             border-color: #2c3e50;
           }
-          
+
           .items-table tbody td {
             padding: 4px 6px;
             font-size: 10px;
             border-color: #bdc3c7;
           }
-          
+
           .items-table .text-center {
             text-align: center;
           }
-          
+
           .items-table .text-right {
             text-align: right;
           }
-          
+
           .items-table .items-total-row {
             background: linear-gradient(to right, #d5dbdb 0%, #ecf0f1 100%);
             border-top: 2px solid #34495e;
             font-weight: 700;
             color: #2c3e50;
           }
-          
+
           /* Payment Table */
           .payment-table {
             margin-top: 4px;
           }
-          
+
           .payment-table .label {
             font-weight: 600;
             width: 22%;
             background: linear-gradient(to right, #ecf0f1 0%, #f8f9fa 100%);
             color: #2c3e50;
           }
-          
+
           .payment-table .amount {
             width: 28%;
             text-align: right;
             font-weight: 600;
             color: #1a5490;
           }
-          
+
           .payment-table .total-label {
             background: linear-gradient(135deg, #1a5490 0%, #154478 100%);
             color: white;
@@ -513,14 +513,14 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             font-weight: 700;
             letter-spacing: 0.5px;
           }
-          
+
           .payment-table .total-amount {
             background: linear-gradient(135deg, #1a5490 0%, #154478 100%);
             color: white;
             font-size: 12px;
             font-weight: 700;
           }
-          
+
           /* Terms and Conditions */
           .terms-conditions-wrapper {
             display: flex;
@@ -528,7 +528,7 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             margin-bottom: 15px;
             align-items: flex-start;
           }
-          
+
           .terms-conditions {
             flex: 1;
             border: 1px solid #95a5a6;
@@ -539,22 +539,22 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             border-radius: 3px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           }
-          
+
           .terms-conditions ol {
             margin: 0;
             padding-left: 16px;
           }
-          
+
           .terms-conditions li {
             margin-bottom: 4px;
             text-align: justify;
             color: #34495e;
           }
-          
+
           .terms-conditions li:last-child {
             margin-bottom: 0;
           }
-          
+
           .qr-code-container {
             flex-shrink: 0;
             text-align: center;
@@ -564,38 +564,38 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             border-radius: 3px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
           }
-          
+
           .qr-code {
             width: 100px;
             height: 100px;
             display: block;
             margin: 0 auto;
           }
-          
+
           /* Signature Table */
           .signature-table {
             margin-top: 12px;
             border: none;
           }
-          
+
           .signature-table td {
             border: none;
             text-align: center;
             padding: 0 10px;
           }
-          
+
           .signature-line {
             border-top: 2px solid #34495e;
             margin-top: 35px;
             margin-bottom: 4px;
           }
-          
+
           .signature-label {
             font-size: 9px;
             font-weight: 600;
             color: #2c3e50;
           }
-          
+
           /* Print Button */
           .print-btn {
             margin: 20px auto;
@@ -612,13 +612,13 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             transition: all 0.3s ease;
             letter-spacing: 1px;
           }
-          
+
           .print-btn:hover {
             background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
             box-shadow: 0 6px 10px rgba(0,0,0,0.15);
             transform: translateY(-2px);
           }
-          
+
           @media print {
             body {
               padding: 0;
@@ -637,7 +637,7 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
             .print-btn {
               display: none;
             }
-            
+
             /* Ensure colors print well in grayscale */
             .section-header,
             .party-table th,
@@ -645,18 +645,18 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
-            
+
             .copy-type {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
-            
+
             .payment-table .total-label,
             .payment-table .total-amount {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
-            
+
             @page {
               margin: 1cm;
               size: A4;
@@ -667,13 +667,13 @@ export function generateGRPrintTemplate(entry: GREntryData): string {
       <body>
         <!-- Consigner Copy -->
         ${generateSingleCopy(entry, 'CONSIGNER COPY')}
-        
+
         <!-- Consignee Copy -->
         ${generateSingleCopy(entry, 'CONSIGNEE COPY')}
-        
+
         <!-- Driver Copy -->
         ${generateSingleCopy(entry, 'DRIVER COPY')}
-        
+
         <button class="print-btn" onclick="window.print()">PRINT ALL COPIES</button>
       </body>
     </html>

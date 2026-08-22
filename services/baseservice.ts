@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7199/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://81.0.248.82:8080/api";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 
