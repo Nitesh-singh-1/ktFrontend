@@ -13,7 +13,7 @@ export default function ProtectedLayout({
   const router = useRouter();
 
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
-  const [isOpen, setIsOpen] = useState(true); // 🔥 sidebar state
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn");
@@ -25,18 +25,20 @@ export default function ProtectedLayout({
     }
   }, [router]);
 
-  if (isAuth === null) return null; // prevent flicker
+  if (isAuth === null) return null;
 
   return (
-    <div className="flex">
-  <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
-  <main
-    className={`flex-1 transition-all duration-300 p-6
-    ${isOpen ? "ml-64" : "ml-16"}`}
-  >
-    {children}
-  </main>
-</div>
+      <div
+        className={`flex-1 flex flex-col min-h-screen bg-slate-50 transition-all duration-300 ease-in-out
+        ${isOpen ? "ml-64" : "ml-20"}`}
+      >
+        <Navbar />
+
+        <main className="flex-1 p-6 lg:p-8 bg-slate-50">{children}</main>
+      </div>
+    </div>
   );
 }

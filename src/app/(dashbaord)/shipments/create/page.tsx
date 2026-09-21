@@ -4,14 +4,14 @@ import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import UnifiedShipmentForm from "@/app/components/shipment/UnifiedShipmentForm";
 
-function GREntryContent() {
+function CreateShipmentContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
 
   return <UnifiedShipmentForm initialId={editId ? Number(editId) : undefined} />;
 }
 
-export default function GREntryPage() {
+export default function CreateShipmentPage() {
   return (
     <Suspense
       fallback={
@@ -20,7 +20,7 @@ export default function GREntryPage() {
         </div>
       }
     >
-      <GREntryContent />
+      <CreateShipmentContent />
     </Suspense>
   );
 }

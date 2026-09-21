@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { authService } from "../../../../services/authService";
 
@@ -238,12 +239,17 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Footer note */}
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-400">
-              Need access? Contact{" "}
-              <span className="font-semibold text-slate-700">Fleet Operations Administration</span>
+          {/* Register / Onboard Organization */}
+          <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center gap-2">
+            <p className="text-xs text-slate-500">
+              Need a new workspace for your transport fleet?
             </p>
+            <Link
+              href="/onboard"
+              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition-all duration-150 flex items-center justify-center gap-2 border border-slate-200"
+            >
+              <span>🏢 Register New Organization</span>
+            </Link>
           </div>
         </div>
       </div>

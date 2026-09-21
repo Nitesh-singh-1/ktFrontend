@@ -12,60 +12,71 @@ export const sidebarItems: SidebarItem[] = [
     path: "/dashboard",
   },
   {
-    title: "GR",
+    title: "Consignments (GR)",
     icon: "package",
     children: [
       {
-        title: "View Bills",
-        icon: "list",
-        path: "/dashboard/gr-list",
+        title: "All Shipments",
+        icon: "fileText",
+        path: "/shipments",
       },
       {
-        title: "GR Entry",
-        icon: "plusCircle",
-        path: "/dashboard/gr-entry",
+        title: "New Consignment",
+        icon: "package",
+        path: "/shipments/create",
       },
     ],
   },
   {
-    title: "Challan",
+    title: "Master Data",
+    icon: "cog",
+    children: [
+      {
+        title: "Party Directory",
+        icon: "fileText",
+        path: "/customers",
+      },
+      {
+        title: "Fleet & Stations",
+        icon: "truck",
+        path: "/fleet",
+      },
+    ],
+  },
+  {
+    title: "Trip Challans",
     icon: "truck",
     children: [
       {
         title: "View Challans",
-        icon: "list",
+        icon: "fileText",
         path: "/dashboard/challan-list",
       },
       {
         title: "Challan Entry",
-        icon: "plusCircle",
+        icon: "truck",
         path: "/dashboard/challan-entry",
       },
     ],
   },
   {
-    title: "Reports",
+    title: "Billing & Invoices",
+    icon: "fileText",
+    path: "/billing",
+  },
+  {
+    title: "Reports & Analytics",
     icon: "barChart",
     path: "/reports",
   },
   {
-    title: "System",
-    icon: "cog",
+    title: "Organization",
+    icon: "settings",
     children: [
       {
-        title: "Settings",
-        icon: "settings",
-        path: "/settings",
-      },
-      {
-        title: "Forgot Password",
-        icon: "lock",
-        path: "/forgot-password",
-      },
-      {
-        title: "About",
+        title: "Onboard Company",
         icon: "info",
-        path: "/about",
+        path: "/onboard",
       },
     ],
   },
