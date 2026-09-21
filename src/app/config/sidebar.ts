@@ -28,6 +28,16 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
+    title: "Trip Manifests",
+    icon: "truck",
+    path: "/trips",
+  },
+  {
+    title: "POD & Deliveries",
+    icon: "fileText",
+    path: "/pod",
+  },
+  {
     title: "Master Data",
     icon: "cog",
     children: [
@@ -44,20 +54,9 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
-    title: "Trip Challans",
+    title: "Market Vendors & Hire",
     icon: "truck",
-    children: [
-      {
-        title: "View Challans",
-        icon: "fileText",
-        path: "/dashboard/challan-list",
-      },
-      {
-        title: "Challan Entry",
-        icon: "truck",
-        path: "/dashboard/challan-entry",
-      },
-    ],
+    path: "/vendors",
   },
   {
     title: "Billing & Invoices",
@@ -65,9 +64,19 @@ export const sidebarItems: SidebarItem[] = [
     path: "/billing",
   },
   {
+    title: "Damage & Claims",
+    icon: "info",
+    path: "/claims",
+  },
+  {
     title: "Reports & Analytics",
     icon: "barChart",
     path: "/reports",
+  },
+  {
+    title: "Live Tracker",
+    icon: "info",
+    path: "/tracking",
   },
   {
     title: "Organization",

@@ -20,14 +20,16 @@ export enum ShipmentStatus {
   InTransit = 3,
   OutForDelivery = 4,
   Delivered = 5,
-  Cancelled = 6,
-  Returned = 7,
+  Returned = 6,
+  Cancelled = 7,
 }
 
 export enum PartyType {
-  Consignor = 0,
-  Consignee = 1,
-  Both = 2,
+  Both = 0,
+  Consignor = 1,
+  Consignee = 2,
+  Transporter = 3,
+  Agent = 4,
 }
 
 export enum InvoicePaymentStatus {

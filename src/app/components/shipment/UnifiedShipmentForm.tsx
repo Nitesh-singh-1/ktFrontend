@@ -21,6 +21,7 @@ import { shipmentService } from "services/shipmentService";
 import { partyService } from "services/partyService";
 import { fleetService } from "services/fleetService";
 import { invoiceService } from "services/invoiceService";
+import { rateCardService } from "services/rateCardService";
 
 interface UnifiedShipmentFormProps {
   initialId?: number;
@@ -182,6 +183,43 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       setConsigneeAddress(fullAddr);
     }
     setSaveConsigneeAsParty(false);
+  };
+
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [calcResult, setCalcResult] = useState<string | null>(null);
+
+  const handleAutoCalculateTariff = async () => {
+    if (!fromLocation.trim() || !toLocation.trim()) {
+      alert("Please enter Origin and Destination stations first.");
+      return;
+    }
+    const totalWeight = items.reduce((sum, it) => sum + (Number(it.weight) || 0), 0);
+    if (totalWeight <= 0) {
+      alert("Please enter cargo weights in the items table to calculate freight tariff.");
+      return;
+    }
+
+    try {
+      setCalcLoading(true);
+      const res = await rateCardService.calculateFreight({
+        partyId: consignorPartyId,
+        fromLocation,
+        toLocation,
+        weightKg: totalWeight,
+        packagesCount: items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0),
+        includeDoorDelivery: true,
+        includeHamali: true,
+      });
+
+      if (res) {
+        setTotalFreight(res.freightAmount || 0);
+        setCalcResult(res.calculationBreakdown || `Auto-applied base freight: ₹${res.freightAmount}`);
+      }
+    } catch (err: any) {
+      alert("Could not calculate tariff: " + (err?.message || "Check network"));
+    } finally {
+      setCalcLoading(false);
+    }
   };
 
   const validate = (): string[] => {
@@ -797,6 +835,34 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
 
       {/* 4. Cargo Items Table */}
       <CargoItemsTable items={items} onChange={setItems} />
+
+      {/* 4.1 Automated Rate Card & Tariff Calculation Bar */}
+      <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🏷️</span>
+            <span className="text-xs font-bold text-blue-950">Automated Route Tariff & Rate Card Engine</span>
+          </div>
+          <p className="text-[11px] text-blue-700 mt-0.5">
+            Auto-estimate freight rates based on origin, destination, cargo weight, and customer contracts.
+          </p>
+          {calcResult && (
+            <p className="text-[11px] font-mono font-bold text-emerald-800 mt-1">
+              ✓ {calcResult}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAutoCalculateTariff}
+          disabled={calcLoading}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
+        >
+          <span>⚡</span>
+          <span>{calcLoading ? "Calculating..." : "Auto-Calculate Tariff"}</span>
+        </button>
+      </div>
 
       {/* 5. Dynamic Charges Table & Real-time Ledger */}
       <DynamicChargesTable
