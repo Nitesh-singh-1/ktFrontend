@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { sidebarItems } from "@/app/config/sidebar";
+import { sidebarItems, SidebarItem } from "@/app/config/sidebar";
 import { authService } from "../../../../services/authService";
+import { useTenantConfig } from "@/context/TenantConfigContext";
+import { useNavigation } from "@/context/NavigationContext";
+import { DynamicMenuItem } from "../../../../services/navigationService";
 import {
   HomeIcon,
   PackageIcon,
@@ -18,23 +21,27 @@ import {
   SettingsIcon,
   LockIcon,
   InfoIcon,
+  TruckIcon,
 } from "@/app/components/ui/Icons";
 
 const iconMap: { [key: string]: React.FC<{ className?: string; size?: number }> } = {
   home: HomeIcon,
   package: PackageIcon,
+  truck: TruckIcon,
   fileText: FileTextIcon,
   barChart: BarChartIcon,
   cog: CogIcon,
   settings: SettingsIcon,
   lock: LockIcon,
   info: InfoIcon,
+  list: FileTextIcon,
+  plusCircle: PackageIcon,
 };
 
 const getIcon = (iconName?: string) => {
-  if (!iconName) return null;
-  const IconComponent = iconMap[iconName];
-  return IconComponent ? <IconComponent className="w-4 h-4" /> : null;
+  if (!iconName) return <FileTextIcon className="w-4 h-4" />;
+  const IconComponent = iconMap[iconName] || FileTextIcon;
+  return <IconComponent className="w-4 h-4" />;
 };
 
 export default function Sidebar({
@@ -54,6 +61,30 @@ export default function Sidebar({
     setOrgName(authService.getOrganizationName());
   }, []);
 
+  let companyName = orgName || "K-Transport";
+  let dynamicMenu: (DynamicMenuItem | SidebarItem)[] = [];
+
+  try {
+    const configCtx = useTenantConfig();
+    if (configCtx?.companyName) {
+      companyName = configCtx.companyName;
+    }
+  } catch {
+    // Context fallback
+  }
+
+  try {
+    const navCtx = useNavigation();
+    if (navCtx?.menu && navCtx.menu.length > 0) {
+      dynamicMenu = navCtx.menu;
+    }
+  } catch {
+    // Context fallback
+  }
+
+  // Fallback to static sidebar items if dynamic menu is not populated
+  const displayItems = dynamicMenu.length > 0 ? dynamicMenu : sidebarItems;
+
   const handleLogout = () => {
     authService.logout();
     window.location.href = "/login";
@@ -62,7 +93,7 @@ export default function Sidebar({
   return (
     <aside
       className={`fixed top-0 left-0 h-screen bg-[#0f172a] text-slate-300
-      transition-all duration-300 z-40 border-r border-slate-800/80 flex flex-col shadow-lg
+      transition-all duration-300 z-40 border-r border-slate-800/80 flex flex-col shadow-xl
       ${isOpen ? "w-64" : "w-20"}`}
     >
       {/* Collapse Toggle Button */}
@@ -79,17 +110,17 @@ export default function Sidebar({
       </button>
 
       {/* Brand Header */}
-      <div className="h-16 px-5 border-b border-slate-800/80 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-indigo-500/20 shrink-0">
+      <div className="h-16 px-5 border-b border-slate-800/80 flex items-center gap-3 bg-slate-900/40">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-indigo-500/20 shrink-0">
           KT
         </div>
         {isOpen && (
           <div className="overflow-hidden">
-            <h1 className="font-extrabold text-sm tracking-tight text-white truncate">
-              K-TRANSPORT
+            <h1 className="font-extrabold text-sm tracking-tight text-white truncate" title={companyName}>
+              {companyName}
             </h1>
             <p className="text-[11px] font-medium text-indigo-400 truncate">
-              {orgName || "Freight & Logistics TMS"}
+              {orgName || "Logistics & Fleet TMS"}
             </p>
           </div>
         )}
@@ -97,13 +128,13 @@ export default function Sidebar({
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700">
-        {sidebarItems.map((item) => {
+        {displayItems.map((item) => {
           // Simple single link
-          if (!item.children) {
+          if (!item.children || item.children.length === 0) {
             const isActive = pathname === item.path;
             return (
               <Link
-                key={item.title}
+                key={item.id || item.title}
                 href={item.path || "#"}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 group ${
                   isActive
@@ -115,20 +146,29 @@ export default function Sidebar({
                 <div className={`shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`}>
                   {getIcon(item.icon)}
                 </div>
-                {isOpen && <span className="truncate">{item.title}</span>}
+                {isOpen && (
+                  <div className="flex items-center justify-between w-full overflow-hidden">
+                    <span className="truncate">{item.title}</span>
+                    {item.badge && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                )}
               </Link>
             );
           }
 
           // Dropdown menu
-          const isDropdownOpen = openMenu === item.title;
+          const isDropdownOpen = openMenu === (item.id || item.title);
           const hasActiveChild = item.children.some((c) => pathname === c.path);
 
           return (
-            <div key={item.title} className="space-y-1">
+            <div key={item.id || item.title} className="space-y-1">
               <button
                 type="button"
-                onClick={() => setOpenMenu(isDropdownOpen ? null : item.title)}
+                onClick={() => setOpenMenu(isDropdownOpen ? null : (item.id || item.title))}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 group cursor-pointer ${
                   hasActiveChild
                     ? "text-white bg-slate-800/80"
@@ -136,18 +176,25 @@ export default function Sidebar({
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 overflow-hidden">
                   <div className={`shrink-0 ${hasActiveChild ? "text-indigo-400" : "text-slate-400 group-hover:text-white"}`}>
                     {getIcon(item.icon)}
                   </div>
                   {isOpen && <span className="truncate">{item.title}</span>}
                 </div>
                 {isOpen && (
-                  <ChevronDownIcon
-                    className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
+                  <div className="flex items-center gap-2">
+                    {item.badge && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300">
+                        {item.badge}
+                      </span>
+                    )}
+                    <ChevronDownIcon
+                      className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </div>
                 )}
               </button>
 
@@ -158,7 +205,7 @@ export default function Sidebar({
                     const isChildActive = pathname === child.path;
                     return (
                       <Link
-                        key={child.title}
+                        key={child.id || child.title}
                         href={child.path || "#"}
                         className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all duration-150 ${
                           isChildActive
@@ -199,7 +246,7 @@ export default function Sidebar({
 
           <button
             onClick={handleLogout}
-            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition"
+            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer"
             title="Sign Out"
           >
             <LogOutIcon className="w-4 h-4" />
