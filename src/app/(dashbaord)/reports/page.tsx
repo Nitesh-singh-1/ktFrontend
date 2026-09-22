@@ -300,7 +300,7 @@ function ReportsContent() {
                   <th className="py-2.5 px-3">Party Name</th>
                   <th className="py-2.5 px-3">GSTIN</th>
                   <th className="py-2.5 px-3">Contact</th>
-                  <th className="py-2.5 px-3 text-right">Total Invoiced</th>
+                  <th className="py-2.5 px-3 text-right">Total Billed</th>
                   <th className="py-2.5 px-3 text-right">Amount Paid</th>
                   <th className="py-2.5 px-3 text-right">Balance Outstanding</th>
                 </tr>
@@ -310,11 +310,11 @@ function ReportsContent() {
                   partyLedger.map((p) => (
                     <tr key={p.partyId} className="hover:bg-slate-800/40">
                       <td className="py-3 px-3 font-bold text-white">{p.partyName}</td>
-                      <td className="py-3 px-3 font-mono text-slate-400">{p.gstin || "Unregistered"}</td>
-                      <td className="py-3 px-3 font-mono text-slate-400">{p.phone || "—"}</td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">{formatCurrency(p.totalInvoicedAmount)}</td>
+                      <td className="py-3 px-3 font-mono text-slate-400">{p.gstNo || "Unregistered"}</td>
+                      <td className="py-3 px-3 font-mono text-slate-400">{p.mobile || "—"}</td>
+                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">{formatCurrency(p.totalBilledAmount)}</td>
                       <td className="py-3 px-3 text-right font-mono text-emerald-400">{formatCurrency(p.totalPaidAmount)}</td>
-                      <td className="py-3 px-3 text-right font-mono font-black text-rose-400">{formatCurrency(p.totalBalanceOutstanding)}</td>
+                      <td className="py-3 px-3 text-right font-mono font-black text-rose-400">{formatCurrency(p.totalOutstandingDue)}</td>
                     </tr>
                   ))
                 ) : (

@@ -49,7 +49,7 @@ export const sidebarItems: SidebarItem[] = [
     title: "POD & Deliveries",
     icon: "fileText",
     path: "/pod",
-    moduleKey: "podTracking",
+    moduleKey: "challanManagement",
   },
   {
     id: "master_data",
@@ -75,7 +75,7 @@ export const sidebarItems: SidebarItem[] = [
     title: "Market Vendors & Hire",
     icon: "truck",
     path: "/vendors",
-    moduleKey: "challanManagement",
+    moduleKey: "vendorManagement",
   },
   {
     id: "billing",
@@ -89,6 +89,7 @@ export const sidebarItems: SidebarItem[] = [
     title: "Damage & Claims",
     icon: "info",
     path: "/claims",
+    moduleKey: "cargoClaims",
   },
   {
     id: "reports",
@@ -102,7 +103,7 @@ export const sidebarItems: SidebarItem[] = [
     title: "Live Tracker",
     icon: "info",
     path: "/tracking",
-    moduleKey: "liveGpsTracking",
+    moduleKey: "gpsTracking",
   },
   {
     id: "clients",

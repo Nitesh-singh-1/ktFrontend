@@ -1,14 +1,14 @@
 import { TenantConfiguration } from "../../services/configService";
 
 /**
- * Format a number as currency based on active tenant configuration.
+ * Format a number as currency based on active tenant configuration or fallback to standard INR.
  */
 export function formatTenantCurrency(
   amount: number | null | undefined,
   config?: TenantConfiguration | null
 ): string {
   if (amount === null || amount === undefined || isNaN(amount)) {
-    return "0.00";
+    return "₹ 0.00";
   }
 
   const symbol = config?.general?.currencySymbol || "₹";
@@ -19,6 +19,8 @@ export function formatTenantCurrency(
 
   return `${symbol} ${formatted}`;
 }
+
+export const formatCurrency = (amount: number | null | undefined) => formatTenantCurrency(amount);
 
 /**
  * Format a date string using the active tenant's date format preference.
@@ -50,6 +52,8 @@ export function formatTenantDate(
       return `${day}/${month}/${year}`;
   }
 }
+
+export const formatDate = (dateInput: string | Date | null | undefined) => formatTenantDate(dateInput);
 
 /**
  * Preview document sequence number based on tenant sequence configuration.

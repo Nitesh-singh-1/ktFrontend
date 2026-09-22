@@ -64,3 +64,5 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
 
   return <>{children}</>;
 };
+
+export default PagePermissionGuard;
