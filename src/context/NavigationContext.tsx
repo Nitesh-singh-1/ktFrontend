@@ -13,26 +13,91 @@ interface NavigationContextType {
 }
 
 const defaultStaticMenu: DynamicMenuItem[] = [
-  { id: "dashboard", title: "Dashboard", path: "/dashboard", icon: "home", permissionKey: "dashboard.view" },
   {
-    id: "gr",
-    title: "GR / Consignments",
+    id: "dashboard",
+    title: "Dashboard",
+    path: "/dashboard",
+    icon: "home",
+    permissionKey: "dashboard.view",
+  },
+  {
+    id: "consignments",
+    title: "Consignments (GR)",
     icon: "package",
-    permissionKey: "gr.module",
+    permissionKey: "consignments.module",
     children: [
-      { id: "gr.list", title: "View Bills", path: "/dashboard/gr-list", icon: "list", permissionKey: "gr.view" },
-      { id: "gr.entry", title: "GR Entry", path: "/dashboard/gr-entry", icon: "plusCircle", permissionKey: "gr.create" },
+      {
+        id: "consignments.all",
+        title: "All Shipments",
+        path: "/shipments",
+        icon: "fileText",
+        permissionKey: "consignments.view",
+      },
+      {
+        id: "consignments.create",
+        title: "New Consignment",
+        path: "/shipments/create",
+        icon: "package",
+        permissionKey: "consignments.create",
+      },
     ],
   },
   {
-    id: "challan",
-    title: "Challan",
+    id: "trips",
+    title: "Trip Manifests",
+    path: "/trips",
     icon: "truck",
-    permissionKey: "challan.module",
+    permissionKey: "trips.view",
+  },
+  {
+    id: "pod",
+    title: "POD & Deliveries",
+    path: "/pod",
+    icon: "fileText",
+    permissionKey: "pod.view",
+  },
+  {
+    id: "master_data",
+    title: "Master Data",
+    icon: "cog",
+    permissionKey: "masterdata.module",
     children: [
-      { id: "challan.list", title: "View Challans", path: "/dashboard/challan-list", icon: "list", permissionKey: "challan.view" },
-      { id: "challan.entry", title: "Challan Entry", path: "/dashboard/challan-entry", icon: "plusCircle", permissionKey: "challan.create" },
+      {
+        id: "master_data.parties",
+        title: "Party Directory",
+        path: "/customers",
+        icon: "fileText",
+        permissionKey: "parties.view",
+      },
+      {
+        id: "master_data.fleet",
+        title: "Fleet & Stations",
+        path: "/fleet",
+        icon: "truck",
+        permissionKey: "fleet.view",
+      },
     ],
+  },
+  {
+    id: "vendors",
+    title: "Market Vendors & Hire",
+    path: "/vendors",
+    icon: "truck",
+    permissionKey: "vendors.view",
+  },
+  {
+    id: "billing",
+    title: "Billing & Invoices",
+    path: "/billing",
+    icon: "fileText",
+    permissionKey: "billing.view",
+  },
+  {
+    id: "claims",
+    title: "Damage & Claims",
+    path: "/claims",
+    icon: "info",
+    permissionKey: "claims.view",
   },
   {
     id: "reports",
@@ -41,21 +106,84 @@ const defaultStaticMenu: DynamicMenuItem[] = [
     icon: "barChart",
     permissionKey: "reports.view",
     children: [
-      { id: "reports.booking_register", title: "Booking Register", path: "/reports?tab=booking_register", icon: "fileText", permissionKey: "reports.booking_register" },
-      { id: "reports.tax_summary", title: "GST Tax Summary", path: "/reports?tab=tax_summary", icon: "fileText", permissionKey: "reports.tax_summary" },
-      { id: "reports.party_outstanding", title: "Customer Outstanding", path: "/reports?tab=party_outstanding", icon: "fileText", permissionKey: "reports.party_outstanding" },
-      { id: "reports.trip_profitability", title: "Trip Profitability", path: "/reports?tab=trip_profitability", icon: "fileText", permissionKey: "reports.trip_profitability" },
-      { id: "reports.vendor_payables", title: "Vendor Payables", path: "/reports?tab=vendor_payables", icon: "fileText", permissionKey: "reports.vendor_payables" },
+      {
+        id: "reports.booking_register",
+        title: "Booking Register",
+        path: "/reports?tab=booking_register",
+        icon: "fileText",
+        permissionKey: "reports.booking_register",
+      },
+      {
+        id: "reports.tax_summary",
+        title: "GST Tax Summary",
+        path: "/reports?tab=tax_summary",
+        icon: "fileText",
+        permissionKey: "reports.tax_summary",
+      },
+      {
+        id: "reports.party_outstanding",
+        title: "Customer Outstanding",
+        path: "/reports?tab=party_outstanding",
+        icon: "fileText",
+        permissionKey: "reports.party_outstanding",
+      },
+      {
+        id: "reports.trip_profitability",
+        title: "Trip Profitability",
+        path: "/reports?tab=trip_profitability",
+        icon: "fileText",
+        permissionKey: "reports.trip_profitability",
+      },
+      {
+        id: "reports.vendor_payables",
+        title: "Vendor Payables",
+        path: "/reports?tab=vendor_payables",
+        icon: "fileText",
+        permissionKey: "reports.vendor_payables",
+      },
     ],
   },
   {
+    id: "tracking",
+    title: "Live Tracker",
+    path: "/tracking",
+    icon: "info",
+    permissionKey: "tracking.view",
+  },
+  {
+    id: "clients",
+    title: "Client Management",
+    path: "/clients",
+    icon: "lock",
+    permissionKey: "saas.tenants.manage",
+    badge: "SaaS",
+  },
+  {
     id: "system",
-    title: "System & SaaS",
-    icon: "cog",
+    title: "System & Settings",
+    icon: "settings",
     children: [
-      { id: "system.settings", title: "Settings & Config", path: "/settings", icon: "settings", permissionKey: "settings.manage" },
-      { id: "system.forgot_password", title: "Forgot Password", path: "/forgot-password", icon: "lock", permissionKey: "auth.password_reset" },
-      { id: "system.about", title: "About", path: "/about", icon: "info", permissionKey: "general.about" },
+      {
+        id: "system.settings",
+        title: "SaaS Configuration",
+        path: "/settings",
+        icon: "settings",
+        permissionKey: "settings.manage",
+      },
+      {
+        id: "system.onboard",
+        title: "Tenant Onboarding",
+        path: "/onboard",
+        icon: "info",
+        permissionKey: "tenant.onboard",
+      },
+      {
+        id: "system.forgot_password",
+        title: "Forgot Password",
+        path: "/forgot-password",
+        icon: "lock",
+        permissionKey: "auth.password_reset",
+      },
     ],
   },
 ];
@@ -102,12 +230,13 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const hasPermission = (permissionKey?: string): boolean => {
     if (!permissionKey) return true;
     if (permissions.length === 0) return true; // Default permissive until permissions load
+    if (permissions.includes("*") || permissions.includes("admin")) return true;
     return permissions.some((p) => p.toLowerCase() === permissionKey.toLowerCase());
   };
 
   const isReportEnabled = (reportKey: string): boolean => {
     const reportMenu = menu.find((m) => m.id === "reports");
-    if (!reportMenu || !reportMenu.children) return false;
+    if (!reportMenu || !reportMenu.children) return true;
     return reportMenu.children.some(
       (c) => c.id.toLowerCase() === `reports.${reportKey.toLowerCase()}` || c.id.toLowerCase() === reportKey.toLowerCase()
     );
