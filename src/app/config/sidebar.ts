@@ -1,7 +1,11 @@
+import { TenantFeatureFlags } from "../../../services/configService";
+
 export type SidebarItem = {
   title: string;
   icon?: string;
   path?: string;
+  moduleKey?: keyof TenantFeatureFlags;
+  badge?: string;
   children?: SidebarItem[];
 };
 
@@ -12,8 +16,9 @@ export const sidebarItems: SidebarItem[] = [
     path: "/dashboard",
   },
   {
-    title: "GR",
+    title: "GR / Consignments",
     icon: "package",
+    moduleKey: "gstBilling",
     children: [
       {
         title: "View Bills",
@@ -30,6 +35,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     title: "Challan",
     icon: "truck",
+    moduleKey: "challanManagement",
     children: [
       {
         title: "View Challans",
@@ -44,16 +50,17 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
-    title: "Reports",
+    title: "Reports & Analytics",
     icon: "barChart",
+    moduleKey: "reportsAndAnalytics",
     path: "/reports",
   },
   {
-    title: "System",
+    title: "System & SaaS",
     icon: "cog",
     children: [
       {
-        title: "Settings",
+        title: "Settings & Config",
         icon: "settings",
         path: "/settings",
       },
