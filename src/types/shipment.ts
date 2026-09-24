@@ -219,6 +219,35 @@ export interface RecordPaymentRequest {
   notes?: string;
 }
 
+export interface ConsignmentInvoiceReference {
+  id?: number;
+  customerInvoiceNo: string;
+  customerInvoiceDate: string;
+  declaredGoodsValue: number;
+  ewayBillNo?: string;
+  ewayBillDate?: string;
+  ewayBillValidUpto?: string;
+  documentType?: string;
+  packageCount?: number;
+  weightKg?: number;
+  commodityDescription?: string;
+  documentUrl?: string; // Digital copy / photo of customer paper bill
+}
+
+export interface CreateConsignmentInvoiceReferenceRequest {
+  customerInvoiceNo: string;
+  customerInvoiceDate: string;
+  declaredGoodsValue: number;
+  ewayBillNo?: string;
+  ewayBillDate?: string;
+  ewayBillValidUpto?: string;
+  documentType?: string;
+  packageCount?: number;
+  weightKg?: number;
+  commodityDescription?: string;
+  documentUrl?: string; // Digital copy / photo of customer paper bill
+}
+
 // Line Items
 export interface ShipmentItem {
   id?: number;
@@ -283,6 +312,17 @@ export interface Shipment {
   consigneeState?: string;
   consigneePincode?: string;
   
+  // Hubs & Routing
+  originHubId?: number;
+  originHubName?: string;
+  destinationHubId?: number;
+  destinationHubName?: string;
+  currentHubId?: number;
+  currentHubName?: string;
+  deliveryType?: string;
+  ewayBillNo?: string;
+  ewayBillValidUpto?: string;
+
   // Financials
   goodsValue: number;
   paymentTerm: PaymentTerm;
@@ -298,6 +338,7 @@ export interface Shipment {
   isActive: boolean;
   createdAt: string;
   createdByName?: string;
+  invoiceReferences?: ConsignmentInvoiceReference[];
   items: ShipmentItem[];
   chargeItems: ShipmentChargeItem[];
   statusHistory: ShipmentStatusHistory[];
@@ -332,6 +373,13 @@ export interface CreateShipmentRequest {
   consigneeAddress?: string;
   saveConsigneeAsParty?: boolean;
 
+  // Hubs & Routing
+  originHubId?: number;
+  destinationHubId?: number;
+  deliveryType?: string;
+  ewayBillNo?: string;
+  ewayBillValidUpto?: string;
+
   goodsValue: number;
   paymentTerm: PaymentTerm;
   totalFreight: number;
@@ -339,6 +387,7 @@ export interface CreateShipmentRequest {
   paidAmount: number;
   remarks?: string;
   bookingClerk?: string;
+  customerInvoices?: CreateConsignmentInvoiceReferenceRequest[];
   items?: ShipmentItem[];
   chargeItems?: ShipmentChargeItem[];
 }

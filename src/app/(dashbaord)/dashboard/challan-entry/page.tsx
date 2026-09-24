@@ -102,80 +102,101 @@ function ChallanEntryContent() {
   };
 
   const deleteRow = (index: number) => {
-    if (rows.length === 1) return;
-    setRows(rows.filter((_, i) => i !== index));
-  };
-
-  const handleChange = <K extends keyof ChallanDetailRow>(
-    index: number,
-    field: K,
-    value: ChallanDetailRow[K]
-  ) => {
-    const updated = [...rows];
-    updated[index][field] = value;
+    if (rows.length === 1) {
+      alert("At least one consignment row is required");
+      return;
+    }
+    const updated = rows.filter((_, i) => i !== index);
     setRows(updated);
   };
 
-  const handleFormChange = (key: string, value: any) => {
+  const handleChange = (index: number, field: string, value: any) => {
+    const updated = [...rows];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setRows(updated);
+  };
+
+  const handleFormChange = (field: string, value: string) => {
     setForm((prev) => ({
       ...prev,
-      [key]: value,
+      [field]: value,
     }));
   };
 
   const validateForm = () => {
-    const errors: string[] = [];
+    if (!form.challanNo.trim()) {
+      alert("Challan Number is required");
+      return false;
+    }
+    if (!form.lorryNo.trim()) {
+      alert("Lorry Number is required");
+      return false;
+    }
+    if (!form.driverName.trim()) {
+      alert("Driver Name is required");
+      return false;
+    }
+    if (!form.toLocation.trim()) {
+      alert("To Location is required");
+      return false;
+    }
 
-    // Challan Header validations
-    if (!form.challanNo.trim()) errors.push("Challan No is required");
-    if (!form.challanDate) errors.push("Challan Date is required");
-    if (!form.lorryNo.trim()) errors.push("Lorry No is required");
-    if (!form.driverName.trim()) errors.push("Driver Name is required");
-    if (!form.toLocation.trim()) errors.push("To Location is required");
+    // Validate rows
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row.billNo.trim()) {
+        alert(`Bill No is required in row ${i + 1}`);
+        return false;
+      }
+      if (row.quantity <= 0) {
+        alert(`Quantity must be greater than 0 in row ${i + 1}`);
+        return false;
+      }
+      if (!row.destination.trim()) {
+        alert(`Destination is required in row ${i + 1}`);
+        return false;
+      }
+      if (row.freightAmount <= 0) {
+        alert(`Freight Amount must be greater than 0 in row ${i + 1}`);
+        return false;
+      }
+      if (!row.billTypeId || row.billTypeId === 0) {
+        alert(`Bill Type is required in row ${i + 1}`);
+        return false;
+      }
+    }
 
-    // Challan Details validation
-    if (rows.length === 0) errors.push("At least one consignment is required");
-    rows.forEach((row, index) => {
-      if (!row.billNo.trim()) errors.push(`Bill No is required for row ${index + 1}`);
-      if (!row.quantity || row.quantity <= 0) errors.push(`Quantity must be greater than 0 for row ${index + 1}`);
-      if (!row.destination.trim()) errors.push(`Destination is required for row ${index + 1}`);
-      if (!row.freightAmount || row.freightAmount <= 0) errors.push(`Freight Amount must be greater than 0 for row ${index + 1}`);
-      if (!row.billTypeId) errors.push(`Bill Type is required for row ${index + 1}`);
-      if (!row.consigneeName.trim()) errors.push(`Consignee Name is required for row ${index + 1}`);
-    });
-
-    return errors;
+    return true;
   };
 
   const handleSubmit = async () => {
-    // Validate form
-    const errors = validateForm();
-    if (errors.length > 0) {
-      alert("Please fix the following errors:\\n\\n" + errors.join("\\n"));
+    if (!validateForm()) {
       return;
     }
 
     try {
       setLoading(true);
-      
-      // Prepare challan data
+
       const challanData = {
         challanNo: form.challanNo,
         challanDate: form.challanDate,
         lorryNo: form.lorryNo,
         driverName: form.driverName,
-        voiceDriverName: form.voiceDriverName,
+        voiceDriverName: form.voiceDriverName || null,
         fromLocation: form.fromLocation,
         toLocation: form.toLocation,
-        remarks: form.remarks,
+        remarks: form.remarks || null,
         challanDetails: rows.map((row) => ({
           billNo: row.billNo,
-          quantity: row.quantity,
+          quantity: Number(row.quantity),
           destination: row.destination,
-          freightAmount: row.freightAmount,
-          billTypeId: row.billTypeId,
-          consigneeName: row.consigneeName,
-          remarks: row.remarks,
+          freightAmount: Number(row.freightAmount),
+          billTypeId: Number(row.billTypeId),
+          consigneeName: row.consigneeName || null,
+          remarks: row.remarks || null,
         })),
       };
 
@@ -189,13 +210,12 @@ function ChallanEntryContent() {
       }
       
       if (response.success) {
-        alert(editId ? "Challan updated successfully! ✓" : "Challan saved successfully! ✓");
-        // Optionally reset form or redirect
+        alert(editId ? "Challan updated successfully!" : "Challan saved successfully!");
       }
       
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Something went wrong ❌");
+      alert(error.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -212,21 +232,20 @@ function ChallanEntryContent() {
   const totals = calculateTotals();
 
   return (
-    <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen space-y-6">
-
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             {editId ? "Edit Challan" : "New Challan Entry"}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {editId ? `Editing Challan: ${form.challanNo}` : "Create a new trip challan"}
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+            {editId ? `Editing Challan: ${form.challanNo}` : "Create a new trip dispatch challan"}
           </p>
         </div>
 
         <button 
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed" 
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl shadow-xs transition font-bold text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
           onClick={handleSubmit}
           disabled={loading}
         >
@@ -236,7 +255,7 @@ function ChallanEntryContent() {
 
       {/* BASIC INFO */}
       <Card title="Trip Information">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input 
             label="Challan No" 
             value={form.challanNo} 
@@ -260,7 +279,7 @@ function ChallanEntryContent() {
 
       {/* DRIVER DETAILS */}
       <Card title="Driver Details">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input 
             label="Driver Name" 
             value={form.driverName} 
@@ -277,7 +296,7 @@ function ChallanEntryContent() {
 
       {/* ROUTE DETAILS */}
       <Card title="Route Details">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input 
             label="From Location" 
             value={form.fromLocation} 
@@ -299,7 +318,7 @@ function ChallanEntryContent() {
       </Card>
 
       {/* CONSIGNMENT DETAILS TABLE */}
-      <Card title="">
+      <Card title="Consignment Details">
         <ChallanDetailsTable
           rows={rows}
           addRow={addRow}
@@ -310,25 +329,25 @@ function ChallanEntryContent() {
 
       {/* SUMMARY */}
       <Card title="Summary">
-        <div className="grid grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-            <p className="text-xs text-gray-600 uppercase font-medium mb-1">Total Bills</p>
-            <p className="text-2xl font-bold text-blue-700">{totals.totalBills}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Bills</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{totals.totalBills}</p>
           </div>
           
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-            <p className="text-xs text-gray-600 uppercase font-medium mb-1">Total Quantity</p>
-            <p className="text-2xl font-bold text-green-700">{totals.totalQuantity}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Quantity</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{totals.totalQuantity}</p>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-            <p className="text-xs text-gray-600 uppercase font-medium mb-1">Total Freight</p>
-            <p className="text-2xl font-bold text-purple-700">₹{totals.totalFreight.toFixed(2)}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Freight</p>
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">₹{totals.totalFreight.toFixed(2)}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
-            <p className="text-xs text-gray-600 uppercase font-medium mb-1">Avg Freight/Bill</p>
-            <p className="text-2xl font-bold text-orange-700">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Avg Freight/Bill</p>
+            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 font-mono">
               ₹{totals.totalBills > 0 ? (totals.totalFreight / totals.totalBills).toFixed(2) : "0.00"}
             </p>
           </div>
@@ -341,7 +360,7 @@ function ChallanEntryContent() {
 
 export default function ChallanEntryPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading Challan Entry...</div>}>
+    <Suspense fallback={<div className="p-6 text-center text-slate-400">Loading Challan Entry...</div>}>
       <ChallanEntryContent />
     </Suspense>
   );

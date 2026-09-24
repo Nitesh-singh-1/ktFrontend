@@ -20,6 +20,7 @@ import {
   CheckIcon,
   LockIcon,
 } from "@/app/components/ui/Icons";
+import { X } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
 
 export default function ClientsManagementPage() {
@@ -327,17 +328,17 @@ export default function ClientsManagementPage() {
       )}
 
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-sky-100 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+            <div className="p-3 bg-sky-600 rounded-xl shadow-xs">
               <PackageIcon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
                 SaaS Client Management & Provisioning
               </h1>
-              <p className="text-slate-400 text-sm mt-0.5">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
                 Onboard transport companies, monetize subscription tiers, and control feature access per client
               </p>
             </div>
@@ -349,9 +350,9 @@ export default function ClientsManagementPage() {
             setOnboardStep(1);
             setShowOnboardModal(true);
           }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5"
+          className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
         >
-          <PlusIcon className="w-5 h-5" />
+          <PlusIcon className="w-4 h-4" />
           <span>Onboard New Client</span>
         </button>
       </div>
@@ -599,7 +600,7 @@ export default function ClientsManagementPage() {
                 }}
                 className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -793,7 +794,7 @@ export default function ClientsManagementPage() {
                 onClick={() => setShowOnboardModal(false)}
                 className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1067,7 +1068,7 @@ export default function ClientsManagementPage() {
                       }
                       setOnboardStep((prev) => (prev + 1) as 1 | 2 | 3);
                     }}
-                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+                    className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                   >
                     Next Step →
                   </button>
@@ -1075,7 +1076,7 @@ export default function ClientsManagementPage() {
                   <button
                     type="submit"
                     disabled={submittingOnboard}
-                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 cursor-pointer"
+                    className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {submittingOnboard
                       ? "Onboarding Client..."

@@ -60,6 +60,24 @@ export const TenantConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         return;
       }
 
+      // Check user role: Sub-users must NOT call super-user configuration endpoints
+      const storedUserStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      let isSuperUser = false;
+      if (storedUserStr) {
+        try {
+          const u = JSON.parse(storedUserStr);
+          const r = (u?.role || "").toUpperCase();
+          isSuperUser = r === "SUPER_USER" || r === "ADMIN" || r === "TENANTADMIN" || r === "TENANT_OWNER" || r === "SUPERADMIN";
+        } catch { }
+      }
+
+      // If user is a sub-user, provide standard defaults without firing 403-generating config calls
+      if (!isSuperUser) {
+        setFeatureFlags(defaultFeatureFlags);
+        setIsLoading(false);
+        return;
+      }
+
       const [cfg, flags, sub] = await Promise.allSettled([
         configService.getConfiguration(),
         configService.getFeatureFlags(),

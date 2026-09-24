@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Invoice, RecordPaymentRequest } from "@/types/shipment";
 import { invoiceService } from "services/invoiceService";
+import { CreditCard, X } from "lucide-react";
 
 interface PaymentRecordModalProps {
   isOpen: boolean;
@@ -71,52 +72,52 @@ export default function PaymentRecordModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>💳</span> Record Payment Receipt
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Record Payment Receipt
             </h2>
-            <p className="text-xs text-slate-500">
-              Invoice <span className="font-mono font-bold text-blue-600">{invoice.invoiceNo}</span> • {invoice.partyName}
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Invoice <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{invoice.invoiceNo}</span> • {invoice.partyName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
               {error}
             </div>
           )}
 
           {/* Invoice Balances Banner */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 grid grid-cols-3 gap-2 text-center text-xs">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-2 text-center text-xs">
             <div>
               <p className="text-slate-400 text-[10px] font-bold">Total Invoiced</p>
-              <p className="font-mono font-bold text-slate-800 mt-0.5">₹{invoice.grandTotal}</p>
+              <p className="font-mono font-bold text-slate-800 dark:text-slate-200 mt-0.5">₹{invoice.grandTotal}</p>
             </div>
             <div>
               <p className="text-slate-400 text-[10px] font-bold">Already Paid</p>
-              <p className="font-mono font-bold text-emerald-600 mt-0.5">₹{invoice.paidAmount}</p>
+              <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">₹{invoice.paidAmount}</p>
             </div>
             <div>
               <p className="text-slate-400 text-[10px] font-bold">Outstanding</p>
-              <p className="font-mono font-bold text-blue-600 mt-0.5">₹{invoice.balanceAmount}</p>
+              <p className="font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5">₹{invoice.balanceAmount}</p>
             </div>
           </div>
 
           {/* Payment Amount */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Received Payment Amount (₹) *
             </label>
             <input
@@ -127,14 +128,14 @@ export default function PaymentRecordModal({
               required
               value={amount === 0 ? "" : amount}
               onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono font-black text-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm font-mono font-black text-blue-600 dark:text-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Date & Mode */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Receipt Date *
               </label>
               <input
@@ -142,18 +143,18 @@ export default function PaymentRecordModal({
                 required
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Payment Mode
               </label>
               <select
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="Bank Transfer / NEFT">Bank Transfer / NEFT</option>
                 <option value="UPI / Online">UPI / Online</option>
@@ -166,7 +167,7 @@ export default function PaymentRecordModal({
 
           {/* Reference / UTR */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Transaction Ref / UTR / Cheque No
             </label>
             <input
@@ -174,13 +175,13 @@ export default function PaymentRecordModal({
               placeholder="e.g. UTR1948205820"
               value={referenceNo}
               onChange={(e) => setReferenceNo(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Notes / Receipt Remarks
             </label>
             <textarea
@@ -188,16 +189,16 @@ export default function PaymentRecordModal({
               placeholder="e.g. Received full settlement against bill"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Sparkles, Download, RefreshCw, X } from "lucide-react";
 
 interface UpdateState {
   status: "idle" | "checking" | "available" | "downloading" | "downloaded" | "not-available" | "error";
@@ -52,15 +53,21 @@ export default function UpdateNotification() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white rounded-2xl shadow-2xl border border-indigo-100 p-4 transform transition-all duration-300 animate-slide-up">
+    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-sky-200 dark:border-slate-800 p-4 transform transition-all duration-300">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-lg flex-shrink-0 shadow-md">
-          {updateState.status === "downloaded" ? "✨" : updateState.status === "downloading" ? "⬇️" : "🚀"}
+        <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white text-lg flex-shrink-0 shadow-xs">
+          {updateState.status === "downloaded" ? (
+            <Sparkles className="w-5 h-5" />
+          ) : updateState.status === "downloading" ? (
+            <Download className="w-5 h-5 animate-bounce" />
+          ) : (
+            <RefreshCw className="w-5 h-5" />
+          )}
         </div>
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-bold text-gray-900">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
               {updateState.status === "downloaded"
                 ? "Update Ready to Install!"
                 : updateState.status === "downloading"
@@ -71,13 +78,13 @@ export default function UpdateNotification() {
             </h4>
             <button
               onClick={handleDismiss}
-              className="text-gray-400 hover:text-gray-600 text-xs font-semibold p-1"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 cursor-pointer"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {updateState.status === "downloaded" &&
               `Version ${updateState.version || ""} has finished downloading. Restart the app to apply the latest features and bug fixes.`}
             {updateState.status === "downloading" &&
@@ -90,9 +97,9 @@ export default function UpdateNotification() {
 
           {/* Progress Bar */}
           {updateState.status === "downloading" && (
-            <div className="w-full bg-gray-100 h-2 rounded-full mt-2.5 overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-2.5 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 h-full rounded-full transition-all duration-300"
+                className="bg-sky-600 h-full rounded-full transition-all duration-300"
                 style={{ width: `${updateState.percent || 0}%` }}
               />
             </div>
@@ -103,13 +110,13 @@ export default function UpdateNotification() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleRestart}
-                className="flex-1 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-xs font-bold hover:shadow-md transition-all duration-200"
+                className="flex-1 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
               >
                 Restart & Apply Update
               </button>
               <button
                 onClick={handleDismiss}
-                className="px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors"
+                className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Later
               </button>

@@ -52,7 +52,7 @@ export default function Sidebar({
   setIsOpen: (val: boolean) => void;
 }) {
   const pathname = usePathname();
-  const [openMenu, setOpenMenu] = useState<string | null>("Consignments (GR)");
+  const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
 
@@ -60,6 +60,17 @@ export default function Sidebar({
     setUser(authService.getUser());
     setOrgName(authService.getOrganizationName());
   }, []);
+
+  // Auto-expand menu containing the active page
+  useEffect(() => {
+    if (!pathname) return;
+    for (const item of sidebarItems) {
+      if (item.children?.some((c) => c.path === pathname || (c.path && c.path !== "/" && pathname.startsWith(c.path)))) {
+        setOpenMenu(item.id || item.title);
+        break;
+      }
+    }
+  }, [pathname]);
 
   let companyName = orgName || "K-Transport";
   let dynamicMenu: (DynamicMenuItem | SidebarItem)[] = [];
@@ -92,14 +103,14 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-[#0f172a] text-slate-300
-      transition-all duration-300 z-40 border-r border-slate-800/80 flex flex-col shadow-xl
+      className={`fixed top-0 left-0 h-screen bg-slate-900 dark:bg-slate-950 text-slate-200
+      transition-all duration-300 z-40 border-r border-slate-800 flex flex-col shadow-lg
       ${isOpen ? "w-64" : "w-20"}`}
     >
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-3 top-6 bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded-full shadow-md transition-transform duration-200 z-50 border-2 border-[#0f172a] cursor-pointer"
+        className="absolute -right-3 top-6 bg-sky-600 hover:bg-sky-500 text-white p-1.5 rounded-full shadow-md transition-transform duration-200 z-50 border-2 border-slate-900 cursor-pointer"
         title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
       >
         {isOpen ? (
@@ -110,8 +121,8 @@ export default function Sidebar({
       </button>
 
       {/* Brand Header */}
-      <div className="h-16 px-5 border-b border-slate-800/80 flex items-center gap-3 bg-slate-900/40">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-indigo-500/20 shrink-0">
+      <div className="h-16 px-5 border-b border-slate-800 flex items-center gap-3 bg-slate-950/50">
+        <div className="w-9 h-9 rounded-xl bg-sky-600 flex items-center justify-center text-white font-black text-sm shadow-sm shrink-0">
           KT
         </div>
         {isOpen && (
@@ -119,7 +130,7 @@ export default function Sidebar({
             <h1 className="font-extrabold text-sm tracking-tight text-white truncate" title={companyName}>
               {companyName}
             </h1>
-            <p className="text-[11px] font-medium text-indigo-400 truncate">
+            <p className="text-[11px] font-medium text-sky-400 truncate">
               {orgName || "Logistics & Fleet TMS"}
             </p>
           </div>
@@ -127,7 +138,7 @@ export default function Sidebar({
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-700">
         {displayItems.map((item) => {
           // Simple single link
           if (!item.children || item.children.length === 0) {
@@ -136,10 +147,10 @@ export default function Sidebar({
               <Link
                 key={item.id || item.title}
                 href={item.path || "#"}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 group ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group ${
                   isActive
-                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/70"
+                    ? "bg-sky-600 text-white shadow-xs font-bold"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
@@ -150,7 +161,7 @@ export default function Sidebar({
                   <div className="flex items-center justify-between w-full overflow-hidden">
                     <span className="truncate">{item.title}</span>
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300">
                         {item.badge}
                       </span>
                     )}
@@ -165,19 +176,19 @@ export default function Sidebar({
           const hasActiveChild = item.children.some((c) => pathname === c.path);
 
           return (
-            <div key={item.id || item.title} className="space-y-1">
+            <div key={item.id || item.title} className="space-y-0.5">
               <button
                 type="button"
                 onClick={() => setOpenMenu(isDropdownOpen ? null : (item.id || item.title))}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 group cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group cursor-pointer ${
                   hasActiveChild
-                    ? "text-white bg-slate-800/80"
+                    ? "text-white bg-slate-800/90 font-bold"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`shrink-0 ${hasActiveChild ? "text-indigo-400" : "text-slate-400 group-hover:text-white"}`}>
+                  <div className={`shrink-0 ${hasActiveChild ? "text-sky-400" : "text-slate-400 group-hover:text-white"}`}>
                     {getIcon(item.icon)}
                   </div>
                   {isOpen && <span className="truncate">{item.title}</span>}
@@ -185,7 +196,7 @@ export default function Sidebar({
                 {isOpen && (
                   <div className="flex items-center gap-2">
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300">
                         {item.badge}
                       </span>
                     )}
@@ -200,16 +211,16 @@ export default function Sidebar({
 
               {/* Sub-items */}
               {isOpen && isDropdownOpen && (
-                <div className="ml-5 pl-3 border-l border-slate-800 space-y-1 py-1">
+                <div className="ml-5 pl-3 border-l border-slate-800 space-y-0.5 py-1">
                   {item.children.map((child) => {
                     const isChildActive = pathname === child.path;
                     return (
                       <Link
                         key={child.id || child.title}
                         href={child.path || "#"}
-                        className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all duration-150 ${
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                           isChildActive
-                            ? "bg-indigo-600/20 text-indigo-300 font-bold border border-indigo-500/30"
+                            ? "bg-sky-600/20 text-sky-300 font-bold border border-sky-500/30"
                             : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                         }`}
                       >
@@ -226,10 +237,10 @@ export default function Sidebar({
       </nav>
 
       {/* User Profile & Logout Bottom Bar */}
-      <div className="p-3 border-t border-slate-800/80 bg-[#0b1120]">
+      <div className="p-3 border-t border-slate-800 bg-slate-950/60">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-indigo-900/60 border border-indigo-700/50 flex items-center justify-center text-indigo-300 font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-sky-900/60 border border-sky-700/50 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
               {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
             </div>
             {isOpen && (
@@ -237,7 +248,7 @@ export default function Sidebar({
                 <div className="text-xs font-bold text-white truncate">
                   {user?.fullName || user?.username || "Admin"}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate">
+                <div className="text-[10px] text-sky-400 truncate">
                   {user?.role || "Fleet Manager"}
                 </div>
               </div>
@@ -246,7 +257,7 @@ export default function Sidebar({
 
           <button
             onClick={handleLogout}
-            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition cursor-pointer"
             title="Sign Out"
           >
             <LogOutIcon className="w-4 h-4" />

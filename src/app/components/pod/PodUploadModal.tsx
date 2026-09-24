@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { UploadPodRequest, ShipmentDto } from "@/types/tms";
 import { podService } from "services/podService";
 import { shipmentService } from "services/shipmentService";
+import { FileCheck, PenTool, X } from "lucide-react";
 
 interface PodUploadModalProps {
   isOpen: boolean;
@@ -151,26 +152,26 @@ export default function PodUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>✍️</span> Electronic Proof of Delivery (e-POD)
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Electronic Proof of Delivery (e-POD)
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Record consignee delivery acknowledgement, recipient ID, and digital signature.
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition">
-            ✕
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -178,14 +179,14 @@ export default function PodUploadModal({
           {/* Consignment Selector & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Select Consignment (LR / GR) *
               </label>
               <select
                 required
                 value={shipmentId || ""}
                 onChange={(e) => setShipmentId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">-- Choose Shipment / LR --</option>
                 {shipments.map((s) => (
@@ -197,7 +198,7 @@ export default function PodUploadModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Delivery Date *
               </label>
               <input
@@ -205,7 +206,7 @@ export default function PodUploadModal({
                 required
                 value={deliveryDate}
                 onChange={(e) => setDeliveryDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -213,7 +214,7 @@ export default function PodUploadModal({
           {/* Receiver Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Receiver / Signatory Full Name *
               </label>
               <input
@@ -222,12 +223,12 @@ export default function PodUploadModal({
                 placeholder="e.g. Mukesh Kumar (Godown Mgr)"
                 value={receiverName}
                 onChange={(e) => setReceiverName(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Receiver Mobile Number
               </label>
               <input
@@ -236,13 +237,13 @@ export default function PodUploadModal({
                 placeholder="9876543210"
                 value={receiverMobile}
                 onChange={(e) => setReceiverMobile(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Receiver Aadhar / ID Proof No
             </label>
             <input
@@ -250,15 +251,15 @@ export default function PodUploadModal({
               placeholder="e.g. Aadhar ending in 4920 or Company Stamp ID"
               value={receiverAadharOrId}
               onChange={(e) => setReceiverAadharOrId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Digital Signature Pad */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <span>🖋️</span> Digital Receiver Signature (Draw on screen)
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <PenTool className="w-4 h-4 text-slate-600 dark:text-slate-300" /> Digital Receiver Signature (Draw on screen)
               </span>
               {hasSignature && (
                 <button
@@ -271,7 +272,7 @@ export default function PodUploadModal({
               )}
             </div>
 
-            <div className="border border-slate-300 rounded-xl overflow-hidden bg-white">
+            <div className="border border-slate-300 dark:border-slate-600 rounded-xl overflow-hidden bg-white">
               <canvas
                 ref={canvasRef}
                 width={500}
@@ -291,7 +292,7 @@ export default function PodUploadModal({
 
           {/* Remarks */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Delivery Notes / Shortage Remarks (if any)
             </label>
             <textarea
@@ -299,16 +300,16 @@ export default function PodUploadModal({
               placeholder="e.g. Delivered 10 pkgs in sound condition with seal intact"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>

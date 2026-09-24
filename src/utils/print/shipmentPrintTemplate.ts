@@ -200,7 +200,7 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
     <!-- Route & Movement Meta -->
     <div style="display: flex; justify-content: space-between; background: #f1f5f9; padding: 6px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; font-weight: bold;">
       <div>ORIGIN: <span style="color: #4338ca;">${shipment.fromLocation || "-"}</span></div>
-      <div>➔</div>
+      <div>&rarr;</div>
       <div>DESTINATION: <span style="color: #4338ca;">${shipment.toLocation || "-"}</span></div>
       <div>VEHICLE NO: <span style="font-family: monospace;">${shipment.truckNo || "NOT ASSIGNED"}</span></div>
       <div>PAYMENT: <span style="color: #b91c1c;">${paymentTermLabel}</span></div>

@@ -19,27 +19,27 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     id: "consignments",
-    title: "Consignments (GR)",
+    title: "Bilty / GR Booking",
     icon: "package",
     moduleKey: "gstBilling",
     children: [
       {
-        id: "consignments.all",
-        title: "All Shipments",
-        icon: "fileText",
-        path: "/shipments",
-      },
-      {
         id: "consignments.create",
-        title: "New Consignment",
+        title: "New Bilty (GR Booking)",
         icon: "package",
         path: "/shipments/create",
+      },
+      {
+        id: "consignments.all",
+        title: "All Bilties (GR Registry)",
+        icon: "fileText",
+        path: "/shipments",
       },
     ],
   },
   {
     id: "trips",
-    title: "Trip Manifests",
+    title: "LR / Truck Challan",
     icon: "truck",
     path: "/trips",
     moduleKey: "challanManagement",
@@ -50,6 +50,26 @@ export const sidebarItems: SidebarItem[] = [
     icon: "fileText",
     path: "/pod",
     moduleKey: "challanManagement",
+  },
+  {
+    id: "billing",
+    title: "Freight Invoicing & Billing",
+    icon: "fileText",
+    moduleKey: "gstBilling",
+    children: [
+      {
+        id: "billing.invoices",
+        title: "Freight Invoices",
+        icon: "fileText",
+        path: "/billing",
+      },
+      {
+        id: "billing.receipts",
+        title: "Money Receipts (MR)",
+        icon: "fileText",
+        path: "/receipts",
+      },
+    ],
   },
   {
     id: "master_data",
@@ -78,13 +98,6 @@ export const sidebarItems: SidebarItem[] = [
     moduleKey: "vendorManagement",
   },
   {
-    id: "billing",
-    title: "Billing & Invoices",
-    icon: "fileText",
-    path: "/billing",
-    moduleKey: "gstBilling",
-  },
-  {
     id: "claims",
     title: "Damage & Claims",
     icon: "info",
@@ -100,7 +113,7 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     id: "tracking",
-    title: "Live Tracker",
+    title: "Live GPS Tracker",
     icon: "info",
     path: "/tracking",
     moduleKey: "gpsTracking",

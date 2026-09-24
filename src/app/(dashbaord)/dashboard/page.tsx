@@ -3,6 +3,21 @@
 import { useState, useEffect } from "react";
 import { apiService } from "../../../../services/apiservice";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { 
+  Plus, 
+  Truck, 
+  ClipboardList, 
+  CheckCircle2, 
+  IndianRupee, 
+  Banknote, 
+  CreditCard, 
+  BarChart3, 
+  Package, 
+  FileCheck, 
+  ArrowRight,
+  TrendingUp
+} from "lucide-react";
 
 interface DashboardStats {
   totalGrEntries: number;
@@ -60,10 +75,10 @@ export default function DashboardPage() {
       const statsData = statsResponse as any;
       const revenueData = revenueResponse as any;
 
-      if (statsData.success) {
+      if (statsData?.success) {
         setStats(statsData.data);
       }
-      if (revenueData.success) {
+      if (revenueData?.success) {
         setRevenue(revenueData.data);
       }
     } catch (error) {
@@ -75,160 +90,245 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+      <div className="p-8 bg-[#f0f7ff] dark:bg-slate-950 min-h-[70vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">Loading logistics dispatch metrics...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen space-y-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-8 text-white shadow-lg">
-        <h1 className="text-4xl font-bold mb-2">Welcome to K-Transport</h1>
-        <p className="text-indigo-100 text-lg">Manage your logistics and transportation seamlessly</p>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Total GR Entries</p>
-              <h3 className="text-3xl font-bold text-gray-800 mt-2">{stats?.totalGrEntries || 0}</h3>
-              <p className="text-xs text-gray-400 mt-1">This month: {stats?.thisMonthEntries || 0}</p>
-            </div>
-            <div className="text-4xl">📋</div>
+    <div className="space-y-6 pb-12">
+      {/* Welcome Banner - Solid Light Blue & Crisp White */}
+      <div className="bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50 px-2.5 py-1 rounded-md border border-sky-200 dark:border-sky-800">
+              Operations Control
+            </span>
+            <span className="text-xs text-slate-400">Real-time TMS Overview</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Logistics & Freight Dispatch Console
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Monitor consignment bilties, truck manifests, POD acknowledgments, and revenue collections
+          </p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Pending Deliveries</p>
-              <h3 className="text-3xl font-bold text-amber-600 mt-2">{stats?.pendingDeliveries || 0}</h3>
-              <p className="text-xs text-gray-400 mt-1">Awaiting delivery</p>
-            </div>
-            <div className="text-4xl">🚚</div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Completed</p>
-              <h3 className="text-3xl font-bold text-emerald-600 mt-2">{stats?.completedDeliveries || 0}</h3>
-              <p className="text-xs text-gray-400 mt-1">Delivered</p>
-            </div>
-            <div className="text-4xl">✅</div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Total Revenue</p>
-              <h3 className="text-3xl font-bold text-indigo-600 mt-2">
-                ₹{stats?.totalRevenue?.toLocaleString('en-IN') || 0}
-              </h3>
-              <p className="text-xs text-gray-400 mt-1">All time</p>
-            </div>
-            <div className="text-4xl">💰</div>
-          </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href="/shipments/create"
+            className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Bilty (GR)</span>
+          </Link>
+          <Link
+            href="/trips"
+            className="px-4 py-2.5 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer dark:bg-slate-800 dark:text-sky-300 dark:border-slate-700"
+          >
+            <Truck className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            <span>Truck Challans</span>
+          </Link>
         </div>
       </div>
 
-      {/* Revenue Breakdown */}
+      {/* Primary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs hover:border-sky-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Total Bilties (GR)
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300 flex items-center justify-center font-bold text-sm">
+              <ClipboardList className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+              {stats?.totalGrEntries || 0}
+            </h3>
+            <p className="text-xs font-medium text-sky-700 dark:text-sky-400 mt-1">
+              This Month: <strong>{stats?.thisMonthEntries || 0}</strong> booked
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs hover:border-amber-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              In-Transit / Pending
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 flex items-center justify-center font-bold text-sm">
+              <Truck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400">
+              {stats?.pendingDeliveries || 0}
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
+              Active dispatches on road
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs hover:border-emerald-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Delivered / POD Closed
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              {stats?.completedDeliveries || 0}
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
+              Acknowledged delivery slips
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs hover:border-sky-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Total Freight Billed
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300 flex items-center justify-center font-bold text-sm">
+              <IndianRupee className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-black text-sky-700 dark:text-sky-400">
+              ₹{stats?.totalRevenue ? stats.totalRevenue.toLocaleString('en-IN') : "0"}
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
+              Consignment freight revenue
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue & Payment Mode Split */}
       {revenue && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600 text-sm font-medium">Paid Amount</p>
-              <span className="text-emerald-500 text-xl">💵</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Paid / Cash Collections</span>
+                <h4 className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                  ₹{revenue.paidAmount?.toLocaleString('en-IN') || 0}
+                </h4>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center">
+                <Banknote className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-emerald-600">
-              ₹{revenue.paidAmount?.toLocaleString('en-IN')}
-            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Immediate settlement & counter collections</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600 text-sm font-medium">To Pay Amount</p>
-              <span className="text-amber-500 text-xl">💳</span>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">To-Pay (Destination Pay)</span>
+                <h4 className="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">
+                  ₹{revenue.toPayAmount?.toLocaleString('en-IN') || 0}
+                </h4>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-amber-600">
-              ₹{revenue.toPayAmount?.toLocaleString('en-IN')}
-            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Payable by consignee upon delivery</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600 text-sm font-medium">TBB Amount</p>
-              <span className="text-blue-500 text-xl">📊</span>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-sky-100 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">TBB (To-Be-Billed / Credit)</span>
+                <h4 className="text-xl font-extrabold text-sky-700 dark:text-sky-400 mt-1">
+                  ₹{revenue.tbbAmount?.toLocaleString('en-IN') || 0}
+                </h4>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-blue-600">
-              ₹{revenue.tbbAmount?.toLocaleString('en-IN')}
-            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Monthly customer corporate invoices</p>
           </div>
         </div>
       )}
 
-      {/* Recent Bills */}
-      {stats && stats.recentBills && stats.recentBills.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
-            <h2 className="text-white font-semibold text-lg">Recent Bills</h2>
+      {/* Recent Bilties Registry Table */}
+      {stats?.recentBills && stats.recentBills.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="px-6 py-4 border-b border-sky-100 dark:border-slate-800 flex items-center justify-between bg-sky-50/50 dark:bg-slate-850">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Recent Consignment Bilties</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Live booking feed across all active branches</p>
+            </div>
+            <Link
+              href="/shipments"
+              className="text-xs font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400 hover:underline flex items-center gap-1"
+            >
+              <span>View Full Registry</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">GR No</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Consignee</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Route</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Date</th>
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase border-b border-slate-200/80 dark:border-slate-700">
+                <tr>
+                  <th className="px-6 py-3.5">GR Number</th>
+                  <th className="px-6 py-3.5">Consignee</th>
+                  <th className="px-6 py-3.5">Route</th>
+                  <th className="px-6 py-3.5">Delivery Status</th>
+                  <th className="px-6 py-3.5">Freight Total</th>
+                  <th className="px-6 py-3.5">Booking Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
                 {stats.recentBills.slice(0, 5).map((bill) => (
-                  <tr 
-                    key={bill.id} 
-                    className="hover:bg-indigo-50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/dashboard/gr-entry?id=${bill.id}`)}
+                  <tr
+                    key={bill.id}
+                    className="hover:bg-sky-50/50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                    onClick={() => router.push(`/shipments/${bill.id}`)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-indigo-600">{bill.grNo}</span>
+                    <td className="px-6 py-3.5 font-mono font-bold text-sky-700 dark:text-sky-400">
+                      {bill.grNo}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-6 py-3.5 font-semibold text-slate-900 dark:text-white">
                       {bill.consigneeName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      <div className="flex items-center gap-1">
-                        <span>{bill.fromLocation}</span>
-                        <span className="text-indigo-500">→</span>
-                        <span>{bill.toLocation}</span>
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{bill.fromLocation}</span>
+                        <ArrowRight className="w-3 h-3 text-sky-500" />
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{bill.toLocation}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-3.5">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          bill.deliveryStatus === "Pending"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-emerald-100 text-emerald-800"
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          bill.deliveryStatus === "Delivered" || bill.deliveryStatus === "Completed"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+                            : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800"
                         }`}
                       >
                         {bill.deliveryStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                    <td className="px-6 py-3.5 font-bold text-slate-900 dark:text-white">
                       ₹{bill.totalAmount?.toLocaleString('en-IN')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-3.5 text-xs text-slate-500 dark:text-slate-400">
                       {new Date(bill.createdAt).toLocaleDateString('en-IN')}
                     </td>
                   </tr>
@@ -239,42 +339,71 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
-            href="/dashboard/gr-entry"
-            className="flex items-center gap-4 p-4 rounded-lg border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-300 transition-all duration-200"
+      {/* Quick Launchpad */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+          Quick Operational Launchpad
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/shipments/create"
+            className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 hover:bg-sky-100/60 dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <span className="text-3xl">➕</span>
-            <div>
-              <h3 className="font-bold text-indigo-700">New GR Entry</h3>
-              <p className="text-sm text-indigo-600">Create a new goods receipt</p>
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 flex items-center justify-center shrink-0">
+              <Package className="w-5 h-5 text-sky-700 dark:text-sky-300" />
             </div>
-          </a>
+            <div>
+              <h4 className="text-xs font-bold text-sky-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-sky-400">
+                New Bilty Booking
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Issue fresh consignment GR</p>
+            </div>
+          </Link>
 
-          <a
-            href="/dashboard/gr-list"
-            className="flex items-center gap-4 p-4 rounded-lg border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
+          <Link
+            href="/trips"
+            className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 hover:bg-sky-100/60 dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <span className="text-3xl">📋</span>
-            <div>
-              <h3 className="font-bold text-purple-700">View All GR</h3>
-              <p className="text-sm text-purple-600">Browse all entries</p>
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 flex items-center justify-center shrink-0">
+              <Truck className="w-5 h-5 text-sky-700 dark:text-sky-300" />
             </div>
-          </a>
+            <div>
+              <h4 className="text-xs font-bold text-sky-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-sky-400">
+                Truck Challans
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Dispatch vehicle loading memo</p>
+            </div>
+          </Link>
 
-          <a
-            href="/dashboard/reports"
-            className="flex items-center gap-4 p-4 rounded-lg border-2 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all duration-200"
+          <Link
+            href="/pod"
+            className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 hover:bg-sky-100/60 dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <span className="text-3xl">📊</span>
-            <div>
-              <h3 className="font-bold text-emerald-700">Reports</h3>
-              <p className="text-sm text-emerald-600">View analytics and reports</p>
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 flex items-center justify-center shrink-0">
+              <FileCheck className="w-5 h-5 text-sky-700 dark:text-sky-300" />
             </div>
-          </a>
+            <div>
+              <h4 className="text-xs font-bold text-sky-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-sky-400">
+                POD Upload & Delivery
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Update proof of delivery</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/reports"
+            className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 hover:bg-sky-100/60 dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-5 h-5 text-sky-700 dark:text-sky-300" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-sky-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-sky-400">
+                Reports & Ledger
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Tax, P&L, outstanding balance</p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

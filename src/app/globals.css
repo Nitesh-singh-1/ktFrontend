@@ -1,30 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #f8fafc;
+  --background: #f0f7ff;
   --foreground: #0f172a;
+  --primary-color: #0284c7;
+  --accent-color: #38bdf8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 html,
 body {
-  background-color: #f8fafc !important;
+  background-color: #f0f7ff;
   color: #0f172a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+}
+
+html.dark body {
+  background-color: #090d16 !important;
+  color: #f8fafc;
+}
+
+/* Hide number input spinner arrows when desired */
+input[type="number"].no-spinners::-webkit-inner-spin-button,
+input[type="number"].no-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"].no-spinners {
+  -moz-appearance: textfield;
 }
 
 /* Custom Scrollbar Styles */
@@ -48,9 +62,75 @@ body {
 
 /* Sidebar scrollbar */
 aside::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #bae6fd;
 }
 
 aside::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #7dd3fc;
+}
+
+/* =========================================================================
+   Standard SaaS Design System Classes - Light Blue & Crisp White
+   ========================================================================= */
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 rounded-xl shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-sky-600 dark:text-sky-400 bg-transparent hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-sky-600 dark:border-sky-500 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer min-w-[100px];
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl shadow-xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 h-10 px-3 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800 rounded-xl transition-all duration-150 cursor-pointer;
+  }
+
+  /* Form Controls */
+  .form-input {
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 disabled:cursor-not-allowed;
+  }
+
+  .form-select {
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors cursor-pointer disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500;
+  }
+
+  .form-date {
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors cursor-pointer disabled:bg-slate-100 dark:disabled:bg-slate-800/60;
+  }
+
+  .form-label {
+    @apply block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide;
+  }
+
+  /* Container Cards */
+  .form-card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs p-6 transition-shadow;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto;
+  }
+
+  .modal-container {
+    @apply relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col w-full my-auto transition-all;
+  }
+
+  .modal-header {
+    @apply px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-sky-50/60 dark:bg-slate-800/60;
+  }
+
+  .modal-footer {
+    @apply px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3;
+  }
 }

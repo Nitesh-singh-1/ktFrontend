@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { VehicleMaster, DriverLookupItem } from "@/types/shipment";
 import { fleetService } from "services/fleetService";
+import { Truck, X, AlertTriangle } from "lucide-react";
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -10,6 +11,16 @@ interface VehicleModalProps {
   onSaved: () => void;
   initialVehicle?: VehicleMaster | null;
 }
+
+const VEHICLE_BODY_TYPES = [
+  { value: "Open Body Truck", label: "Open Body Truck (Full Truck Load)" },
+  { value: "Closed Container", label: "Closed Container (Weatherproof)" },
+  { value: "Trailer / 40ft Flatbed", label: "High-Capacity Trailer / Flatbed" },
+  { value: "Mini Truck / LCV", label: "Mini Truck / LCV (Pickup / Tata Ace)" },
+  { value: "Tanker", label: "Liquid / Chemical Tanker" },
+  { value: "Refrigerated Container", label: "Cold Chain / Refrigerated Reefer" },
+  { value: "Other", label: "Other Commercial Vehicle" },
+];
 
 export default function VehicleModal({
   isOpen,
@@ -73,8 +84,6 @@ export default function VehicleModal({
     setError("");
   };
 
-  if (!isOpen) return null;
-
   const handleDriverSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const dId = Number(e.target.value);
     if (!dId) {
@@ -90,6 +99,13 @@ export default function VehicleModal({
       setDriverMobile(found.mobile || "");
     }
   };
+
+  const handleMobileChange = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 10);
+    setOwnerMobile(digits);
+  };
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,38 +142,40 @@ export default function VehicleModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-sky-50/50 dark:bg-slate-800/60">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🚚</span> {initialVehicle ? "Edit Fleet Vehicle" : "Add New Fleet Vehicle (Truck)"}
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Truck className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+              <span>{initialVehicle ? "Edit Fleet Vehicle" : "Add New Fleet Vehicle (Truck)"}</span>
             </h2>
-            <p className="text-xs text-slate-500">
-              Register vehicle for instant autocomplete and consignment assignment.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Register commercial vehicles for trip manifest and autocomplete.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg transition cursor-pointer"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold">
-              {error}
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
           {/* Vehicle No & Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Vehicle / Truck Reg No *
               </label>
               <input
@@ -166,25 +184,24 @@ export default function VehicleModal({
                 placeholder="e.g. BR-01-GB-4589"
                 value={vehicleNo}
                 onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Vehicle Body Type
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Vehicle Body Type (Standardized)
               </label>
               <select
                 value={vehicleType}
                 onChange={(e) => setVehicleType(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
               >
-                <option value="Open Body Truck">Open Body Truck</option>
-                <option value="Closed Container">Closed Container</option>
-                <option value="Trailer / 40ft Flatbed">Trailer / Flatbed</option>
-                <option value="Mini Truck / Pickup">Mini Truck / LCV</option>
-                <option value="Tanker">Tanker</option>
-                <option value="Other">Other</option>
+                {VEHICLE_BODY_TYPES.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -192,7 +209,7 @@ export default function VehicleModal({
           {/* Capacity & Driver Assignment */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Carrying Capacity (Tons / MT)
               </label>
               <input
@@ -200,18 +217,18 @@ export default function VehicleModal({
                 placeholder="e.g. 16 MT or 25 Tons"
                 value={capacity}
                 onChange={(e) => setCapacity(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Default Assigned Driver
               </label>
               <select
                 value={driverId || ""}
                 onChange={handleDriverSelect}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
               >
                 <option value="">-- No Driver Assigned --</option>
                 {availableDrivers.map((d) => (
@@ -224,13 +241,13 @@ export default function VehicleModal({
           </div>
 
           {/* Owner Details */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
-            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+          <div className="bg-sky-50/40 dark:bg-slate-800/40 p-3.5 rounded-xl border border-sky-100 dark:border-slate-800 space-y-3">
+            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               Vehicle Ownership & Contact
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Owner / Transporter Name
                 </label>
                 <input
@@ -238,12 +255,12 @@ export default function VehicleModal({
                   placeholder="e.g. Ramesh Singh Fleet"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Owner Mobile
                 </label>
                 <input
@@ -251,21 +268,21 @@ export default function VehicleModal({
                   maxLength={10}
                   placeholder="9876543210"
                   value={ownerMobile}
-                  onChange={(e) => setOwnerMobile(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  onChange={(e) => handleMobileChange(e.target.value)}
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-blue-600 focus:ring-blue-500"
+                className="rounded text-sky-600 focus:ring-sky-500"
               />
               <span>Active in Vehicle Directory</span>
             </label>
@@ -274,14 +291,14 @@ export default function VehicleModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? "Saving..." : initialVehicle ? "Update Vehicle" : "Save Vehicle"}
               </button>

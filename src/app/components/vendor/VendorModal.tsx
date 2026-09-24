@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Users, X, Landmark, Building2, Check } from "lucide-react";
 import { VendorDto } from "@/types/tms";
 import { vendorService } from "services/vendorService";
 
@@ -127,26 +128,27 @@ export default function VendorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🤝</span> {initialVendor ? "Edit Market Vendor / Broker" : "Register Market Truck Vendor / Broker"}
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              {initialVendor ? "Edit Market Vendor / Broker" : "Register Market Truck Vendor / Broker"}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Manage fleet supplier, TDS taxation percentage, and payout bank details.
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition">
-            ✕
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -154,7 +156,7 @@ export default function VendorModal({
           {/* Name & Code */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Vendor / Transporter Business Name *
               </label>
               <input
@@ -163,12 +165,12 @@ export default function VendorModal({
                 placeholder="e.g. Star Transport Logistics"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Vendor Code
               </label>
               <input
@@ -176,7 +178,7 @@ export default function VendorModal({
                 placeholder="e.g. VND-01"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -184,7 +186,7 @@ export default function VendorModal({
           {/* Taxation & TDS */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 PAN Number
               </label>
               <input
@@ -193,12 +195,12 @@ export default function VendorModal({
                 placeholder="AAACB1234F"
                 value={panNo}
                 onChange={(e) => setPanNo(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 GSTIN Number
               </label>
               <input
@@ -207,18 +209,18 @@ export default function VendorModal({
                 placeholder="27AAACB1234F1Z1"
                 value={gstNo}
                 onChange={(e) => setGstNo(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 TDS Deduction (%)
               </label>
               <select
                 value={tdsPercentage}
                 onChange={(e) => setTdsPercentage(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value={0}>0% (Exempt)</option>
                 <option value={1}>1% (Individual / Sole Prop 194C)</option>
@@ -230,7 +232,7 @@ export default function VendorModal({
           {/* Contact Details */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Contact Person
               </label>
               <input
@@ -238,12 +240,12 @@ export default function VendorModal({
                 placeholder="e.g. Anil Verma"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Mobile Phone
               </label>
               <input
@@ -252,12 +254,12 @@ export default function VendorModal({
                 placeholder="9876543210"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Email Address
               </label>
               <input
@@ -265,20 +267,21 @@ export default function VendorModal({
                 placeholder="accounts@startransport.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
 
           {/* Bank Details Payout Section */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <span>🏦</span> Bank Payout Details (for Advance & Hire Settlement)
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Landmark className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              Bank Payout Details (for Advance & Hire Settlement)
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Bank Name
                 </label>
                 <input
@@ -286,12 +289,12 @@ export default function VendorModal({
                   placeholder="e.g. State Bank of India"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Account Number
                 </label>
                 <input
@@ -299,12 +302,12 @@ export default function VendorModal({
                   placeholder="e.g. 308948201948"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   IFSC Code
                 </label>
                 <input
@@ -313,12 +316,12 @@ export default function VendorModal({
                   placeholder="SBIN0001234"
                   value={ifscCode}
                   onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Account Holder Name
                 </label>
                 <input
@@ -326,15 +329,15 @@ export default function VendorModal({
                   placeholder="e.g. Star Transport Logistics Pvt Ltd"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isActive}
@@ -348,7 +351,7 @@ export default function VendorModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
               >
                 Cancel
               </button>

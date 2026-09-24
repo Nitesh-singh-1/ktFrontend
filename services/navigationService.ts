@@ -21,9 +21,11 @@ export interface ReportEntitlementItem {
 
 export interface TenantMenuEntitlements {
   tenantId: string;
+  planTier?: string; // Starter, Professional, Enterprise, Custom
   enabledMenuKeys: string[];
   reports: ReportEntitlementItem[];
   roleOverridesJson?: string;
+  userOverridesJson?: string;
 }
 
 export interface TenantListItem {
@@ -34,12 +36,23 @@ export interface TenantListItem {
   createdAt: string;
 }
 
+export interface TenantUserItem {
+  id: number;
+  username: string;
+  fullName?: string;
+  role?: string;
+  mobile?: string;
+  isActive?: boolean;
+}
+
 export const navigationService = {
   getMenu: () => baseService.get<DynamicMenuItem[]>("/navigation/menu"),
 
   getPermissions: () => baseService.get<string[]>("/navigation/permissions"),
 
   getAllTenants: () => baseService.get<TenantListItem[]>("/configuration/tenants"),
+
+  getTenantUsers: () => baseService.get<TenantUserItem[]>("/configuration/users"),
 
   getMenuEntitlements: () =>
     baseService.get<TenantMenuEntitlements>("/configuration/menu-entitlements"),

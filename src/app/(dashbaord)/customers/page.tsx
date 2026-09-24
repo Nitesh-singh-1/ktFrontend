@@ -4,6 +4,16 @@ import React, { useState, useEffect } from "react";
 import { Party, PartyType, PaymentTerm } from "@/types/shipment";
 import { partyService } from "services/partyService";
 import PartyModal from "@/app/components/party/PartyModal";
+import {
+  Building2,
+  Landmark,
+  RotateCcw,
+  Plus,
+  Search,
+  AlertTriangle,
+  Trash2,
+  Edit2
+} from "lucide-react";
 
 export default function CustomersPage() {
   const [parties, setParties] = useState<Party[]>([]);
@@ -75,17 +85,17 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
               Party Master Directory
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
               Consignors & Consignees
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Maintain your master trading directory. Parties can act interchangeably as Sender or Receiver with auto-fill during booking.
           </p>
         </div>
@@ -94,46 +104,46 @@ export default function CustomersPage() {
           onClick={handleAddNew}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
-          <span>+</span>
+          <Plus className="w-4 h-4" />
           <span>Add Master Party</span>
         </button>
       </div>
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500">Total Master Parties</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{totalCount}</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Master Parties</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">
-            🏢
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center font-bold text-lg">
+            <Building2 className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500">GST Registered Entities</p>
-            <p className="text-2xl font-black text-emerald-600 mt-1">{gstRegisteredCount}</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">GST Registered Entities</p>
+            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{gstRegisteredCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">
-            🏛️
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
+            <Landmark className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500">Dual-Role (Consignor & Consignee)</p>
-            <p className="text-2xl font-black text-purple-600 mt-1">{bothRoleCount}</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Dual-Role (Consignor & Consignee)</p>
+            <p className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">{bothRoleCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">
-            🔄
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400 flex items-center justify-center font-bold text-lg">
+            <RotateCcw className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative w-full md:w-96">
           <input
@@ -141,12 +151,12 @@ export default function CustomersPage() {
             placeholder="Search party name, GSTIN, mobile, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-20 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-9 pr-20 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
-          <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+          <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
           <button
             type="submit"
-            className="absolute right-1.5 top-1 px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-md text-[11px] transition cursor-pointer"
+            className="absolute right-1.5 top-1 px-3 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-md text-[11px] transition cursor-pointer"
           >
             Search
           </button>
@@ -167,8 +177,8 @@ export default function CustomersPage() {
                 onClick={() => setPartyTypeFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
                 }`}
               >
                 {tab.label}
@@ -180,14 +190,14 @@ export default function CustomersPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold flex items-center gap-2">
-          <span>⚠️</span>
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Directory Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-16 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3" />
@@ -195,23 +205,26 @@ export default function CustomersPage() {
           </div>
         ) : parties.length === 0 ? (
           <div className="p-16 text-center space-y-3">
-            <div className="text-4xl">🏢</div>
-            <p className="text-sm font-bold text-slate-800">No Master Parties Found</p>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <div className="flex justify-center">
+              <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+            </div>
+            <p className="text-sm font-bold text-slate-800 dark:text-white">No Master Parties Found</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
               Add your first customer, shipper, or receiver entity to enable instant autocomplete during consignment booking.
             </p>
             <button
               onClick={handleAddNew}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
             >
-              + Create First Master Party
+              <Plus className="w-4 h-4" />
+              <span>Create First Master Party</span>
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   <th className="py-3 px-4">Entity / Party Name</th>
                   <th className="py-3 px-4">Role Type</th>
                   <th className="py-3 px-4">GSTIN & PAN</th>
@@ -221,20 +234,20 @@ export default function CustomersPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                 {parties.map((party) => {
                   const roleBadge =
                     party.partyType === PartyType.Both
-                      ? { text: "Consignor & Consignee", color: "bg-purple-50 text-purple-700 border-purple-200" }
+                      ? { text: "Consignor & Consignee", color: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800" }
                       : party.partyType === PartyType.Consignor
-                      ? { text: "Consignor Only", color: "bg-blue-50 text-blue-700 border-blue-200" }
-                      : { text: "Consignee Only", color: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+                      ? { text: "Consignor Only", color: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800" }
+                      : { text: "Consignee Only", color: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800" };
 
                   return (
-                    <tr key={party.id} className="hover:bg-slate-50/60 transition">
+                    <tr key={party.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
                       {/* Name & Code */}
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">{party.name}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{party.name}</div>
                         {party.code && (
                           <div className="text-[10px] font-mono text-slate-400">Code: {party.code}</div>
                         )}
@@ -250,7 +263,7 @@ export default function CustomersPage() {
                       {/* GSTIN & PAN */}
                       <td className="py-3.5 px-4 font-mono text-[11px]">
                         {party.gstNo ? (
-                          <div className="font-bold text-slate-800">{party.gstNo}</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200">{party.gstNo}</div>
                         ) : (
                           <div className="text-slate-400 italic">Unregistered</div>
                         )}
@@ -261,7 +274,7 @@ export default function CustomersPage() {
 
                       {/* Location */}
                       <td className="py-3.5 px-4">
-                        <div className="font-medium text-slate-800">
+                        <div className="font-medium text-slate-800 dark:text-slate-200">
                           {[party.city, party.state].filter(Boolean).join(", ") || "—"}
                         </div>
                         {party.address && (
@@ -271,13 +284,13 @@ export default function CustomersPage() {
 
                       {/* Contact */}
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800">{party.contactPerson || "—"}</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">{party.contactPerson || "—"}</div>
                         <div className="text-[11px] text-slate-500 font-mono">{party.mobile || party.phone || ""}</div>
                       </td>
 
                       {/* Payment Terms */}
                       <td className="py-3.5 px-4">
-                        <span className="text-[11px] font-semibold text-slate-700">
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           {party.defaultPaymentTerm === PaymentTerm.ToPay
                             ? "To Pay"
                             : party.defaultPaymentTerm === PaymentTerm.Paid
@@ -291,16 +304,16 @@ export default function CustomersPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleEdit(party)}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(party)}
-                            className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer dark:hover:text-red-400"
                             title="Delete Party"
                           >
-                            🗑️
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

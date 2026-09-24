@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { X } from "lucide-react";
 
 interface SearchableSelectProps<T> {
   value?: string;
@@ -137,10 +138,10 @@ export default function SearchableSelect<T>({
             <button
               type="button"
               onClick={handleClear}
-              className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer transition"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer transition"
               title="Clear"
             >
-              ✕
+              <X className="w-3 h-3" />
             </button>
           )}
 

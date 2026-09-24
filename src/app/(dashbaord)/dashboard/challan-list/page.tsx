@@ -6,6 +6,15 @@ import Card from "@/app/components/ui/Card";
 import Button from "@/app/components/ui/Button";
 import { apiService } from "../../../../../services/apiservice";
 import { printChallan } from "@/utils/print";
+import {
+  Truck,
+  Plus,
+  Edit2,
+  Printer,
+  Trash2,
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react";
 
 interface ChallanDetail {
   id: number;
@@ -66,14 +75,17 @@ export default function ChallanListPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.getAllChallans(page, pageSize) as APIResponse;
-      if (response.success) {
+      const response: any = await apiService.getAllChallans(page, pageSize);
+      
+      if (response.success && response.data) {
         setChallans(response.data);
-        setTotalCount(response.totalCount);
+        setTotalCount(response.totalCount || 0);
+      } else {
+        setError(response.message || "Failed to fetch challans");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to fetch challans");
       console.error("Error fetching challans:", err);
+      setError(err.message || "Failed to fetch challans");
     } finally {
       setLoading(false);
     }
@@ -84,17 +96,21 @@ export default function ChallanListPage() {
   };
 
   const handleDelete = async (id: number, challanNo: string) => {
-    if (!confirm(`Are you sure you want to delete Challan ${challanNo}?`)) {
+    if (!confirm(`Are you sure you want to delete challan "${challanNo}"?`)) {
       return;
     }
 
     try {
-      await apiService.deleteChallan(id);
-      alert("Challan deleted successfully");
-      fetchChallans();
+      const response: any = await apiService.deleteChallan(id);
+      if (response.success) {
+        alert("Challan deleted successfully");
+        fetchChallans();
+      } else {
+        alert(response.message || "Failed to delete challan");
+      }
     } catch (err: any) {
-      alert(err.message || "Failed to delete challan");
       console.error("Error deleting challan:", err);
+      alert(err.message || "Failed to delete challan");
     }
   };
 
@@ -110,11 +126,11 @@ export default function ChallanListPage() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen">
+      <div className="p-6 min-h-screen">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading challans...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-slate-500 font-medium text-xs">Loading challans...</p>
           </div>
         </div>
       </div>
@@ -123,11 +139,11 @@ export default function ChallanListPage() {
 
   if (error) {
     return (
-      <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen">
+      <div className="p-6 min-h-screen">
         <div className="flex justify-center items-center h-64">
-          <div className="text-center bg-white p-8 rounded-xl shadow-lg">
-            <div className="text-red-500 text-5xl mb-4">⚠️</div>
-            <p className="text-red-600 mb-4 font-medium">{error}</p>
+          <div className="text-center bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 max-w-md">
+            <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+            <p className="text-rose-600 mb-4 font-medium text-sm">{error}</p>
             <Button onClick={fetchChallans}>Retry</Button>
           </div>
         </div>
@@ -136,74 +152,61 @@ export default function ChallanListPage() {
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* HEADER */}
-      <div className="flex justify-between items-center">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Challan List
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage all your trip challans</p>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Challan Registry & Dispatch Manifests
+            </h1>
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
+              Trip Loading Sheets
+            </span>
+          </div>
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Manage and track all your vehicle dispatch challans</p>
         </div>
         <button
           onClick={() => router.push("/dashboard/challan-entry")}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 font-medium flex items-center gap-2"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-xs transition font-bold text-xs flex items-center gap-2 cursor-pointer shrink-0"
         >
-          <span className="text-xl">+</span>
-          New Challan
+          <Plus className="w-4 h-4" />
+          <span>New Challan</span>
         </button>
       </div>
 
       {/* CHALLANS TABLE */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
-          <h2 className="text-white font-semibold text-lg">
-            Total Challans: {totalCount}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-3 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-slate-800 dark:text-slate-200 font-semibold text-xs uppercase tracking-wider">
+            Total Challans: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{totalCount}</span>
           </h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Challan No
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Lorry No
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Driver
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Route
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Bills
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Total Qty
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Total Freight
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Created By
-                </th>
-                <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Actions
-                </th>
+              <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-6 py-3">Challan No</th>
+                <th className="px-6 py-3">Date</th>
+                <th className="px-6 py-3">Lorry No</th>
+                <th className="px-6 py-3">Driver</th>
+                <th className="px-6 py-3">Route</th>
+                <th className="px-6 py-3 text-center">Bills</th>
+                <th className="px-6 py-3 text-center">Total Qty</th>
+                <th className="px-6 py-3 text-right">Total Freight</th>
+                <th className="px-6 py-3">Created By</th>
+                <th className="px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {challans.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center">
-                    <div className="text-gray-400 text-6xl mb-4">🚚</div>
-                    <p className="text-gray-500 font-medium">No challans found</p>
-                    <p className="text-gray-400 text-sm mt-2">Click "New Challan" to create one.</p>
+                    <div className="flex justify-center mb-3">
+                      <Truck className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                    </div>
+                    <p className="text-slate-700 dark:text-slate-300 font-medium text-sm">No challans found</p>
+                    <p className="text-slate-400 text-xs mt-1">Click &ldquo;New Challan&rdquo; to create your first dispatch manifest.</p>
                   </td>
                 </tr>
               ) : (
@@ -212,63 +215,66 @@ export default function ChallanListPage() {
                   return (
                     <tr
                       key={challan.id}
-                      className="hover:bg-indigo-50 transition-colors duration-150"
+                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-bold text-indigo-600">{challan.challanNo}</span>
+                      <td className="px-6 py-3.5 whitespace-nowrap font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        {challan.challanNo}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-600 dark:text-slate-300">
                         {new Date(challan.challanDate).toLocaleDateString('en-IN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono font-semibold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-800 dark:text-slate-200 font-mono font-semibold">
                         {challan.lorryNo}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-800 dark:text-slate-200">
                         {challan.driverName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{challan.fromLocation}</span>
-                          <span className="text-indigo-500">→</span>
-                          <span className="font-medium">{challan.toLocation}</span>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-700 dark:text-slate-300">
+                        <div className="flex items-center gap-1.5">
+                          <span>{challan.fromLocation}</span>
+                          <ArrowRight className="w-3 h-3 text-indigo-500 inline" />
+                          <span>{challan.toLocation}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center">
+                        <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-full text-xs font-semibold border border-indigo-200 dark:border-indigo-800">
                           {challan.challanDetails.length}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center text-slate-900 dark:text-white font-semibold">
                         {totals.totalQuantity}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-right text-slate-900 dark:text-white font-bold font-mono">
                         ₹{totals.totalFreight.toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-500">
                         {challan.createdByName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex gap-2 justify-center">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center">
+                        <div className="flex gap-1.5 justify-center">
                           <button
                             onClick={() => handleEdit(challan.id)}
-                            className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded-lg font-medium transition-colors duration-150 text-xs"
+                            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Edit Challan"
                           >
-                            ✏️ Edit
+                            <Edit2 className="w-3 h-3" />
+                            <span>Edit</span>
                           </button>
                           <button
                             onClick={() => handlePrint(challan.id)}
-                            className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg font-medium transition-colors duration-150 text-xs"
+                            className="bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-purple-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Print Challan"
                           >
-                            🖨️ Print
+                            <Printer className="w-3 h-3" />
+                            <span>Print</span>
                           </button>
                           <button
                             onClick={() => handleDelete(challan.id, challan.challanNo)}
-                            className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-medium transition-colors duration-150 text-xs"
+                            className="bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-rose-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Delete Challan"
                           >
-                            🗑️ Delete
+                            <Trash2 className="w-3 h-3" />
+                            <span>Delete</span>
                           </button>
                         </div>
                       </td>
@@ -282,24 +288,24 @@ export default function ChallanListPage() {
 
         {/* PAGINATION */}
         {totalCount > pageSize && (
-          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">{(page - 1) * pageSize + 1}</span> to{" "}
-              <span className="font-semibold">{Math.min(page * pageSize, totalCount)}</span> of{" "}
-              <span className="font-semibold">{totalCount}</span> results
+          <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-3 flex items-center justify-between border-t border-slate-200 dark:border-slate-700 text-xs">
+            <div className="text-slate-600 dark:text-slate-400">
+              Showing <span className="font-semibold text-slate-900 dark:text-white">{(page - 1) * pageSize + 1}</span> to{" "}
+              <span className="font-semibold text-slate-900 dark:text-white">{Math.min(page * pageSize, totalCount)}</span> of{" "}
+              <span className="font-semibold text-slate-900 dark:text-white">{totalCount}</span> results
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Previous
               </button>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page * pageSize >= totalCount}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Next
               </button>

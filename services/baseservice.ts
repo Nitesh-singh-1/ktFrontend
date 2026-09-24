@@ -14,29 +14,57 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const tenantId = typeof window !== "undefined" ? localStorage.getItem("tenantId") : null;
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...(tenantId && { "X-Tenant-ID": tenantId }),
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(tenantId && { "X-Tenant-ID": tenantId }),
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const message = error.message || error.title || (typeof error === 'string' ? error : "Something went wrong");
-    throw new Error(message);
-  }
+    // 401 Unauthorized handling: Auto logout & redirect to login page
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        sessionStorage.clear();
 
-  // Handle 204 No Content or empty responses
-  const contentType = response.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    return response.json();
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard")) {
+          // Redirect immediately to login
+          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+        }
+      }
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    // 403 Forbidden handling: Clean, user-friendly business message
+    if (response.status === 403) {
+      throw new Error("This section is restricted for your role or organization subscription tier.");
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      const message =
+        error.message ||
+        error.title ||
+        (typeof error === "string" ? error : "Something went wrong");
+      throw new Error(message);
+    }
+
+    // Handle 204 No Content or empty responses
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return response.json();
+    }
+    return {} as T;
+  } catch (err: any) {
+    throw err;
   }
-  return {} as T;
 }
 
 export const baseService = {

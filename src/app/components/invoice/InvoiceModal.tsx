@@ -11,6 +11,7 @@ import { invoiceService } from "services/invoiceService";
 import { partyService } from "services/partyService";
 import { shipmentService } from "services/shipmentService";
 import SearchableSelect from "../ui/SearchableSelect";
+import { Receipt, X, Package, Plus } from "lucide-react";
 
 interface InvoiceModalProps {
   isOpen: boolean;
@@ -193,29 +194,29 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🧾</span> Generate Freight & Commercial Invoice
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Generate Freight & Commercial Invoice
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Create an auto-numbered invoice, link consignments, and balance ledger receivables.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-semibold">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -223,7 +224,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           {/* Customer / Party Selection & Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Billed To / Master Customer (Party) *
               </label>
               <SearchableSelect<PartyLookupItem>
@@ -236,27 +237,27 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 renderItem={(p) => (
                   <div className="flex items-center justify-between w-full">
                     <div>
-                      <div className="font-bold text-slate-900">{p.name}</div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
                         {p.gstNo ? `GST: ${p.gstNo}` : "Unregistered"} {p.city ? `• ${p.city}` : ""}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
                       #{p.id}
                     </span>
                   </div>
                 )}
               />
               {selectedParty && (
-                <div className="mt-1 text-[11px] text-slate-500 font-medium">
-                  GST: <span className="font-mono font-bold text-slate-700">{selectedParty.gstNo || "N/A"}</span> •{" "}
+                <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  GST: <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{selectedParty.gstNo || "N/A"}</span> •{" "}
                   Address: {selectedParty.address || "N/A"}
                 </div>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Invoice Date *
               </label>
               <input
@@ -264,17 +265,17 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 required
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
 
           {/* Quick Consignment Linker */}
           {availableShipments.length > 0 && (
-            <div className="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200">
+            <div className="bg-slate-50/80 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <span>📦</span> Quick Link Available Consignments (Waybills):
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Quick Link Available Consignments (Waybills):
                 </span>
                 <span className="text-[10px] text-slate-400">Click to import freight line</span>
               </div>
@@ -284,9 +285,9 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     key={shp.id}
                     type="button"
                     onClick={() => handleLinkShipment(shp)}
-                    className="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-md text-[11px] font-semibold text-slate-700 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:border-blue-400 rounded-md text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <span className="font-mono text-blue-600 font-bold">{shp.shipmentNo}</span>
+                    <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">{shp.shipmentNo}</span>
                     <span className="text-slate-400">→ ₹{shp.totalFreight || shp.grandTotal}</span>
                   </button>
                 ))}
@@ -295,24 +296,24 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           )}
 
           {/* Line Items Table */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
+            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Invoice Line Items
               </span>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-md border border-blue-200 transition cursor-pointer"
+                className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-md border border-blue-200 dark:border-blue-800 transition cursor-pointer flex items-center gap-1"
               >
-                + Add Item
+                <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     <th className="py-2 px-3 w-8">#</th>
                     <th className="py-2 px-3">Description / Service</th>
                     <th className="py-2 px-3 w-20">Qty</th>
@@ -321,9 +322,9 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     <th className="py-2 px-3 w-10 text-center"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/40">
+                    <tr key={idx} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40">
                       <td className="py-2 px-3 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
                       <td className="py-2 px-3">
                         <input
@@ -332,7 +333,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           placeholder="e.g. Freight charges Patna to Ranchi"
                           value={item.description}
                           onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -341,7 +342,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 1)}
-                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -351,10 +352,10 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="0"
                           value={item.rate}
                           onChange={(e) => handleItemChange(idx, "rate", parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                         ₹{(item.totalAmount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -364,7 +365,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                             onClick={() => handleRemoveItem(idx)}
                             className="text-slate-400 hover:text-red-500 p-1 rounded transition"
                           >
-                            ✕
+                            <X className="w-4 h-4" />
                           </button>
                         )}
                       </td>
@@ -380,19 +381,19 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
             {/* Left: Remarks & Due Date */}
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Payment Due Date
                 </label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Invoice Remarks / Terms
                 </label>
                 <textarea
@@ -400,27 +401,27 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   placeholder="e.g. Payment due within 15 days of invoice date"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             {/* Right: Balance Ledger */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5 text-xs">
-              <div className="flex justify-between text-slate-600 font-medium">
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5 text-xs">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <span>Subtotal (Line Items):</span>
-                <span className="font-mono font-bold text-slate-900">
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
                   ₹{subTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 font-medium">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex items-center gap-2">
                   <span>GST Tax Rate (%):</span>
                   <select
                     value={globalTaxRate}
                     onChange={(e) => setGlobalTaxRate(Number(e.target.value))}
-                    className="px-2 py-0.5 border border-slate-300 rounded bg-white text-xs font-bold"
+                    className="px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold"
                   >
                     <option value={0}>0% (Exempt)</option>
                     <option value={5}>5% (GTA RCM/ITC)</option>
@@ -428,12 +429,12 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     <option value={18}>18% (Standard)</option>
                   </select>
                 </div>
-                <span className="font-mono font-bold text-slate-900">
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
                   + ₹{taxAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 font-medium">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex items-center gap-1.5">
                   <span>Other Ancillary Charges (₹):</span>
                 </div>
@@ -444,11 +445,11 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   value={otherCharges === 0 ? "" : otherCharges}
                   onChange={(e) => setOtherCharges(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-24 px-2 py-0.5 border border-slate-300 rounded text-right font-mono font-bold bg-white"
+                  className="w-24 px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded text-right font-mono font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 font-medium">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex items-center gap-1.5">
                   <span>Discount / Rebate (₹):</span>
                 </div>
@@ -459,13 +460,13 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   value={discount === 0 ? "" : discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-24 px-2 py-0.5 border border-slate-300 rounded text-right font-mono font-bold bg-white text-emerald-700"
+                  className="w-24 px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded text-right font-mono font-bold bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400"
                 />
               </div>
 
-              <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                <span className="text-sm font-black text-slate-900">Grand Total:</span>
-                <span className="text-base font-mono font-black text-blue-600">
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <span className="text-sm font-black text-slate-900 dark:text-white">Grand Total:</span>
+                <span className="text-base font-mono font-black text-blue-600 dark:text-blue-400">
                   ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -473,11 +474,11 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>

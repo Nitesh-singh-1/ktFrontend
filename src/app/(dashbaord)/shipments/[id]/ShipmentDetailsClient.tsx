@@ -14,6 +14,16 @@ import TrackingTimeline from "@/app/components/shipment/TrackingTimeline";
 import StatusTransitionModal from "@/app/components/shipment/StatusTransitionModal";
 import { printShipment } from "@/utils/print/printShipment";
 import { numberToWords } from "@/utils/numberToWords";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Send,
+  Printer,
+  Edit,
+  ArrowRight,
+  Upload,
+  Download,
+} from "lucide-react";
 
 export default function ShipmentDetailsClient() {
   const params = useParams();
@@ -74,8 +84,8 @@ export default function ShipmentDetailsClient() {
     return (
       <div className="flex items-center justify-center p-20">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
-          <p className="text-slate-500 font-medium text-xs">Loading consignment details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-xs">Loading consignment details...</p>
         </div>
       </div>
     );
@@ -83,22 +93,22 @@ export default function ShipmentDetailsClient() {
 
   if (error || !shipment) {
     return (
-      <div className="p-8 max-w-lg mx-auto bg-white rounded-2xl border border-red-200 shadow-sm text-center space-y-4">
-        <div className="text-4xl">⚠️</div>
-        <h2 className="text-lg font-bold text-slate-800">Consignment Not Found</h2>
-        <p className="text-xs text-red-600">{error || "Could not retrieve consignment data."}</p>
+      <div className="p-8 max-w-lg mx-auto bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900 shadow-sm text-center space-y-4">
+        <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Consignment Not Found</h2>
+        <p className="text-xs text-red-600 dark:text-red-400">{error || "Could not retrieve consignment data."}</p>
         <div className="flex justify-center gap-3">
           {id && (
             <button
               onClick={() => fetchShipmentDetails(id)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs cursor-pointer"
             >
               Retry
             </button>
           )}
           <Link
             href="/shipments"
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs"
           >
             Back to List
           </Link>
@@ -110,24 +120,24 @@ export default function ShipmentDetailsClient() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
             <Link
               href="/shipments"
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
               title="Back to consignments"
             >
-              ←
+              <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-black text-slate-900 font-mono">
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white font-mono">
                   {shipment.shipmentNo}
                 </h1>
                 <ShipmentStatusBadge status={shipment.status} />
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Booked on {new Date(shipment.shipmentDate || shipment.createdAt).toLocaleDateString('en-IN', {
                   dateStyle: "full",
                 })} • {getTaxLabel(shipment.taxTreatment)}
@@ -141,38 +151,41 @@ export default function ShipmentDetailsClient() {
           <button
             type="button"
             onClick={() => setIsStatusModalOpen(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl text-xs shadow-md shadow-amber-500/20 transition flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
           >
-            <span>🚀</span> Update Status Stage
+            <Send className="w-3.5 h-3.5" />
+            <span>Update Status Stage</span>
           </button>
 
           <button
             type="button"
             onClick={() => printShipment(shipment)}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
           >
-            <span>🖨️</span> Print Consignment Note
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Consignment Note</span>
           </button>
 
           <Link
             href={`/shipments/create?id=${shipment.id}`}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+            className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
           >
-            ✏️ Edit
+            <Edit className="w-3.5 h-3.5" />
+            <span>Edit</span>
           </Link>
         </div>
       </div>
 
       {/* Movement & Route Ribbon */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-sky-900 text-white p-5 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <div className="text-[10px] text-indigo-300 uppercase tracking-widest font-bold">Origin</div>
+            <div className="text-[10px] text-sky-300 uppercase tracking-widest font-bold">Origin</div>
             <div className="text-base font-extrabold">{shipment.fromLocation}</div>
           </div>
-          <div className="text-xl text-indigo-400">➔</div>
+          <ArrowRight className="w-5 h-5 text-sky-400 shrink-0" />
           <div>
-            <div className="text-[10px] text-indigo-300 uppercase tracking-widest font-bold">Destination</div>
+            <div className="text-[10px] text-sky-300 uppercase tracking-widest font-bold">Destination</div>
             <div className="text-base font-extrabold">{shipment.toLocation}</div>
           </div>
         </div>
@@ -204,54 +217,58 @@ export default function ShipmentDetailsClient() {
       {/* Sender & Receiver Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Consignor */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 flex justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2 flex justify-between">
             <span>Consignor (Sender)</span>
-            <span className="text-indigo-600">📤 Origin</span>
+            <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+              <Upload className="w-3 h-3" /> Origin
+            </span>
           </div>
-          <div className="text-base font-extrabold text-slate-900">{shipment.consignorName}</div>
+          <div className="text-base font-extrabold text-slate-900 dark:text-white">{shipment.consignorName}</div>
           {shipment.consignorGstNo && (
-            <div className="text-xs text-slate-600">
-              <strong className="text-slate-700">GSTIN:</strong> <span className="font-mono font-bold">{shipment.consignorGstNo}</span>
+            <div className="text-xs text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-700 dark:text-slate-200">GSTIN:</strong> <span className="font-mono font-bold">{shipment.consignorGstNo}</span>
             </div>
           )}
-          <div className="text-xs text-slate-600">
-            <strong className="text-slate-700">Mobile:</strong> {shipment.consignorMobile || "—"}
+          <div className="text-xs text-slate-600 dark:text-slate-300">
+            <strong className="text-slate-700 dark:text-slate-200">Mobile:</strong> {shipment.consignorMobile || "—"}
           </div>
-          <div className="text-xs text-slate-600">
-            <strong className="text-slate-700">Address:</strong> {shipment.consignorAddress || "—"}
+          <div className="text-xs text-slate-600 dark:text-slate-300">
+            <strong className="text-slate-700 dark:text-slate-200">Address:</strong> {shipment.consignorAddress || "—"}
           </div>
         </div>
 
         {/* Consignee */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 flex justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2 flex justify-between">
             <span>Consignee (Receiver)</span>
-            <span className="text-purple-600">📥 Destination</span>
+            <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
+              <Download className="w-3 h-3" /> Destination
+            </span>
           </div>
-          <div className="text-base font-extrabold text-slate-900">{shipment.consigneeName}</div>
+          <div className="text-base font-extrabold text-slate-900 dark:text-white">{shipment.consigneeName}</div>
           {shipment.consigneeGstNo && (
-            <div className="text-xs text-slate-600">
-              <strong className="text-slate-700">GSTIN:</strong> <span className="font-mono font-bold">{shipment.consigneeGstNo}</span>
+            <div className="text-xs text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-700 dark:text-slate-200">GSTIN:</strong> <span className="font-mono font-bold">{shipment.consigneeGstNo}</span>
             </div>
           )}
-          <div className="text-xs text-slate-600">
-            <strong className="text-slate-700">Mobile:</strong> {shipment.consigneeMobile || "—"}
+          <div className="text-xs text-slate-600 dark:text-slate-300">
+            <strong className="text-slate-700 dark:text-slate-200">Mobile:</strong> {shipment.consigneeMobile || "—"}
           </div>
-          <div className="text-xs text-slate-600">
-            <strong className="text-slate-700">Address:</strong> {shipment.consigneeAddress || "—"}
+          <div className="text-xs text-slate-600 dark:text-slate-300">
+            <strong className="text-slate-700 dark:text-slate-200">Address:</strong> {shipment.consigneeAddress || "—"}
           </div>
         </div>
       </div>
 
       {/* Cargo Items Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="px-5 py-3.5 bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
           Attached Cargo Goods ({shipment.items?.length || 0})
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase">
+            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold uppercase">
               <tr>
                 <th className="px-4 py-3 text-center w-12">#</th>
                 <th className="px-4 py-3">Article / Package</th>
@@ -262,17 +279,17 @@ export default function ShipmentDetailsClient() {
                 <th className="px-4 py-3 text-right">Row Total (₹)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {shipment.items && shipment.items.length > 0 ? (
                 shipment.items.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80">
+                  <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
                     <td className="px-4 py-2.5 text-center font-bold text-slate-400">{idx + 1}</td>
-                    <td className="px-4 py-2.5 font-semibold text-slate-800">{item.article || "—"}</td>
-                    <td className="px-4 py-2.5 text-slate-600">{item.description || "—"}</td>
-                    <td className="px-4 py-2.5 text-right font-medium text-slate-700">{item.weight || 0}</td>
-                    <td className="px-4 py-2.5 text-right font-medium text-slate-700">₹{(item.rate || 0).toFixed(2)}</td>
-                    <td className="px-4 py-2.5 text-center font-medium text-slate-700">{item.quantity || 1}</td>
-                    <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-900">
+                    <td className="px-4 py-2.5 font-semibold text-slate-800 dark:text-slate-200">{item.article || "—"}</td>
+                    <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">{item.description || "—"}</td>
+                    <td className="px-4 py-2.5 text-right font-medium text-slate-700 dark:text-slate-300">{item.weight || 0}</td>
+                    <td className="px-4 py-2.5 text-right font-medium text-slate-700 dark:text-slate-300">₹{(item.rate || 0).toFixed(2)}</td>
+                    <td className="px-4 py-2.5 text-center font-medium text-slate-700 dark:text-slate-300">{item.quantity || 1}</td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
                       ₹{(item.totalAmount || 0).toFixed(2)}
                     </td>
                   </tr>
@@ -292,25 +309,25 @@ export default function ShipmentDetailsClient() {
       {/* Financial Ledger & Dynamic Charges */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Dynamic Charges List */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-100 pb-2 flex justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800 pb-2 flex justify-between">
             <span>Ancillary Charges & Line Items</span>
-            <span className="text-indigo-600">{shipment.chargeItems?.length || 0} Added</span>
+            <span className="text-blue-600 dark:text-blue-400 font-semibold">{shipment.chargeItems?.length || 0} Added</span>
           </div>
 
           {shipment.chargeItems && shipment.chargeItems.length > 0 ? (
-            <div className="divide-y divide-slate-100 text-xs">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
               {shipment.chargeItems.map((c, i) => (
                 <div key={i} className="py-2.5 flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-800">{c.chargeName}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{c.chargeName}</span>
                     {c.isTaxable && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-900">
                         Taxable
                       </span>
                     )}
                   </div>
-                  <span className="font-mono font-bold text-slate-900">₹{(c.amount || 0).toFixed(2)}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">₹{(c.amount || 0).toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -319,15 +336,15 @@ export default function ShipmentDetailsClient() {
           )}
 
           {shipment.remarks && (
-            <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
-              <strong className="text-slate-800">Operational Notes:</strong> {shipment.remarks}
+            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+              <strong className="text-slate-800 dark:text-slate-200">Operational Notes:</strong> {shipment.remarks}
             </div>
           )}
         </div>
 
         {/* Grand Total Ledger */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-5 shadow-md space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700 pb-2 flex justify-between">
+        <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2 flex justify-between">
             <span>Financial Breakdown</span>
             <span>INR (₹)</span>
           </div>
@@ -351,7 +368,7 @@ export default function ShipmentDetailsClient() {
             ) : null}
 
             <div className="pt-2 border-t border-slate-700 flex justify-between items-center text-sm font-black">
-              <span className="text-indigo-300">Grand Total:</span>
+              <span className="text-blue-300">Grand Total:</span>
               <span className="font-mono text-xl text-emerald-400">
                 ₹{(shipment.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -370,7 +387,7 @@ export default function ShipmentDetailsClient() {
 
           <div className="pt-2 border-t border-slate-700 text-[11px] text-slate-300">
             <span className="font-semibold text-slate-400">Amount in Words: </span>
-            <span className="italic text-indigo-200">{numberToWords(shipment.grandTotal || 0)}</span>
+            <span className="italic text-slate-200">{numberToWords(shipment.grandTotal || 0)}</span>
           </div>
         </div>
       </div>

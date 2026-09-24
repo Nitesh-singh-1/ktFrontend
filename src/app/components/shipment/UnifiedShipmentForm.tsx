@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Shipment,
   CreateShipmentRequest,
+  CreateConsignmentInvoiceReferenceRequest,
   TaxTreatment,
   PaymentTerm,
   ShipmentItem,
@@ -14,6 +15,7 @@ import {
   LocationLookupItem,
   InvoiceLookupItem,
 } from "@/types/shipment";
+import CustomerInvoicesTable from "./CustomerInvoicesTable";
 import CargoItemsTable from "./CargoItemsTable";
 import DynamicChargesTable from "./DynamicChargesTable";
 import SearchableSelect from "../ui/SearchableSelect";
@@ -22,6 +24,25 @@ import { partyService } from "services/partyService";
 import { fleetService } from "services/fleetService";
 import { invoiceService } from "services/invoiceService";
 import { rateCardService } from "services/rateCardService";
+import {
+  Package,
+  MapPin,
+  Upload,
+  Download,
+  Receipt,
+  Scale,
+  Building2,
+  FileText,
+  RefreshCw,
+  Shield,
+  SlidersHorizontal,
+  Zap,
+  Tag,
+  Check,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+} from "lucide-react";
 
 interface UnifiedShipmentFormProps {
   initialId?: number;
@@ -29,11 +50,11 @@ interface UnifiedShipmentFormProps {
 }
 
 const TAX_TREATMENT_OPTIONS = [
-  { value: TaxTreatment.GST_Regular, label: "GST Regular (Tax Invoice)", icon: "🏛️", desc: "Standard 5%/12%/18% GST" },
-  { value: TaxTreatment.NonTaxable, label: "Non-Taxable / Without GST", icon: "📄", desc: "Direct Non-GST Consignment" },
-  { value: TaxTreatment.GST_RCM, label: "GST RCM (Reverse Charge)", icon: "🔄", desc: "Tax payable by recipient" },
-  { value: TaxTreatment.Exempt, label: "Exempt Goods", icon: "🛡️", desc: "Exempted commodities" },
-  { value: TaxTreatment.CustomTax, label: "Custom Tax Rate", icon: "⚙️", desc: "Custom defined tax rate" },
+  { value: TaxTreatment.GST_Regular, label: "GST Regular (Tax Invoice)", icon: Building2, desc: "Standard 5%/12%/18% GST" },
+  { value: TaxTreatment.NonTaxable, label: "Non-Taxable / Without GST", icon: FileText, desc: "Direct Non-GST Consignment" },
+  { value: TaxTreatment.GST_RCM, label: "GST RCM (Reverse Charge)", icon: RefreshCw, desc: "Tax payable by recipient" },
+  { value: TaxTreatment.Exempt, label: "Exempt Goods", icon: Shield, desc: "Exempted commodities" },
+  { value: TaxTreatment.CustomTax, label: "Custom Tax Rate", icon: SlidersHorizontal, desc: "Custom defined tax rate" },
 ];
 
 export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedShipmentFormProps) {
@@ -44,13 +65,28 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Customer Paper Invoices / Bills
+  const [customerInvoices, setCustomerInvoices] = useState<CreateConsignmentInvoiceReferenceRequest[]>([
+    {
+      customerInvoiceNo: "",
+      customerInvoiceDate: new Date().toISOString().split("T")[0],
+      declaredGoodsValue: 0,
+      ewayBillNo: "",
+      documentType: "TaxInvoice",
+      packageCount: 1,
+      weightKg: 0,
+      commodityDescription: "",
+      documentUrl: "",
+    },
+  ]);
+
   // Form State
   const [shipmentNo, setShipmentNo] = useState("");
   const [invoiceId, setInvoiceId] = useState<number | undefined>(undefined);
   const [invoiceNo, setInvoiceNo] = useState("");
   const [shipmentDate, setShipmentDate] = useState(new Date().toISOString().split("T")[0]);
   const [invoiceDate, setInvoiceDate] = useState("");
-  const [fromLocation, setFromLocation] = useState("Pahari Patna");
+  const [fromLocation, setFromLocation] = useState("Zero Mile, Pahari, Patna-7");
   const [toLocation, setToLocation] = useState("");
   const [truckNo, setTruckNo] = useState("");
   const [taxTreatment, setTaxTreatment] = useState<TaxTreatment>(TaxTreatment.GST_Regular);
@@ -85,7 +121,9 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
   const [items, setItems] = useState<ShipmentItem[]>([
     { article: "", description: "", weight: 0, rate: 0, quantity: 1, totalAmount: 0 },
   ]);
-  const [chargeItems, setChargeItems] = useState<ShipmentChargeItem[]>([]);
+  const [chargeItems, setChargeItems] = useState<ShipmentChargeItem[]>([
+    { chargeName: "St. Char", amount: 20, isTaxable: false },
+  ]);
 
   useEffect(() => {
     if (initialData) {
@@ -118,7 +156,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     setInvoiceNo(data.invoiceNo || "");
     setShipmentDate(data.shipmentDate ? data.shipmentDate.split("T")[0] : "");
     setInvoiceDate(data.invoiceDate ? data.invoiceDate.split("T")[0] : "");
-    setFromLocation(data.fromLocation || "Pahari Patna");
+    setFromLocation(data.fromLocation || "Zero Mile, Pahari, Patna-7");
     setToLocation(data.toLocation || "");
     setTruckNo(data.truckNo || "");
     setTaxTreatment(data.taxTreatment ?? TaxTreatment.GST_Regular);
@@ -144,11 +182,58 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     setRemarks(data.remarks || "");
     setBookingClerk(data.bookingClerk || "");
 
+    // Populate customer invoices
+    if (data.invoiceReferences && data.invoiceReferences.length > 0) {
+      setCustomerInvoices(
+        data.invoiceReferences.map((ir) => ({
+          customerInvoiceNo: ir.customerInvoiceNo || "",
+          customerInvoiceDate: ir.customerInvoiceDate ? ir.customerInvoiceDate.split("T")[0] : "",
+          declaredGoodsValue: ir.declaredGoodsValue || 0,
+          ewayBillNo: ir.ewayBillNo || "",
+          ewayBillDate: ir.ewayBillDate ? ir.ewayBillDate.split("T")[0] : undefined,
+          ewayBillValidUpto: ir.ewayBillValidUpto,
+          documentType: ir.documentType || "TaxInvoice",
+          packageCount: ir.packageCount || 1,
+          weightKg: ir.weightKg || 0,
+          commodityDescription: ir.commodityDescription || "",
+          documentUrl: ir.documentUrl || "",
+        }))
+      );
+    } else if (data.invoiceNo) {
+      setCustomerInvoices([
+        {
+          customerInvoiceNo: data.invoiceNo,
+          customerInvoiceDate: data.invoiceDate ? data.invoiceDate.split("T")[0] : data.shipmentDate ? data.shipmentDate.split("T")[0] : "",
+          declaredGoodsValue: data.goodsValue || 0,
+          ewayBillNo: data.ewayBillNo || "",
+          documentType: "TaxInvoice",
+          packageCount: 1,
+          weightKg: 0,
+          commodityDescription: "",
+          documentUrl: "",
+        },
+      ]);
+    }
+
     if (data.items && data.items.length > 0) {
       setItems(data.items);
     }
     if (data.chargeItems && data.chargeItems.length > 0) {
       setChargeItems(data.chargeItems);
+    }
+  };
+
+  const handleCustomerInvoicesChange = (updated: CreateConsignmentInvoiceReferenceRequest[]) => {
+    setCustomerInvoices(updated);
+
+    // Auto-update declared goods value sum from all customer bills
+    const totalVal = updated.reduce((sum, inv) => sum + (Number(inv.declaredGoodsValue) || 0), 0);
+    setGoodsValue(totalVal);
+
+    // Auto-populate single invoiceNo with comma-separated list or first invoice
+    const validInvNos = updated.map((i) => i.customerInvoiceNo.trim()).filter(Boolean);
+    if (validInvNos.length > 0) {
+      setInvoiceNo(validInvNos.join(", "));
     }
   };
 
@@ -253,6 +338,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       return;
     }
 
+    // Filter valid customer invoices
+    const validCustomerInvoices = customerInvoices.filter(
+      (ci) => ci.customerInvoiceNo && ci.customerInvoiceNo.trim().length > 0
+    );
+
     const payload: CreateShipmentRequest = {
       shipmentNo: shipmentNo.trim() || undefined,
       invoiceId: invoiceId || undefined,
@@ -288,6 +378,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       paidAmount: Number(paidAmount) || 0,
       remarks: remarks.trim() || undefined,
       bookingClerk: bookingClerk.trim() || undefined,
+      customerInvoices: validCustomerInvoices.length > 0 ? validCustomerInvoices : undefined,
       items: items.map((it) => ({
         article: it.article || "",
         description: it.description || "",
@@ -351,13 +442,21 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Top Action Header */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            {initialId ? `Edit Consignment #${shipmentNo || initialId}` : "Create New Consignment (Waybill)"}
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Enter goods receipt details, dynamic cargo items, party directory auto-fill, and rate calculation.
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-2xs">
+              <Package className="w-5 h-5" />
+            </span>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {initialId ? `Edit Bilty / Consignment #${shipmentNo || initialId}` : "New Bilty / Consignment Booking (GR)"}
+            </h1>
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+              Step 2: Transporter Bilty
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Fill in booking route, parties, attach customer commercial invoices with photo uploads, specify cargo items, and review charges.
           </p>
         </div>
 
@@ -365,7 +464,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition cursor-pointer"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-lg text-xs transition cursor-pointer"
           >
             Cancel
           </button>
@@ -383,7 +482,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 <span>Processing...</span>
               </>
             ) : (
-              <span>{initialId ? "Update Consignment" : "Book Consignment"}</span>
+              <span>{initialId ? "Update Bilty" : "Confirm & Issue Bilty (LR/GR)"}</span>
             )}
           </button>
         </div>
@@ -391,84 +490,44 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
 
       {/* Alert Notices */}
       {error && (
-        <div className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-          <span>⚠️</span>
+        <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
       {success && (
-        <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <span>✅</span>
+        <div className="p-3.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{success}</span>
         </div>
       )}
 
-      {/* 1. Tax Regime Selector */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-            <span className="text-blue-600">⚖️</span> Tax Treatment & Regime Selector *
-          </div>
-          <span className="text-[11px] text-slate-400 font-medium">Controls GSTIN & tax fields</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {TAX_TREATMENT_OPTIONS.map((opt) => {
-            const isSelected = taxTreatment === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setTaxTreatment(opt.value)}
-                className={`p-3 rounded-lg border text-left transition flex flex-col justify-between gap-2 cursor-pointer ${
-                  isSelected
-                    ? "bg-blue-50/60 border-blue-600 ring-1 ring-blue-600/30"
-                    : "bg-white border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-base">{opt.icon}</span>
-                  {isSelected && (
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  )}
-                </div>
-                <div>
-                  <div className={`text-xs font-bold ${isSelected ? "text-blue-950" : "text-slate-800"}`}>
-                    {opt.label}
-                  </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{opt.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 2. Movement & Consignment Details */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 border-b border-slate-100 pb-2.5">
-          <span>🚚</span> Movement & Consignment Details
+      {/* SECTION 1: Booking & Movement Details (Point A → Point B) */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+          <MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+          <span>1. Bilty Booking & Route Details (Point A → Point B)</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Shipment No */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Shipment / GR No
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Bilty / GR No
             </label>
             <input
               type="text"
-              placeholder="Auto-generated if blank (e.g. GR-2026-0001)"
+              placeholder="Auto-generated (e.g. 14911)"
               value={shipmentNo}
               onChange={(e) => setShipmentNo(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono font-bold text-blue-700 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-blue-700 dark:text-blue-400 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Leave empty for auto-sequencing</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Leave blank for auto-sequencing</span>
           </div>
 
           {/* Shipment Date */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Booking Date *
             </label>
             <input
@@ -476,18 +535,18 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               required
               value={shipmentDate}
               onChange={(e) => setShipmentDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Origin Hub */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              From / Origin Hub *
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              From (Origin Hub / Point A) *
             </label>
             <SearchableSelect<LocationLookupItem>
               value={fromLocation}
-              placeholder="Search station or type hub..."
+              placeholder="Search station (e.g. Zero Mile, Pahari)..."
               onSearch={(q) => fleetService.lookupLocations(q)}
               getItemKey={(l) => l.id}
               getItemLabel={(l) => l.name}
@@ -504,12 +563,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
 
           {/* Destination City */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              To / Destination City *
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              To (Destination Station / Point B) *
             </label>
             <SearchableSelect<LocationLookupItem>
               value={toLocation}
-              placeholder="Search station or type city..."
+              placeholder="Search destination (e.g. Gaya, Mumbai)..."
               onSearch={(q) => fleetService.lookupLocations(q)}
               getItemKey={(l) => l.id}
               getItemLabel={(l) => l.name}
@@ -524,14 +583,30 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
             />
           </div>
 
+          {/* Payment Term */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Freight Payment Term *
+            </label>
+            <select
+              value={paymentTerm}
+              onChange={(e) => setPaymentTerm(Number(e.target.value) as PaymentTerm)}
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value={PaymentTerm.ToPay}>To-Pay (Pay at Destination)</option>
+              <option value={PaymentTerm.Paid}>Paid (Prepaid at Origin)</option>
+              <option value={PaymentTerm.TBB}>TBB (To Be Billed on Account)</option>
+            </select>
+          </div>
+
           {/* Vehicle No */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Assigned Vehicle / Lorry No
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Direct Truck / Lorry No (Optional)
             </label>
             <SearchableSelect<VehicleLookupItem>
               value={truckNo}
-              placeholder="Search truck or type..."
+              placeholder="Search truck or assign later in Challan..."
               onSearch={(q) => fleetService.lookupVehicles(q)}
               getItemKey={(v) => v.id}
               getItemLabel={(v) => v.vehicleNo}
@@ -546,108 +621,67 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
             />
           </div>
 
-          {/* Party Invoice No */}
+          {/* Declared Goods Value */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Party Invoice / Bill No
-            </label>
-            <SearchableSelect<InvoiceLookupItem>
-              value={invoiceNo}
-              placeholder="Search invoice or type..."
-              onSearch={(q) => invoiceService.lookupInvoices(q)}
-              getItemKey={(inv) => inv.id}
-              getItemLabel={(inv) => inv.invoiceNo}
-              onChangeText={setInvoiceNo}
-              onSelect={(inv) => {
-                setInvoiceId(inv.id);
-                setInvoiceNo(inv.invoiceNo);
-                if (inv.invoiceDate) setInvoiceDate(inv.invoiceDate.split("T")[0]);
-              }}
-              renderItem={(inv) => (
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-mono font-semibold text-slate-800">{inv.invoiceNo}</span>
-                  <span className="text-[10px] text-slate-500">₹{inv.grandTotal} {inv.partyName ? `(${inv.partyName})` : ""}</span>
-                </div>
-              )}
-            />
-          </div>
-
-          {/* Invoice Date */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Invoice Date
-            </label>
-            <input
-              type="date"
-              value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Goods Value */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Declared Goods Value (₹)
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+              <span>Total Declared Value (₹)</span>
+              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Auto from Bills
+              </span>
             </label>
             <input
               type="number"
               step="any"
               min="0"
+              disabled={true}
+              readOnly={true}
               placeholder="0.00"
               value={goodsValue === 0 ? "" : goodsValue}
-              onChange={(e) => setGoodsValue(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black text-indigo-700 dark:text-indigo-400 font-mono cursor-not-allowed"
+            />
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Auto-sum of all customer invoices entered below
+            </span>
+          </div>
+
+          {/* Booking Operator */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Booking Clerk / Counter
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Counter 01"
+              value={bookingClerk}
+              onChange={(e) => setBookingClerk(e.target.value)}
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
-
-        {/* GST Paid By */}
-        {isGstRelevant && (
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <span>🏛️</span> GST Liability & Paid By:
-            </div>
-            <div className="flex items-center gap-4">
-              {["Consignor", "Consignee", "Transporter (GTA)"].map((party) => (
-                <label key={party} className="flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="gstPaidBy"
-                    checked={gstPaidBy === party}
-                    onChange={() => setGstPaidBy(party)}
-                    className="text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>{party}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* 3. Consignor & Consignee Details */}
+      {/* SECTION 2: Consignor & Consignee Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Consignor */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <span className="text-blue-600">📤</span> Consignor Details (Sender)
+        {/* Consignor (Sender) */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Upload className="w-3.5 h-3.5 text-blue-600" /> 2.1 Consignor (Sender) *
             </div>
             {consignorPartyId && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded">
                 Linked Master Party #{consignorPartyId}
               </span>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Consignor / Company Name *
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Consignor / Sender Name *
             </label>
             <SearchableSelect<PartyLookupItem>
               value={consignorName}
-              placeholder="Search Consignor directory or type new..."
+              placeholder="Search Sender (Customer A) or type new..."
               onSearch={(q) => partyService.lookupParties(q)}
               getItemKey={(p) => p.id}
               getItemLabel={(p) => p.name}
@@ -659,12 +693,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               renderItem={(p) => (
                 <div className="flex items-center justify-between w-full">
                   <div>
-                    <div className="font-semibold text-slate-900">{p.name}</div>
-                    <div className="text-[10px] text-slate-500">
+                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
                       {p.gstNo ? `GST: ${p.gstNo}` : "Unregistered"} {p.city ? `• ${p.city}` : ""}
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
                     {p.partyType === 0 ? "Consignor" : p.partyType === 1 ? "Consignee" : "Both"}
                   </span>
                 </div>
@@ -673,7 +707,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           </div>
 
           {!consignorPartyId && consignorName.trim().length > 2 && (
-            <label className="flex items-center gap-2 text-[11px] font-medium text-blue-700 bg-blue-50/70 p-2 rounded-lg border border-blue-200/60 cursor-pointer">
+            <label className="flex items-center gap-2 text-[11px] font-medium text-blue-700 dark:text-blue-300 bg-blue-50/70 dark:bg-blue-950/40 p-2 rounded-lg border border-blue-200/60 dark:border-blue-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={saveConsignorAsParty}
@@ -687,7 +721,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {isGstRelevant && (
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Consignor GSTIN
                 </label>
                 <input
@@ -696,14 +730,14 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                   placeholder="10AAAAA0000A1Z5"
                   value={consignorGstNo}
                   onChange={(e) => setConsignorGstNo(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             )}
 
             <div className={!isGstRelevant ? "sm:col-span-2" : ""}>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Contact Mobile
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                Sender Mobile
               </label>
               <input
                 type="tel"
@@ -711,45 +745,45 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 placeholder="9876543210"
                 value={consignorMobile}
                 onChange={(e) => setConsignorMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Dispatch Address
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Pickup / Sender Address
             </label>
             <textarea
               rows={2}
-              placeholder="Warehouse address, industrial area, city, pin"
+              placeholder="Sender address, warehouse, city, pin"
               value={consignorAddress}
               onChange={(e) => setConsignorAddress(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Consignee */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-              <span className="text-purple-600">📥</span> Consignee Details (Receiver)
+        {/* Consignee (Receiver) */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Download className="w-3.5 h-3.5 text-purple-600" /> 2.2 Consignee (Receiver) *
             </div>
             {consigneePartyId && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded">
                 Linked Master Party #{consigneePartyId}
               </span>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Consignee / Destination Recipient *
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Consignee / Receiver Name *
             </label>
             <SearchableSelect<PartyLookupItem>
               value={consigneeName}
-              placeholder="Search Consignee directory or type new..."
+              placeholder="Search Receiver (Party B) or type new..."
               onSearch={(q) => partyService.lookupParties(q)}
               getItemKey={(p) => p.id}
               getItemLabel={(p) => p.name}
@@ -761,12 +795,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               renderItem={(p) => (
                 <div className="flex items-center justify-between w-full">
                   <div>
-                    <div className="font-semibold text-slate-900">{p.name}</div>
-                    <div className="text-[10px] text-slate-500">
+                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
                       {p.gstNo ? `GST: ${p.gstNo}` : "Unregistered"} {p.city ? `• ${p.city}` : ""}
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
                     {p.partyType === 0 ? "Consignor" : p.partyType === 1 ? "Consignee" : "Both"}
                   </span>
                 </div>
@@ -775,7 +809,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           </div>
 
           {!consigneePartyId && consigneeName.trim().length > 2 && (
-            <label className="flex items-center gap-2 text-[11px] font-medium text-purple-700 bg-purple-50/70 p-2 rounded-lg border border-purple-200/60 cursor-pointer">
+            <label className="flex items-center gap-2 text-[11px] font-medium text-purple-700 dark:text-purple-300 bg-purple-50/70 dark:bg-purple-950/40 p-2 rounded-lg border border-purple-200/60 dark:border-purple-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={saveConsigneeAsParty}
@@ -789,7 +823,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {isGstRelevant && (
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                   Consignee GSTIN
                 </label>
                 <input
@@ -798,14 +832,14 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                   placeholder="10BBBBB0000B1Z6"
                   value={consigneeGstNo}
                   onChange={(e) => setConsigneeGstNo(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             )}
 
             <div className={!isGstRelevant ? "sm:col-span-2" : ""}>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Contact Mobile
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                Receiver Contact Mobile
               </label>
               <input
                 type="tel"
@@ -813,42 +847,49 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 placeholder="9876543210"
                 value={consigneeMobile}
                 onChange={(e) => setConsigneeMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Delivery Address
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Destination Delivery Address
             </label>
             <textarea
               rows={2}
-              placeholder="Recipient address, shop/godown number, city, pin"
+              placeholder="Recipient address in destination city, shop/godown number, pin"
               value={consigneeAddress}
               onChange={(e) => setConsigneeAddress(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
       </div>
 
-      {/* 4. Cargo Items Table */}
+      {/* SECTION 3: Customer Commercial Bill Intake & Photo Upload */}
+      <CustomerInvoicesTable
+        invoices={customerInvoices}
+        onChange={handleCustomerInvoicesChange}
+        disabled={loading}
+      />
+
+      {/* SECTION 4: Cargo Items Table */}
       <CargoItemsTable items={items} onChange={setItems} />
 
-      {/* 4.1 Automated Rate Card & Tariff Calculation Bar */}
-      <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Automated Rate Card Engine */}
+      <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">🏷️</span>
-            <span className="text-xs font-bold text-blue-950">Automated Route Tariff & Rate Card Engine</span>
+            <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs font-bold text-blue-950 dark:text-blue-200">Automated Route Tariff & Rate Card Engine</span>
           </div>
-          <p className="text-[11px] text-blue-700 mt-0.5">
+          <p className="text-[11px] text-blue-700 dark:text-blue-400 mt-0.5">
             Auto-estimate freight rates based on origin, destination, cargo weight, and customer contracts.
           </p>
           {calcResult && (
-            <p className="text-[11px] font-mono font-bold text-emerald-800 mt-1">
-              ✓ {calcResult}
+            <p className="text-[11px] font-mono font-bold text-emerald-800 dark:text-emerald-400 mt-1 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> {calcResult}
             </p>
           )}
         </div>
@@ -859,12 +900,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           disabled={calcLoading}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
         >
-          <span>⚡</span>
+          <Zap className="w-3.5 h-3.5" />
           <span>{calcLoading ? "Calculating..." : "Auto-Calculate Tariff"}</span>
         </button>
       </div>
 
-      {/* 5. Dynamic Charges Table & Real-time Ledger */}
+      {/* SECTION 5: Dynamic Charges Table & Real-time Ledger */}
       <DynamicChargesTable
         totalFreight={totalFreight}
         onTotalFreightChange={setTotalFreight}
@@ -877,54 +918,118 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         onPaymentTermChange={setPaymentTerm}
         paidAmount={paidAmount}
         onPaidAmountChange={setPaidAmount}
+        fromLocation={fromLocation}
+        toLocation={toLocation}
       />
 
-      {/* 6. Administrative Footer / Remarks */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* SECTION 6: Tax Treatment & GST Regime */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <Scale className="w-3.5 h-3.5 text-blue-600" /> 6. GST Treatment & Tax Rules
+          </div>
+          <span className="text-[11px] text-slate-400 font-medium">Controls GST calculation on Transporter Freight</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {TAX_TREATMENT_OPTIONS.map((opt) => {
+            const isSelected = taxTreatment === opt.value;
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setTaxTreatment(opt.value)}
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 cursor-pointer ${
+                  isSelected
+                    ? "bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-600 ring-1 ring-indigo-600/30"
+                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                  )}
+                </div>
+                <div>
+                  <div className={`text-xs font-bold ${isSelected ? "text-indigo-950 dark:text-indigo-200" : "text-slate-800 dark:text-slate-200"}`}>
+                    {opt.label}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{opt.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* GST Paid By */}
+        {isGstRelevant && (
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-3">
+            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-slate-600 dark:text-slate-300" /> GST Liability & Paid By:
+            </div>
+            <div className="flex items-center gap-4">
+              {["Consignor", "Consignee", "Transporter (GTA)"].map((party) => (
+                <label key={party} className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="gstPaidBy"
+                    checked={gstPaidBy === party}
+                    onChange={() => setGstPaidBy(party)}
+                    className="text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>{party}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 7: Delivery Remarks & Final Submit */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs">
+        <div className="grid grid-cols-1 gap-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Operational Remarks / Delivery Instructions
             </label>
             <textarea
               rows={2}
-              placeholder="e.g. Handle with care, deliver during business hours"
+              placeholder="e.g. Handle with care, deliver at godown, call receiver before delivery"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Booking Operator / Clerk
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Operator Desk 01"
-              value={bookingClerk}
-              onChange={(e) => setBookingClerk(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
       </div>
 
-      {/* Submit Bar */}
+      {/* Standardized Action Bar */}
       <div className="flex items-center justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+          disabled={loading}
+          className="btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="btn-primary"
         >
-          {loading ? "Submitting..." : initialId ? "Save Consignment Changes" : "Confirm & Save Consignment (GR)"}
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Submitting...</span>
+            </>
+          ) : initialId ? (
+            "Save Bilty Changes"
+          ) : (
+            "Confirm & Issue Bilty (LR/GR)"
+          )}
         </button>
       </div>
     </form>

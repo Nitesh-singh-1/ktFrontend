@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { Building2, User, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import { authService } from "../../../../services/authService";
 
 const LoginPage = () => {
@@ -43,7 +43,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8fafc] text-slate-800 font-sans">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8fafc] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans">
       {/* Left Column: Enterprise Branding & Feature Highlights */}
       <div className="md:w-1/2 lg:w-7/12 bg-slate-950 text-white relative flex flex-col justify-between p-8 md:p-14 lg:p-20 overflow-hidden">
         {/* Background Ambient Glow & Grid */}
@@ -53,7 +53,7 @@ const LoginPage = () => {
         {/* Top: Brand Header */}
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 p-0.5 shadow-lg shadow-blue-500/20 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-sky-600 p-0.5 shadow-xs flex items-center justify-center">
               <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center font-black text-xl text-sky-400">
                 KT
               </div>
@@ -78,7 +78,7 @@ const LoginPage = () => {
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
             Logistics & Freight,{" "}
-            <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="text-sky-400">
               Engineered for Speed.
             </span>
           </h1>
@@ -108,14 +108,14 @@ const LoginPage = () => {
       </div>
 
       {/* Right Column: Modern Authentication Form */}
-      <div className="md:w-1/2 lg:w-5/12 flex items-center justify-center p-6 md:p-12 lg:p-16 bg-white">
+      <div className="md:w-1/2 lg:w-5/12 flex items-center justify-center p-6 md:p-12 lg:p-16 bg-white dark:bg-slate-900">
         <div className="w-full max-w-md">
           {/* Form Header */}
           <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Sign In to Your Account
             </h2>
-            <p className="text-sm text-slate-500 mt-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
               Enter your authorized operator credentials to access the transport console.
             </p>
           </div>
@@ -124,14 +124,12 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Username Field */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
                 Username / Email
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                  <User className="h-5 w-5" />
                 </div>
                 <input
                   type="text"
@@ -139,7 +137,7 @@ const LoginPage = () => {
                   placeholder="admin@kesari.com"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all duration-150"
+                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all duration-150"
                 />
               </div>
             </div>
@@ -147,12 +145,12 @@ const LoginPage = () => {
             {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <a
                   tabIndex={-1}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
+                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer transition-colors"
                   onClick={() => alert("Please contact the administrator to reset your password.")}
                 >
                   Forgot password?
@@ -160,9 +158,7 @@ const LoginPage = () => {
               </div>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+                  <Lock className="h-5 w-5" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -170,23 +166,18 @@ const LoginPage = () => {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all duration-150"
+                  className="block w-full pl-11 pr-11 py-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all duration-150"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? (
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                    </svg>
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <Eye className="h-5 w-5" />
                   )}
                 </button>
               </div>
@@ -194,10 +185,8 @@ const LoginPage = () => {
 
             {/* Error Notification */}
             {error && (
-              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-start gap-2.5 animate-shake">
-                <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-xs font-semibold flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
                 <div className="leading-snug">{error}</div>
               </div>
             )}
@@ -208,9 +197,9 @@ const LoginPage = () => {
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-xs font-medium text-slate-600">Remember session on this device</span>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Remember session on this device</span>
               </label>
             </div>
 
@@ -218,37 +207,33 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 hover:shadow-slate-900/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-3.5 px-4 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 active:bg-slate-950 text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 hover:shadow-slate-900/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                  </svg>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                   <span>Authenticating...</span>
                 </>
               ) : (
                 <>
                   <span>Sign In to Console</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
           {/* Register / Onboard Organization */}
-          <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center gap-2">
-            <p className="text-xs text-slate-500">
+          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center gap-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Need a new workspace for your transport fleet?
             </p>
             <Link
               href="/onboard"
-              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition-all duration-150 flex items-center justify-center gap-2 border border-slate-200"
+              className="w-full py-2.5 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-xs transition-all duration-150 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
             >
-              <span>🏢 Register New Organization</span>
+              <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>Register New Organization</span>
             </Link>
           </div>
         </div>

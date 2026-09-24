@@ -29,8 +29,15 @@ export const tripService = {
   },
 
   // Create Trip Manifest & Load Shipments
-  createTrip: (data: CreateTripRequest): Promise<{ success: boolean; data?: TripDto; message?: string }> => {
-    return baseService.post<{ success: boolean; data?: TripDto; message?: string }>("/trip", data);
+  createTrip: async (data: CreateTripRequest): Promise<{ success: boolean; data?: TripDto; message?: string }> => {
+    const res = await baseService.post<any>("/trip", data);
+    if (res && (res.id || res.tripNo)) {
+      return { success: true, data: res };
+    }
+    if (res && typeof res.success === "boolean") {
+      return res;
+    }
+    return { success: !!res, data: res };
   },
 
   // Dispatch Trip (Transitions trip to Dispatched and shipments to InTransit)
