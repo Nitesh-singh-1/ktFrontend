@@ -310,9 +310,9 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<TenantConfiguration>({
     tenantId: "",
     general: {
-      companyName: "K-Transport Logistics",
-      legalName: "K-Transport Logistics Private Limited",
-      supportEmail: "support@ktransport.com",
+      companyName: "FleetPulse Logistics",
+      legalName: "FleetPulse Logistics Network Private Limited",
+      supportEmail: "support@fleetpulse.io",
       supportPhone: "+91 98765 43210",
       logoUrl: "",
       faviconUrl: "",
@@ -1776,8 +1776,8 @@ export default function SettingsPage() {
               </h3>
               <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 dark:bg-slate-850 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-600 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
-                    KT
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                    {formData.general.companyName ? formData.general.companyName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "FP"}
                   </div>
                   <div>
                     <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">

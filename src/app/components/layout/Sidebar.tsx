@@ -122,16 +122,16 @@ export default function Sidebar({
 
       {/* Brand Header */}
       <div className="h-16 px-5 border-b border-slate-800 flex items-center gap-3 bg-slate-950/50">
-        <div className="w-9 h-9 rounded-xl bg-sky-600 flex items-center justify-center text-white font-black text-sm shadow-sm shrink-0">
-          KT
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/20 shrink-0">
+          <TruckIcon className="w-4 h-4 text-white" />
         </div>
         {isOpen && (
           <div className="overflow-hidden">
-            <h1 className="font-extrabold text-sm tracking-tight text-white truncate" title={companyName}>
-              {companyName}
+            <h1 className="font-extrabold text-sm tracking-tight text-white truncate" title={companyName || "FleetPulse TMS"}>
+              {companyName || "FleetPulse TMS"}
             </h1>
             <p className="text-[11px] font-medium text-sky-400 truncate">
-              {orgName || "Logistics & Fleet TMS"}
+              {orgName || "Enterprise Logistics Cloud"}
             </p>
           </div>
         )}

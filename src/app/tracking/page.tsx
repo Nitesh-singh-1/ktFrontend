@@ -5,6 +5,7 @@ import Link from "next/link";
 import { trackingService } from "services/trackingService";
 import { PublicTrackingDto } from "@/types/tms";
 import { AlertTriangle, CheckCircle2, MapPin, ArrowRight, Search, Truck } from "lucide-react";
+import BrandLogo from "@/app/components/ui/BrandLogo";
 
 export default function PublicTrackingPage() {
   const [lrNo, setLrNo] = useState("");
@@ -57,19 +58,7 @@ export default function PublicTrackingPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
       {/* Top Brand Bar */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-3.5 px-6 sm:px-12 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-xs">
-            KT
-          </div>
-          <div>
-            <h1 className="text-base font-black tracking-tight text-slate-900 dark:text-white">
-              K-Transport Tracking Portal
-            </h1>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-              Live Freight & Waybill Status Radar
-            </p>
-          </div>
-        </div>
+        <BrandLogo size="md" variant="auto" name="FleetPulse" tagline="Consignment Tracking Radar" />
 
         <Link
           href="/login"

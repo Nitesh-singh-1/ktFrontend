@@ -163,3 +163,6 @@ export const useAppTheme = (): ThemeContextType => {
   }
   return context;
 };
+
+export const useTheme = useAppTheme;
+

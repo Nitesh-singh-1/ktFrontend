@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Building2, Zap, Eye, EyeOff, User, Lock, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import { tenantService } from "services/tenantService";
 import { TenantOnboardingRequest } from "@/types/shipment";
+import BrandLogo from "@/app/components/ui/BrandLogo";
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -107,21 +108,7 @@ export default function OnboardPage() {
 
         {/* Top: Brand Header */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-sky-600 p-0.5 shadow-xs flex items-center justify-center">
-              <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center font-black text-xl text-sky-400">
-                KT
-              </div>
-            </div>
-            <div>
-              <span className="text-xl font-extrabold tracking-tight text-white block">
-                KESARI TRANSPORTS
-              </span>
-              <span className="text-xs font-semibold tracking-wider text-sky-400 uppercase">
-                Multi-Tenant TMS Platform
-              </span>
-            </div>
-          </div>
+          <BrandLogo size="lg" variant="light" name="FleetPulse" tagline="Multi-Tenant TMS Platform" />
         </div>
 
         {/* Middle: Onboarding Highlights */}
