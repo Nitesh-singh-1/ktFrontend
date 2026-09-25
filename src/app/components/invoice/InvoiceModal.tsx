@@ -40,6 +40,8 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
   const [globalTaxRate, setGlobalTaxRate] = useState<number>(18);
   const [discount, setDiscount] = useState<number>(0);
   const [otherCharges, setOtherCharges] = useState<number>(0);
+  const [paidAmount, setPaidAmount] = useState<number>(0);
+  const [paymentMode, setPaymentMode] = useState<string>("Cash");
   const [remarks, setRemarks] = useState("");
 
   // Line items
@@ -65,6 +67,8 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
     setGlobalTaxRate(18);
     setDiscount(0);
     setOtherCharges(0);
+    setPaidAmount(0);
+    setPaymentMode("Cash");
     setRemarks("");
     setItems([{ description: "Freight Charges", quantity: 1, rate: 0, taxRate: 18, totalAmount: 0 }]);
     setError("");
@@ -165,6 +169,8 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
         taxRate: Number(globalTaxRate) || 0,
         discount: Number(discount) || 0,
         otherCharges: Number(otherCharges) || 0,
+        paidAmount: Number(paidAmount) || 0,
+        paymentMode: Number(paidAmount) > 0 ? paymentMode : undefined,
         remarks: remarks.trim() || undefined,
         shipmentIdsToLink: shipmentIdsToLink.length > 0 ? shipmentIdsToLink : undefined,
         items: items.map((it) => ({
@@ -378,7 +384,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
 
           {/* Financials & Ledger Summary */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Left: Remarks & Due Date */}
+            {/* Left: Remarks, Due Date & Payment Collection */}
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -390,6 +396,73 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   onChange={(e) => setDueDate(e.target.value)}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+
+              {/* Payment Intake Box */}
+              <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Receipt className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>Received Payment / Initial Settlement</span>
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setPaidAmount(0)}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-50 cursor-pointer"
+                    >
+                      Unpaid (₹0)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaidAmount(grandTotal)}
+                      className="px-2 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded hover:bg-emerald-700 cursor-pointer shadow-2xs"
+                    >
+                      Full (₹{grandTotal.toFixed(2)})
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Amount Received Now (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      max={grandTotal}
+                      value={paidAmount === 0 ? "" : paidAmount}
+                      onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Payment Mode
+                    </label>
+                    <select
+                      value={paymentMode}
+                      onChange={(e) => setPaymentMode(e.target.value)}
+                      disabled={paidAmount <= 0}
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="Cash">Cash (Counter)</option>
+                      <option value="UPI / QR">UPI / QR</option>
+                      <option value="Bank Transfer / NEFT">Bank Transfer (NEFT/RTGS)</option>
+                      <option value="Cheque">Cheque</option>
+                    </select>
+                  </div>
+                </div>
+
+                {paidAmount > 0 && grandTotal - paidAmount <= 0 && (
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    ✓ Full payment recorded. This invoice will immediately settle to Outstanding = ₹0.00.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -421,7 +494,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   <select
                     value={globalTaxRate}
                     onChange={(e) => setGlobalTaxRate(Number(e.target.value))}
-                    className="px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold"
+                    className="px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold cursor-pointer"
                   >
                     <option value={0}>0% (Exempt)</option>
                     <option value={5}>5% (GTA RCM/ITC)</option>
@@ -468,6 +541,20 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 <span className="text-sm font-black text-slate-900 dark:text-white">Grand Total:</span>
                 <span className="text-base font-mono font-black text-blue-600 dark:text-blue-400">
                   ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                <span className="font-semibold">Paid / Received:</span>
+                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  - ₹{(Number(paidAmount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Balance Due (Outstanding):</span>
+                <span className={`text-sm font-mono font-bold ${grandTotal - paidAmount <= 0 && grandTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400"}`}>
+                  ₹{Math.max(0, grandTotal - paidAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>

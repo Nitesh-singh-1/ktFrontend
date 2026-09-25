@@ -9,6 +9,13 @@ autoUpdater.logger = console;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
+// Build Expiry Date: September 30, 2026 23:59:59 IST
+const BUILD_EXPIRY_DATE = new Date("2026-10-01T00:00:00+05:30");
+
+function isBuildExpired() {
+  return new Date() >= BUILD_EXPIRY_DATE;
+}
+
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 let mainWindow = null;
 let server = null;
@@ -272,6 +279,16 @@ ipcMain.handle("print-direct", () => {
 
 // App Lifecycle
 app.whenReady().then(async () => {
+  // Check build expiration
+  if (isBuildExpired()) {
+    dialog.showErrorBox(
+      "Build Expired",
+      "This application build was valid until September 30, 2026 and has expired.\n\nPlease contact the administrator or software provider for an updated version."
+    );
+    app.quit();
+    return;
+  }
+
   // Relax CORS headers globally in session
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -289,6 +306,14 @@ app.whenReady().then(async () => {
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
+      if (isBuildExpired()) {
+        dialog.showErrorBox(
+          "Build Expired",
+          "This application build was valid until September 30, 2026 and has expired.\n\nPlease contact the administrator or software provider for an updated version."
+        );
+        app.quit();
+        return;
+      }
       createWindow();
     }
   });

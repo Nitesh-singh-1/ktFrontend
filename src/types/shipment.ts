@@ -199,6 +199,8 @@ export interface CreateInvoiceRequest {
   taxRate?: number;
   discount?: number;
   otherCharges?: number;
+  paidAmount?: number;
+  paymentMode?: string;
   remarks?: string;
   shipmentIdsToLink?: number[];
   items?: {

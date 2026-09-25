@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import UpdateNotification from "./components/layout/UpdateNotification";
+import BuildExpiryGuard from "./components/layout/BuildExpiryGuard";
 import { ThemeProvider } from "@/context/ThemeContext";
 
 const geistSans = Geist({
@@ -28,7 +29,9 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased`}>
         <ThemeProvider>
-          {children}
+          <BuildExpiryGuard>
+            {children}
+          </BuildExpiryGuard>
           <UpdateNotification />
         </ThemeProvider>
       </body>

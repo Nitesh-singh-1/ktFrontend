@@ -139,15 +139,15 @@ export default function TripDetailsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-rose-100 dark:border-slate-800 flex items-center justify-between bg-rose-50/70 dark:bg-slate-800/60">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-rose-600 text-white rounded-xl text-base font-bold shadow-2xs">
+            <span className="p-2 bg-blue-600 text-white rounded-xl text-base font-bold shadow-2xs">
               <Truck className="w-5 h-5" />
             </span>
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>LR / Truck Challan:</span>
-                <span className="font-mono text-rose-700 dark:text-rose-400 font-black">
+                <span>Manifest & Truck Challan:</span>
+                <span className="font-mono text-blue-600 dark:text-blue-400 font-black">
                   {trip?.tripNo || "Loading..."}
                 </span>
               </h2>
@@ -218,7 +218,7 @@ export default function TripDetailsModal({
                     <button
                       onClick={handleDispatch}
                       disabled={actionLoading}
-                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
                       <span>Dispatch Truck (Mark In Transit)</span>
@@ -229,7 +229,7 @@ export default function TripDetailsModal({
                     <button
                       onClick={handleArrive}
                       disabled={actionLoading}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Flag className="w-4 h-4" />
                       <span>Mark Hub Arrival (Out For Delivery)</span>
@@ -354,7 +354,7 @@ export default function TripDetailsModal({
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
                   <span>Loaded Bilties on Truck ({trip.shipments?.length || 0})</span>
-                  <span className="font-mono text-rose-700 dark:text-rose-400">
+                  <span className="font-mono text-blue-600 dark:text-blue-400">
                     Total Packages: {totalLoadedPackages} | Freight: ₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </h3>
@@ -372,7 +372,7 @@ export default function TripDetailsModal({
                       {trip.shipments && trip.shipments.length > 0 ? (
                         trip.shipments.map((shp) => (
                           <tr key={shp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                            <td className="py-2.5 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">
+                            <td className="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">
                               {shp.shipmentNo}
                             </td>
                             <td className="py-2.5 px-3 font-semibold">{shp.loadedWeight} Kg</td>

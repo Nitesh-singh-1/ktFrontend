@@ -39,10 +39,11 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     id: "trips",
-    title: "LR / Truck Challan",
+    title: "Manifest & Dispatch (Challans)",
     icon: "truck",
     path: "/trips",
     moduleKey: "challanManagement",
+    badge: "Step 4 & 5",
   },
   {
     id: "pod",
@@ -129,6 +130,12 @@ export const sidebarItems: SidebarItem[] = [
     title: "System & Settings",
     icon: "settings",
     children: [
+      {
+        id: "system.users",
+        title: "Manage Users & Access",
+        icon: "lock",
+        path: "/users",
+      },
       {
         id: "system.settings",
         title: "SaaS Configuration",

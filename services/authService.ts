@@ -107,4 +107,12 @@ export const authService = {
     if (typeof window === "undefined") return false;
     return !!localStorage.getItem("token") || localStorage.getItem("isLoggedIn") === "true";
   },
+
+  requestPasswordResetCode: async (payload: { username: string; mobile: string }): Promise<{ success: boolean; message?: string; verificationCode?: string; expiresInSeconds?: number }> => {
+    return await baseService.post("/auth/forgot-password/request-code", payload);
+  },
+
+  verifyAndResetPassword: async (payload: { username: string; mobile: string; verificationCode: string; newPassword: string }): Promise<{ success: boolean; message?: string }> => {
+    return await baseService.post("/auth/forgot-password/verify-and-reset", payload);
+  },
 };

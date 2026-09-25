@@ -85,6 +85,15 @@ export const userService = {
     }
   },
 
+  adminResetPassword: async (id: number, newPassword: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      await baseService.post(`/users/${id}/reset-password`, { newPassword });
+      return { success: true, message: "User password reset successfully." };
+    } catch (e: any) {
+      return { success: false, message: e?.response?.data?.message || e?.message || "Failed to reset password." };
+    }
+  },
+
   deleteUser: async (id: number): Promise<{ success: boolean; message?: string }> => {
     try {
       await baseService.delete(`/users/${id}`);
