@@ -78,32 +78,52 @@ export interface PartyLookupItem {
 
 export interface VehicleMaster {
   id: number;
+  tenantId?: string;
   vehicleNo: string;
   vehicleType?: string;
-  capacity?: string | number;
+  ownerType?: string;
   ownerName?: string;
   ownerMobile?: string;
-  driverId?: number;
   driverName?: string;
   driverMobile?: string;
+  capacity?: string | number;
+  capacityTons?: number;
+  engineNo?: string;
+  chassisNo?: string;
+  rcNumber?: string;
+  insurancePolicyNo?: string;
+  pucValidUntil?: string;
+  fitnessValidUntil?: string;
+  insuranceValidUntil?: string;
+  permitValidUntil?: string;
+  currentOdometerKm?: number;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface VehicleLookupItem {
   id: number;
   vehicleNo: string;
   vehicleType?: string;
+  ownerType?: string;
+  capacityTons?: number;
   driverName?: string;
   driverMobile?: string;
 }
 
 export interface DriverMaster {
   id: number;
+  tenantId?: string;
   name: string;
-  licenseNo?: string;
   mobile?: string;
+  licenseNo?: string;
+  licenseValidUntil?: string;
+  aadharNo?: string;
   address?: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DriverLookupItem {
@@ -115,11 +135,16 @@ export interface DriverLookupItem {
 
 export interface LocationMaster {
   id: number;
-  name: string;
+  tenantId?: string;
   code?: string;
+  name: string;
   city?: string;
   state?: string;
+  address?: string;
+  pincode?: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LocationLookupItem {
@@ -128,6 +153,7 @@ export interface LocationLookupItem {
   code?: string;
   city?: string;
   state?: string;
+  pincode?: string;
 }
 
 // Invoicing Models

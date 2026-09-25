@@ -374,19 +374,7 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Register New Organization Link */}
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center gap-2.5">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Setting up a new fleet company or branch network?
-            </p>
-            <Link
-              href="/onboard"
-              className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-xs transition-all duration-150 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-2xs"
-            >
-              <Building2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-              <span>Register New Organization / Tenant</span>
-            </Link>
-          </div>
+
         </div>
 
         {/* Footer Support & Legal */}

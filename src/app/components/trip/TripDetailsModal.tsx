@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { TripDto, TripStatus, TripExpenseType } from "@/types/tms";
 import { tripService } from "services/tripService";
 import { Truck, Send, Flag, Fuel, Printer, X, FileText } from "lucide-react";
+import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
 
 interface TripDetailsModalProps {
   isOpen: boolean;
@@ -471,110 +472,130 @@ export default function TripDetailsModal({
               </div>
             </div>
 
-            {/* Pink Challan Slip Layout (Matching Photo 3) */}
-            <div className="bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950">
-              {/* Slip Header */}
-              <div className="text-center border-b-2 border-rose-400 pb-3">
-                <h1 className="text-xl font-black tracking-wider uppercase">
-                  TRUCK CHALLAN
-                </h1>
-                <h2 className="text-2xl font-black text-rose-900 mt-1 tracking-tight">
-                  KESHRI TRANSPORT
-                </h2>
-                <p className="text-xs font-bold text-rose-800">
-                  ZERO MILE, PAHARI, PATNA-7
-                </p>
-              </div>
+            {/* Pink Challan Slip Layout (Dynamic Client Branding) */}
+            {(() => {
+              const profile = getTenantPrintProfile();
+              return (
+                <div className="bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950">
+                  {/* Slip Header */}
+                  <div className="text-center border-b-2 border-rose-400 pb-3">
+                    <h1 className="text-xl font-black tracking-wider uppercase">
+                      TRUCK CHALLAN
+                    </h1>
+                    <h2 className="text-2xl font-black text-rose-900 mt-1 tracking-tight">
+                      {profile.companyName || "KESHRI TRANSPORT"}
+                    </h2>
+                    <p className="text-xs font-bold text-rose-800">
+                      {profile.address || "ZERO MILE, PAHARI, PATNA-7"}
+                      {profile.gstin ? ` | GSTIN: ${profile.gstin}` : ""}
+                      {profile.panNumber ? ` | PAN: ${profile.panNumber}` : ""}
+                    </p>
+                  </div>
 
-              {/* Challan Meta Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs border-b-2 border-rose-300 pb-3">
-                <div>
-                  <span className="font-bold text-rose-800">Challan No: </span>
-                  <span className="font-mono font-black text-sm">{trip.tripNo}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-rose-800">Date: </span>
-                  <span className="font-bold">{trip.tripDate ? trip.tripDate.split("T")[0] : ""}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-rose-800">Lorry No: </span>
-                  <span className="font-mono font-black text-sm">{trip.vehicleNo}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-rose-800">Driver Name: </span>
-                  <span className="font-bold">{trip.driverName || "—"}</span>
-                </div>
+                  {/* Challan Meta Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs border-b-2 border-rose-300 pb-3">
+                    <div>
+                      <span className="font-bold text-rose-800">Challan No: </span>
+                      <span className="font-mono font-black text-sm">{trip.tripNo}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-rose-800">Date: </span>
+                      <span className="font-bold">{trip.tripDate ? trip.tripDate.split("T")[0] : ""}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-rose-800">Lorry No: </span>
+                      <span className="font-mono font-black text-sm">{trip.vehicleNo}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-rose-800">Driver Name: </span>
+                      <span className="font-bold">{trip.driverName || "—"}</span>
+                    </div>
 
-                <div className="col-span-2">
-                  <span className="font-bold text-rose-800">From Hub: </span>
-                  <span className="font-bold">{trip.originLocationName || "Zero Mile, Pahari"}</span>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-bold text-rose-800">Destination Route To: </span>
-                  <span className="font-bold">{trip.destinationLocationName || "—"}</span>
-                </div>
-              </div>
+                    <div className="col-span-2">
+                      <span className="font-bold text-rose-800">From Hub: </span>
+                      <span className="font-bold">{trip.originLocationName || profile.address || "Zero Mile, Pahari"}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="font-bold text-rose-800">Destination Route To: </span>
+                      <span className="font-bold">{trip.destinationLocationName || "—"}</span>
+                    </div>
+                  </div>
 
-              {/* Bilties Table matching Photo 3 */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse border border-rose-400 bg-white/70">
-                  <thead>
-                    <tr className="bg-rose-200/80 border-b border-rose-400 text-rose-950 font-black text-[11px]">
-                      <th className="py-2 px-2 border-r border-rose-300 w-8 text-center">Sl.</th>
-                      <th className="py-2 px-3 border-r border-rose-300 min-w-[90px]">Bill No.</th>
-                      <th className="py-2 px-2 border-r border-rose-300 text-center w-14">Qty.</th>
-                      <th className="py-2 px-3 border-r border-rose-300 min-w-[90px]">From</th>
-                      <th className="py-2 px-3 border-r border-rose-300 text-right min-w-[90px]">Freight</th>
-                      <th className="py-2 px-3 border-r border-rose-300 text-center min-w-[90px]">Freight Paid</th>
-                      <th className="py-2 px-3">Consignee Name</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-rose-300">
-                    {trip.shipments && trip.shipments.length > 0 ? (
-                      trip.shipments.map((shp, idx) => (
-                        <tr key={shp.id} className="hover:bg-white transition">
-                          <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{idx + 1}</td>
-                          <td className="py-1.5 px-3 font-mono font-bold border-r border-rose-300">{shp.shipmentNo}</td>
-                          <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{shp.loadedPackages || 1}</td>
-                          <td className="py-1.5 px-3 border-r border-rose-300">Pahari</td>
-                          <td className="py-1.5 px-3 text-right font-mono font-bold border-r border-rose-300">₹{shp.freightAmount}</td>
-                          <td className="py-1.5 px-3 text-center border-r border-rose-300 font-semibold text-[10px]">
-                            {shp.freightAmount > 0 ? "TO PAY" : "PAID"}
-                          </td>
-                          <td className="py-1.5 px-3 font-medium truncate max-w-[180px]">
-                            {shp.shipmentNo} Party
-                          </td>
+                  {/* Bilties Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse border border-rose-400 bg-white/70">
+                      <thead>
+                        <tr className="bg-rose-200/80 border-b border-rose-400 text-rose-950 font-black text-[11px]">
+                          <th className="py-2 px-2 border-r border-rose-300 w-8 text-center">Sl.</th>
+                          <th className="py-2 px-3 border-r border-rose-300 min-w-[90px]">Bill No.</th>
+                          <th className="py-2 px-2 border-r border-rose-300 text-center w-14">Qty.</th>
+                          <th className="py-2 px-3 border-r border-rose-300 min-w-[90px]">From</th>
+                          <th className="py-2 px-3 border-r border-rose-300 text-right min-w-[90px]">Freight</th>
+                          <th className="py-2 px-3 border-r border-rose-300 text-center min-w-[90px]">Freight Paid</th>
+                          <th className="py-2 px-3">Consignee Name</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="py-4 text-center text-rose-400">
-                          No Bilties listed
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Challan Footer & Signature Blocks */}
-              <div className="pt-3 border-t-2 border-rose-400 space-y-4">
-                <div className="flex flex-col sm:flex-row justify-between text-xs font-bold text-rose-900 gap-2">
-                  <span>Total Packages: {totalLoadedPackages}</span>
-                  <span>Driver Advance Given: ₹{(trip.driverAdvanceCash || 0) + (trip.driverAdvanceFuel || 0)}</span>
-                  <span>Total Freight: ₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
-                </div>
-
-                <div className="grid grid-cols-2 pt-8 text-xs font-bold text-center">
-                  <div className="border-t border-rose-800 mx-6 pt-1">
-                    Driver Signature / Thumb Impression
+                      </thead>
+                      <tbody className="divide-y divide-rose-300">
+                        {trip.shipments && trip.shipments.length > 0 ? (
+                          trip.shipments.map((shp, idx) => (
+                            <tr key={shp.id} className="hover:bg-white transition">
+                              <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{idx + 1}</td>
+                              <td className="py-1.5 px-3 font-mono font-bold border-r border-rose-300">{shp.shipmentNo}</td>
+                              <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{shp.loadedPackages || 1}</td>
+                              <td className="py-1.5 px-3 border-r border-rose-300">{trip.originLocationName || "Pahari"}</td>
+                              <td className="py-1.5 px-3 text-right font-mono font-bold border-r border-rose-300">₹{shp.freightAmount}</td>
+                              <td className="py-1.5 px-3 text-center border-r border-rose-300 font-semibold text-[10px]">
+                                {shp.freightAmount > 0 ? "TO PAY" : "PAID"}
+                              </td>
+                              <td className="py-1.5 px-3 font-medium truncate max-w-[180px]">
+                                {shp.shipmentNo} Party
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="py-4 text-center text-rose-400">
+                              No Bilties listed
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="border-t border-rose-800 mx-6 pt-1">
-                    For Keshri Transport (Booking Incharge)
+
+                  {/* Challan Footer & Signature Blocks (Cash and Fuel Advance Shown Individually) */}
+                  <div className="pt-3 border-t-2 border-rose-400 space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold text-rose-900 bg-rose-200/50 p-2.5 rounded-lg border border-rose-300">
+                      <div>
+                        <span className="text-rose-700 block text-[10px] uppercase">Total Packages</span>
+                        <span className="font-mono text-sm">{totalLoadedPackages} PKGS</span>
+                      </div>
+                      <div>
+                        <span className="text-rose-700 block text-[10px] uppercase">Cash Advance</span>
+                        <span className="font-mono text-sm">₹{(trip.driverAdvanceCash || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div>
+                        <span className="text-rose-700 block text-[10px] uppercase">Fuel / Diesel Advance</span>
+                        <span className="font-mono text-sm">₹{(trip.driverAdvanceFuel || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div>
+                        <span className="text-rose-700 block text-[10px] uppercase">Total Freight</span>
+                        <span className="font-mono text-sm">₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 pt-8 text-xs font-bold text-center">
+                      <div className="border-t border-rose-800 mx-6 pt-1">
+                        Driver Signature / Thumb Impression
+                      </div>
+                      <div className="border-t border-rose-800 mx-6 pt-1">
+                        For {profile.companyName || "Keshri Transport"} (Booking Incharge)
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}

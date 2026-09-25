@@ -1,3 +1,5 @@
+import { getTenantPrintProfile } from "./tenantProfile";
+
 interface GREntryData {
   id: number;
   grNo: string;
@@ -44,15 +46,17 @@ interface GREntryData {
 }
 
 function generateSingleCopy(entry: GREntryData, copyType: string): string {
+  const profile = getTenantPrintProfile();
+
   return `
     <div class="container">
       <!-- Company Letterhead -->
       <div class="letterhead">
-        <img src="/logo.jpeg" alt="Company Logo" class="company-logo" />
+        <img src="${profile.logoUrl || '/logo.jpeg'}" alt="Company Logo" class="company-logo" />
         <div class="company-info">
-          <div class="company-name">KESARI TRANSPORT</div>
-          <div class="company-details">Logistics & Transportation Services</div>
-          <div class="company-contact">Phone: +91-9430492601 | Email: info@kesaritransport.com</div>
+          <div class="company-name">${profile.companyName}</div>
+          <div class="company-details">${profile.tagline || 'Logistics & Transportation Services'}</div>
+          <div class="company-contact">Phone: ${profile.phone || '+91-9430492601'} | Email: ${profile.email || 'info@transport.com'} ${profile.gstin ? `| GSTIN: ${profile.gstin}` : ''}</div>
         </div>
       </div>
 

@@ -41,6 +41,10 @@ export const fleetService = {
     return baseService.post<VehicleMaster>("/fleet/vehicles", data);
   },
 
+  updateVehicle: (id: number, data: Partial<VehicleMaster>): Promise<VehicleMaster> => {
+    return baseService.put<VehicleMaster>(`/fleet/vehicles/${id}`, data);
+  },
+
   deleteVehicle: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/fleet/vehicles/${id}`);
   },
@@ -77,6 +81,10 @@ export const fleetService = {
     return baseService.post<DriverMaster>("/fleet/drivers", data);
   },
 
+  updateDriver: (id: number, data: Partial<DriverMaster>): Promise<DriverMaster> => {
+    return baseService.put<DriverMaster>(`/fleet/drivers/${id}`, data);
+  },
+
   deleteDriver: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/fleet/drivers/${id}`);
   },
@@ -111,6 +119,10 @@ export const fleetService = {
 
   createLocation: (data: Partial<LocationMaster>): Promise<LocationMaster> => {
     return baseService.post<LocationMaster>("/fleet/locations", data);
+  },
+
+  updateLocation: (id: number, data: Partial<LocationMaster>): Promise<LocationMaster> => {
+    return baseService.put<LocationMaster>(`/fleet/locations/${id}`, data);
   },
 
   deleteLocation: (id: number): Promise<{ success: boolean; message?: string }> => {

@@ -12,6 +12,10 @@ interface DriverModalProps {
   initialDriver?: DriverMaster | null;
 }
 
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+}
+
 export default function DriverModal({
   isOpen,
   onClose,
@@ -23,7 +27,9 @@ export default function DriverModal({
 
   const [name, setName] = useState("");
   const [licenseNo, setLicenseNo] = useState("");
+  const [licenseValidUntil, setLicenseValidUntil] = useState("");
   const [mobile, setMobile] = useState("");
+  const [aadharNo, setAadharNo] = useState("");
   const [address, setAddress] = useState("");
   const [isActive, setIsActive] = useState(true);
 
@@ -32,7 +38,9 @@ export default function DriverModal({
       if (initialDriver) {
         setName(initialDriver.name || "");
         setLicenseNo(initialDriver.licenseNo || "");
+        setLicenseValidUntil(initialDriver.licenseValidUntil || "");
         setMobile(initialDriver.mobile || "");
+        setAadharNo(initialDriver.aadharNo || "");
         setAddress(initialDriver.address || "");
         setIsActive(initialDriver.isActive ?? true);
       } else {
@@ -44,7 +52,9 @@ export default function DriverModal({
   const resetForm = () => {
     setName("");
     setLicenseNo("");
+    setLicenseValidUntil("");
     setMobile("");
+    setAadharNo("");
     setAddress("");
     setIsActive(true);
     setError("");
@@ -55,12 +65,16 @@ export default function DriverModal({
     setMobile(digitsOnly);
   };
 
+  const handleAadharChange = (val: string) => {
+    const digitsOnly = val.replace(/\D/g, "").slice(0, 12);
+    setAadharNo(digitsOnly);
+  };
+
   if (!isOpen) return null;
 
   const validateForm = (): string | null => {
     if (!name.trim()) return "Driver Full Name is required.";
 
-    // Only characters eligible to be in a person's name (letters, spaces, dots, hyphens)
     const nameRegex = /^[a-zA-Z\s\.\-]+$/;
     if (!nameRegex.test(name.trim())) {
       return "Driver Name contains invalid characters. Only alphabetic letters, spaces, dots, and hyphens are allowed.";
@@ -88,14 +102,20 @@ export default function DriverModal({
       setError("");
 
       const payload: Partial<DriverMaster> = {
-        name: name.trim(),
+        name: toTitleCase(name.trim()),
         licenseNo: licenseNo.trim().toUpperCase() || undefined,
+        licenseValidUntil: licenseValidUntil || undefined,
         mobile: mobile.trim() || undefined,
-        address: address.trim() || undefined,
+        aadharNo: aadharNo.trim() || undefined,
+        address: address.trim() ? toTitleCase(address.trim()) : undefined,
         isActive,
       };
 
-      await fleetService.createDriver(payload);
+      if (initialDriver && initialDriver.id) {
+        await fleetService.updateDriver(initialDriver.id, payload);
+      } else {
+        await fleetService.createDriver(payload);
+      }
       onSaved();
       onClose();
     } catch (err: any) {
@@ -129,7 +149,7 @@ export default function DriverModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
@@ -139,17 +159,17 @@ export default function DriverModal({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Driver Full Name *
+              Driver Full Name * (Capitalized)
             </label>
             <input
               type="text"
               required
               placeholder="e.g. Surendra Yadav"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              onChange={(e) => setName(toTitleCase(e.target.value))}
+              className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-900 dark:text-white capitalize focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Only letters, spaces, dots, and hyphens allowed</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">First letters will automatically be capitalized</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -167,6 +187,20 @@ export default function DriverModal({
             </div>
 
             <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                License Valid Until
+              </label>
+              <input
+                type="date"
+                value={licenseValidUntil}
+                onChange={(e) => setLicenseValidUntil(e.target.value)}
+                className="w-full h-10 px-3 py-1.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   Mobile (10 Digits)
@@ -181,6 +215,20 @@ export default function DriverModal({
                 placeholder="9876543210"
                 value={mobile}
                 onChange={(e) => handleMobileChange(e.target.value)}
+                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Aadhar Card Number
+              </label>
+              <input
+                type="text"
+                maxLength={12}
+                placeholder="1234 5678 9012"
+                value={aadharNo}
+                onChange={(e) => handleAadharChange(e.target.value)}
                 className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>

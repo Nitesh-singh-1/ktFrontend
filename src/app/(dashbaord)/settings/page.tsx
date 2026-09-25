@@ -1676,6 +1676,22 @@ export default function SettingsPage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                    Company Logo Image URL (e.g. /logo.jpeg or https://...)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="/logo.jpeg or https://example.com/logo.png"
+                    value={formData.general.logoUrl || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, general: { ...formData.general, logoUrl: e.target.value } })
+                    }
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">This logo will automatically appear on all printed Bilties, GR Consignment notes, and Challans for this organization.</p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
                     Registered Headquarters Address
                   </label>
                   <textarea

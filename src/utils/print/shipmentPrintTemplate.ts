@@ -1,7 +1,10 @@
 import { Shipment, TaxTreatment, PaymentTerm } from "@/types/shipment";
 import { numberToWords } from "@/utils/numberToWords";
+import { getTenantPrintProfile } from "./tenantProfile";
 
 export function generateShipmentPrintTemplate(shipment: Shipment): string {
+  const profile = getTenantPrintProfile();
+
   const taxTreatmentLabel =
     shipment.taxTreatment === TaxTreatment.GST_Regular
       ? "TAX INVOICE / CONSIGNMENT NOTE (GST REGULAR)"
@@ -17,6 +20,12 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
       : shipment.paymentTerm === PaymentTerm.TBB
       ? "TO BE BILLED (TBB)"
       : "TO PAY";
+
+  const displayInvoiceDate = shipment.invoiceDate
+    ? new Date(shipment.invoiceDate).toLocaleDateString("en-IN")
+    : shipment.invoiceReferences && shipment.invoiceReferences.length > 0 && shipment.invoiceReferences[0].customerInvoiceDate
+    ? new Date(shipment.invoiceReferences[0].customerInvoiceDate).toLocaleDateString("en-IN")
+    : "-";
 
   const itemsHtml = (shipment.items || [])
     .map(
@@ -177,12 +186,12 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
     <table class="header-table">
       <tr>
         <td style="vertical-align: top;">
-          <div class="brand-title">KESARI TRANSPORTS</div>
+          <div class="brand-title">${profile.companyName}</div>
           <div style="font-size: 12px; color: #475569; font-weight: 500;">
-            Fleet & Logistics Management Platform
+            ${profile.tagline || "Fleet & Logistics Management Platform"}
           </div>
           <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-            Head Office: Pahari Patna Hub • Ph: +91 98765 43210
+            ${profile.address ? `Head Office: ${profile.address}` : ""} ${profile.phone ? `• Ph: ${profile.phone}` : ""} ${profile.gstin ? `• GSTIN: ${profile.gstin}` : ""}
           </div>
         </td>
         <td style="text-align: right; vertical-align: top;">
@@ -228,7 +237,7 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
     <!-- Additional Doc Meta -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; font-size: 11px; background: #fff; border: 1px solid #ddd; padding: 6px; border-radius: 4px;">
       <div>Party Inv No: <strong>${shipment.invoiceNo || "-"}</strong></div>
-      <div>Inv Date: <strong>${shipment.invoiceDate ? new Date(shipment.invoiceDate).toLocaleDateString('en-IN') : "-"}</strong></div>
+      <div>Inv Date: <strong>${displayInvoiceDate}</strong></div>
       <div>Declared Goods Value: <strong>₹${(shipment.goodsValue || 0).toLocaleString('en-IN')}</strong></div>
     </div>
 
@@ -309,7 +318,7 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
         <div class="sig-line">Driver's Signature</div>
       </div>
       <div>
-        <div class="sig-line">For Kesari Transports (Auth Sign)</div>
+        <div class="sig-line">For ${profile.companyName} (Auth Sign)</div>
       </div>
     </div>
   </div>
@@ -317,3 +326,4 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
 </html>
   `;
 }
+

@@ -1,3 +1,5 @@
+import { getTenantPrintProfile } from "./tenantProfile";
+
 interface ChallanDetail {
   id: number;
   challanId: number;
@@ -19,33 +21,45 @@ interface ChallanData {
   challanDate: string;
   lorryNo: string;
   driverName: string;
-  voiceDriverName: string;
+  voiceDriverName?: string;
   fromLocation: string;
   toLocation: string;
-  remarks: string;
-  isDeleted: boolean;
+  driverAdvanceCash?: number;
+  driverAdvanceFuel?: number;
+  advanceCash?: number;
+  advanceFuel?: number;
+  remarks?: string;
+  isDeleted?: boolean;
   createdDate: string;
-  createdBy: number;
-  createdByName: string;
-  modifiedDate: string | null;
-  modifiedBy: number | null;
-  modifiedByName: string | null;
+  createdBy?: number;
+  createdByName?: string;
+  modifiedDate?: string | null;
+  modifiedBy?: number | null;
+  modifiedByName?: string | null;
   challanDetails: ChallanDetail[];
 }
 
 function generateSingleCopy(challan: ChallanData, copyType: string): string {
-  const totalQuantity = challan.challanDetails.reduce((sum, item) => sum + item.quantity, 0);
-  const totalFreight = challan.challanDetails.reduce((sum, item) => sum + item.freightAmount, 0);
+  const profile = getTenantPrintProfile();
+  const totalQuantity = challan.challanDetails ? challan.challanDetails.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+  const totalFreight = challan.challanDetails ? challan.challanDetails.reduce((sum, item) => sum + (item.freightAmount || 0), 0) : 0;
+  const cashAdvance = (challan.driverAdvanceCash ?? challan.advanceCash ?? 0);
+  const fuelAdvance = (challan.driverAdvanceFuel ?? challan.advanceFuel ?? 0);
   
   return `
     <div class="container">
       <!-- Company Letterhead -->
       <div class="letterhead">
-        <img src="/logo.jpeg" alt="Company Logo" class="company-logo" />
+        <img src="${profile.logoUrl || '/logo.jpeg'}" alt="Company Logo" class="company-logo" onerror="this.style.display='none'" />
         <div class="company-info">
-          <div class="company-name">KESARI TRANSPORT</div>
-          <div class="company-details">Logistics & Transportation Services</div>
-          <div class="company-contact">Phone: +91-9430492601 | Email: info@kesaritransport.com</div>
+          <div class="company-name">${profile.companyName}</div>
+          <div class="company-details">${profile.tagline || profile.address || 'Logistics & Transportation Services'}</div>
+          <div class="company-contact">${[
+            profile.phone ? `Phone: ${profile.phone}` : '',
+            profile.email ? `Email: ${profile.email}` : '',
+            profile.gstin ? `GSTIN: ${profile.gstin}` : '',
+            profile.panNumber ? `PAN: ${profile.panNumber}` : '',
+          ].filter(Boolean).join(' | ')}</div>
         </div>
       </div>
       
@@ -135,14 +149,20 @@ function generateSingleCopy(challan: ChallanData, copyType: string): string {
         </tbody>
       </table>
       
-      <!-- Summary -->
-      <div class="section-header">SUMMARY</div>
+      <!-- Summary & Advance Details (Individual Cash & Fuel Advance) -->
+      <div class="section-header">SUMMARY & ADVANCE DETAILS</div>
       <table class="payment-table">
         <tr>
           <td class="label">Total Bills:</td>
-          <td class="amount">${challan.challanDetails.length}</td>
+          <td class="amount">${challan.challanDetails ? challan.challanDetails.length : 0}</td>
           <td class="label">Total Quantity:</td>
           <td class="amount">${totalQuantity}</td>
+        </tr>
+        <tr>
+          <td class="label">Cash Advance:</td>
+          <td class="amount">₹${cashAdvance.toFixed(2)}</td>
+          <td class="label">Fuel / Diesel Advance:</td>
+          <td class="amount">₹${fuelAdvance.toFixed(2)}</td>
         </tr>
         <tr>
           <td class="label total-label" colspan="2">TOTAL FREIGHT:</td>
@@ -154,9 +174,9 @@ function generateSingleCopy(challan: ChallanData, copyType: string): string {
       <table class="info-table">
         <tr>
           <td class="label">Created By:</td>
-          <td class="value">${challan.createdByName}</td>
+          <td class="value">${challan.createdByName || '-'}</td>
           <td class="label">Created Date:</td>
-          <td class="value">${new Date(challan.createdDate).toLocaleString('en-IN')}</td>
+          <td class="value">${challan.createdDate ? new Date(challan.createdDate).toLocaleString('en-IN') : '-'}</td>
         </tr>
       </table>
       
@@ -173,7 +193,7 @@ function generateSingleCopy(challan: ChallanData, copyType: string): string {
           </td>
           <td>
             <div class="signature-line"></div>
-            <div class="signature-label">For KESARI TRANSPORT</div>
+            <div class="signature-label">For ${profile.companyName}</div>
           </td>
         </tr>
       </table>

@@ -230,10 +230,21 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     const totalVal = updated.reduce((sum, inv) => sum + (Number(inv.declaredGoodsValue) || 0), 0);
     setGoodsValue(totalVal);
 
-    // Auto-populate single invoiceNo with comma-separated list or first invoice
-    const validInvNos = updated.map((i) => i.customerInvoiceNo.trim()).filter(Boolean);
-    if (validInvNos.length > 0) {
-      setInvoiceNo(validInvNos.join(", "));
+    // Auto-populate single invoiceNo and invoiceDate
+    const validInvs = updated.filter((i) => i.customerInvoiceNo.trim());
+    if (validInvs.length > 0) {
+      setInvoiceNo(validInvs.map((i) => i.customerInvoiceNo.trim()).join(", "));
+      if (validInvs[0].customerInvoiceDate) {
+        setInvoiceDate(validInvs[0].customerInvoiceDate);
+      }
+    }
+  };
+
+  const handleItemsChange = (newItems: ShipmentItem[]) => {
+    setItems(newItems);
+    const cargoTotal = newItems.reduce((sum, it) => sum + (Number(it.totalAmount) || 0), 0);
+    if (cargoTotal > 0) {
+      setTotalFreight(cargoTotal);
     }
   };
 
@@ -348,7 +359,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       invoiceId: invoiceId || undefined,
       invoiceNo: invoiceNo.trim() || undefined,
       shipmentDate: shipmentDate || undefined,
-      invoiceDate: invoiceDate || undefined,
+      invoiceDate: invoiceDate || (validCustomerInvoices.length > 0 ? validCustomerInvoices[0].customerInvoiceDate : undefined),
       fromLocation: fromLocation.trim(),
       toLocation: toLocation.trim(),
       truckNo: truckNo.trim() || undefined,
@@ -361,7 +372,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       consignorGstNo: isGstRelevant ? consignorGstNo.trim() || undefined : undefined,
       consignorMobile: consignorMobile.trim() || undefined,
       consignorAddress: consignorAddress.trim() || undefined,
-      saveConsignorAsParty: !consignorPartyId ? saveConsignorAsParty : undefined,
+      saveConsignorAsParty: !consignorPartyId ? true : undefined,
 
       // Consignee
       consigneePartyId: consigneePartyId || undefined,
@@ -369,7 +380,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       consigneeGstNo: isGstRelevant ? consigneeGstNo.trim() || undefined : undefined,
       consigneeMobile: consigneeMobile.trim() || undefined,
       consigneeAddress: consigneeAddress.trim() || undefined,
-      saveConsigneeAsParty: !consigneePartyId ? saveConsigneeAsParty : undefined,
+      saveConsigneeAsParty: !consigneePartyId ? true : undefined,
 
       goodsValue: Number(goodsValue) || 0,
       paymentTerm,
@@ -875,7 +886,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       />
 
       {/* SECTION 4: Cargo Items Table */}
-      <CargoItemsTable items={items} onChange={setItems} />
+      <CargoItemsTable items={items} onChange={handleItemsChange} />
 
       {/* Automated Rate Card Engine */}
       <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

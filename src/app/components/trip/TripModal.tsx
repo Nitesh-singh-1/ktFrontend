@@ -545,6 +545,8 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {filteredAvailableBilties.map((bilty) => {
                     const pkgs = bilty.items?.reduce((pSum, it) => pSum + (Number(it.quantity) || 1), 0) || 1;
+                    const freightAmt = Number(bilty.totalFreight) || Number(bilty.grandTotal) || 0;
+                    const goodsVal = Number(bilty.goodsValue) || 0;
                     return (
                       <button
                         key={bilty.id}
@@ -564,10 +566,12 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-mono font-bold text-[11px] text-slate-800 dark:text-white">
-                            ₹{bilty.totalFreight || bilty.grandTotal}
+                          <div className="font-mono font-bold text-[11px] text-indigo-700 dark:text-indigo-300">
+                            Value: ₹{goodsVal.toLocaleString("en-IN")}
                           </div>
-                          <div className="text-[10px] text-slate-400">{pkgs} PKG</div>
+                          <div className="text-[10px] text-slate-500 font-semibold">
+                            Freight: ₹{freightAmt.toLocaleString("en-IN")} • {pkgs} PKG
+                          </div>
                         </div>
                       </button>
                     );
@@ -617,7 +621,8 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                         <th className="py-2.5 px-3 min-w-[110px]">Bill No (GR)</th>
                         <th className="py-2.5 px-3 min-w-[70px] text-center">Qty (Pkgs)</th>
                         <th className="py-2.5 px-3 min-w-[110px]">From</th>
-                        <th className="py-2.5 px-3 min-w-[120px] text-right">Freight (₹)</th>
+                        <th className="py-2.5 px-3 min-w-[120px] text-right">Bilty Goods Value (₹)</th>
+                        <th className="py-2.5 px-3 min-w-[110px] text-right">Freight (₹)</th>
                         <th className="py-2.5 px-3 min-w-[100px] text-center">Payment Term</th>
                         <th className="py-2.5 px-3 min-w-[180px]">Consignee (Receiver)</th>
                         <th className="py-2.5 px-3 w-16 text-center">Action</th>
@@ -628,6 +633,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                         const pkgs = s.items?.reduce((pSum, it) => pSum + (Number(it.quantity) || 1), 0) || 1;
                         const paymentBadge = getPaymentTermLabel(s.paymentTerm);
                         const freightVal = Number(s.totalFreight) || Number(s.grandTotal) || 0;
+                        const goodsVal = Number(s.goodsValue) || 0;
 
                         return (
                           <tr
@@ -648,6 +654,9 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                             </td>
                             <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300">
                               {s.fromLocation || "Pahari"}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                              ₹{goodsVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                               ₹{freightVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}

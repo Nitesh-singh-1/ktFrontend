@@ -86,6 +86,9 @@ export const TenantConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (cfg.status === "fulfilled") {
         setConfig(cfg.value);
+        try {
+          localStorage.setItem("tenant_config", JSON.stringify(cfg.value));
+        } catch {}
         if (cfg.value.featureFlags) {
           setFeatureFlags(cfg.value.featureFlags);
         }
@@ -114,6 +117,9 @@ export const TenantConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const updated = await configService.updateConfiguration(data);
       setConfig(updated);
+      try {
+        localStorage.setItem("tenant_config", JSON.stringify(updated));
+      } catch {}
       if (updated.featureFlags) {
         setFeatureFlags(updated.featureFlags);
       }

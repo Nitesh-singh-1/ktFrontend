@@ -22,6 +22,16 @@ const VEHICLE_BODY_TYPES = [
   { value: "Other", label: "Other Commercial Vehicle" },
 ];
 
+const OWNER_TYPES = [
+  { value: "Self Owned", label: "Self Owned Fleet" },
+  { value: "Market / Attached", label: "Market / Attached Vehicle" },
+  { value: "Contract", label: "Third-Party Contract" },
+];
+
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+}
+
 export default function VehicleModal({
   isOpen,
   onClose,
@@ -33,7 +43,14 @@ export default function VehicleModal({
 
   const [vehicleNo, setVehicleNo] = useState("");
   const [vehicleType, setVehicleType] = useState("Open Body Truck");
-  const [capacity, setCapacity] = useState("");
+  const [ownerType, setOwnerType] = useState("Self Owned");
+  const [capacityTons, setCapacityTons] = useState<number | string>("");
+  const [engineNo, setEngineNo] = useState("");
+  const [chassisNo, setChassisNo] = useState("");
+  const [fitnessValidUntil, setFitnessValidUntil] = useState("");
+  const [insuranceValidUntil, setInsuranceValidUntil] = useState("");
+  const [permitValidUntil, setPermitValidUntil] = useState("");
+  
   const [ownerName, setOwnerName] = useState("");
   const [ownerMobile, setOwnerMobile] = useState("");
   const [driverId, setDriverId] = useState<number | undefined>(undefined);
@@ -49,12 +66,18 @@ export default function VehicleModal({
       if (initialVehicle) {
         setVehicleNo(initialVehicle.vehicleNo || "");
         setVehicleType(initialVehicle.vehicleType || "Open Body Truck");
-        setCapacity(initialVehicle.capacity ? initialVehicle.capacity.toString() : "");
-        setOwnerName(initialVehicle.ownerName || "");
-        setOwnerMobile(initialVehicle.ownerMobile || "");
-        setDriverId(initialVehicle.driverId);
-        setDriverName(initialVehicle.driverName || "");
-        setDriverMobile(initialVehicle.driverMobile || "");
+        setOwnerType(initialVehicle.ownerType || "Self Owned");
+        setCapacityTons(initialVehicle.capacityTons ?? (initialVehicle as any).capacity ?? "");
+        setEngineNo(initialVehicle.engineNo || "");
+        setChassisNo(initialVehicle.chassisNo || "");
+        setFitnessValidUntil(initialVehicle.fitnessValidUntil || "");
+        setInsuranceValidUntil(initialVehicle.insuranceValidUntil || "");
+        setPermitValidUntil(initialVehicle.permitValidUntil || "");
+        setOwnerName((initialVehicle as any).ownerName || "");
+        setOwnerMobile((initialVehicle as any).ownerMobile || "");
+        setDriverId((initialVehicle as any).driverId);
+        setDriverName((initialVehicle as any).driverName || "");
+        setDriverMobile((initialVehicle as any).driverMobile || "");
         setIsActive(initialVehicle.isActive ?? true);
       } else {
         resetForm();
@@ -74,7 +97,13 @@ export default function VehicleModal({
   const resetForm = () => {
     setVehicleNo("");
     setVehicleType("Open Body Truck");
-    setCapacity("");
+    setOwnerType("Self Owned");
+    setCapacityTons("");
+    setEngineNo("");
+    setChassisNo("");
+    setFitnessValidUntil("");
+    setInsuranceValidUntil("");
+    setPermitValidUntil("");
     setOwnerName("");
     setOwnerMobile("");
     setDriverId(undefined);
@@ -118,19 +147,32 @@ export default function VehicleModal({
       setLoading(true);
       setError("");
 
-      const payload: Partial<VehicleMaster> = {
+      const parsedCapacity = typeof capacityTons === "string" ? parseFloat(capacityTons) || 0 : (capacityTons || 0);
+
+      const payload: Partial<VehicleMaster> & { [key: string]: any } = {
         vehicleNo: vehicleNo.trim().toUpperCase(),
         vehicleType: vehicleType.trim() || undefined,
-        capacity: capacity.trim() || undefined,
-        ownerName: ownerName.trim() || undefined,
+        ownerType: ownerType.trim() || undefined,
+        capacityTons: parsedCapacity,
+        capacity: parsedCapacity > 0 ? `${parsedCapacity} MT` : undefined,
+        engineNo: engineNo.trim().toUpperCase() || undefined,
+        chassisNo: chassisNo.trim().toUpperCase() || undefined,
+        fitnessValidUntil: fitnessValidUntil || undefined,
+        insuranceValidUntil: insuranceValidUntil || undefined,
+        permitValidUntil: permitValidUntil || undefined,
+        ownerName: ownerName.trim() ? toTitleCase(ownerName.trim()) : undefined,
         ownerMobile: ownerMobile.trim() || undefined,
         driverId: driverId || undefined,
-        driverName: driverName.trim() || undefined,
+        driverName: driverName.trim() ? toTitleCase(driverName.trim()) : undefined,
         driverMobile: driverMobile.trim() || undefined,
         isActive,
       };
 
-      await fleetService.createVehicle(payload);
+      if (initialVehicle && initialVehicle.id) {
+        await fleetService.updateVehicle(initialVehicle.id, payload);
+      } else {
+        await fleetService.createVehicle(payload);
+      }
       onSaved();
       onClose();
     } catch (err: any) {
@@ -143,7 +185,7 @@ export default function VehicleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-sky-50/50 dark:bg-slate-800/60">
           <div>
@@ -164,7 +206,7 @@ export default function VehicleModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
@@ -172,11 +214,11 @@ export default function VehicleModal({
             </div>
           )}
 
-          {/* Vehicle No & Type */}
+          {/* Vehicle No & Body Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Vehicle / Truck Reg No *
+                Vehicle / Truck Reg No * (ALL CAPS)
               </label>
               <input
                 type="text"
@@ -190,7 +232,7 @@ export default function VehicleModal({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Vehicle Body Type (Standardized)
+                Vehicle Body Type
               </label>
               <select
                 value={vehicleType}
@@ -206,21 +248,116 @@ export default function VehicleModal({
             </div>
           </div>
 
-          {/* Capacity & Driver Assignment */}
+          {/* Owner Type & Capacity */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Carrying Capacity (Tons / MT)
+                Ownership Category
+              </label>
+              <select
+                value={ownerType}
+                onChange={(e) => setOwnerType(e.target.value)}
+                className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+              >
+                {OWNER_TYPES.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Carrying Capacity (in Metric Tons / MT)
               </label>
               <input
-                type="text"
-                placeholder="e.g. 16 MT or 25 Tons"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
+                type="number"
+                step="0.1"
+                min="0"
+                placeholder="e.g. 16.5"
+                value={capacityTons}
+                onChange={(e) => setCapacityTons(e.target.value)}
                 className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
+          </div>
 
+          {/* Engine & Chassis Numbers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Engine Number
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 6DTI987654"
+                value={engineNo}
+                onChange={(e) => setEngineNo(e.target.value.toUpperCase())}
+                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white uppercase focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Chassis Number
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. MAT45892300189"
+                value={chassisNo}
+                onChange={(e) => setChassisNo(e.target.value.toUpperCase())}
+                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white uppercase focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+          </div>
+
+          {/* Validity Compliance Dates */}
+          <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              Document Expiries & Compliance
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  Fitness Valid Until
+                </label>
+                <input
+                  type="date"
+                  value={fitnessValidUntil}
+                  onChange={(e) => setFitnessValidUntil(e.target.value)}
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  Insurance Valid Until
+                </label>
+                <input
+                  type="date"
+                  value={insuranceValidUntil}
+                  onChange={(e) => setInsuranceValidUntil(e.target.value)}
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  National Permit Until
+                </label>
+                <input
+                  type="date"
+                  value={permitValidUntil}
+                  onChange={(e) => setPermitValidUntil(e.target.value)}
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Assigned Driver & Owner Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Default Assigned Driver
@@ -238,41 +375,33 @@ export default function VehicleModal({
                 ))}
               </select>
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Owner / Transporter Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Ramesh Singh Fleet"
+                value={ownerName}
+                onChange={(e) => setOwnerName(toTitleCase(e.target.value))}
+                className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 capitalize"
+              />
+            </div>
           </div>
 
-          {/* Owner Details */}
-          <div className="bg-sky-50/40 dark:bg-slate-800/40 p-3.5 rounded-xl border border-sky-100 dark:border-slate-800 space-y-3">
-            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Vehicle Ownership & Contact
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Owner / Transporter Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ramesh Singh Fleet"
-                  value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Owner Mobile
-                </label>
-                <input
-                  type="tel"
-                  maxLength={10}
-                  placeholder="9876543210"
-                  value={ownerMobile}
-                  onChange={(e) => handleMobileChange(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-              </div>
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Owner Mobile Number (10 Digits)
+            </label>
+            <input
+              type="tel"
+              maxLength={10}
+              placeholder="9876543210"
+              value={ownerMobile}
+              onChange={(e) => handleMobileChange(e.target.value)}
+              className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
           </div>
 
           {/* Footer Actions */}
@@ -284,7 +413,7 @@ export default function VehicleModal({
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="rounded text-sky-600 focus:ring-sky-500"
               />
-              <span>Active in Vehicle Directory</span>
+              <span>Active in Fleet Directory</span>
             </label>
 
             <div className="flex items-center gap-3">
