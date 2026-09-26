@@ -5,7 +5,8 @@ import { Truck } from "lucide-react";
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
-  variant?: "light" | "dark" | "auto";
+  variant?: "light" | "dark" | "auto" | "teal";
+  accent?: "teal" | "sky" | "indigo";
   showTagline?: boolean;
   name?: string;
   tagline?: string;
@@ -15,6 +16,7 @@ interface BrandLogoProps {
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = "md",
   variant = "auto",
+  accent = "teal",
   showTagline = true,
   name = "FleetPulse",
   tagline = "Enterprise Cloud TMS",
@@ -53,34 +55,39 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const textColor = {
     light: "text-white",
-    dark: "text-slate-900",
-    auto: "text-slate-900 dark:text-white",
+    dark: "text-[#111827]",
+    teal: "text-[#111827]",
+    auto: "text-[#111827] dark:text-white",
   }[variant];
 
   const taglineColor = {
-    light: "text-sky-400",
-    dark: "text-sky-600",
-    auto: "text-sky-600 dark:text-sky-400",
+    light: "text-white/80",
+    dark: "text-[#3a8890]",
+    teal: "text-[#3a8890]",
+    auto: "text-[#3a8890]",
   }[variant];
+
+  const iconBg =
+    accent === "teal"
+      ? "bg-[#3a8890]"
+      : accent === "indigo"
+      ? "bg-indigo-600"
+      : "bg-sky-600";
 
   return (
     <div className={`flex items-center ${sizeConfig.gap} select-none ${className}`}>
       {/* Brand Icon Mark */}
-      <div className={`relative ${sizeConfig.iconBox} p-0.5 bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-700 shadow-md shadow-blue-500/20 flex items-center justify-center shrink-0`}>
-        <div className="w-full h-full bg-slate-950/90 rounded-[inherit] flex items-center justify-center relative overflow-hidden backdrop-blur-xs">
-          {/* Subtle geometric light accent */}
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-sky-400/40 rounded-full blur-xs pointer-events-none" />
-          <Truck className={`${sizeConfig.iconSize} text-sky-400`} />
-        </div>
+      <div className={`relative ${sizeConfig.iconBox} ${iconBg} rounded-xl shadow-xs flex items-center justify-center shrink-0`}>
+        <Truck className={`${sizeConfig.iconSize} text-white`} />
       </div>
 
       {/* Brand Text */}
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5 leading-none">
-          <span className={`font-black tracking-tight ${sizeConfig.titleText} ${textColor}`}>
+          <span className={`font-bold tracking-tight ${sizeConfig.titleText} ${textColor}`}>
             {name}
           </span>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-500 border border-sky-500/25">
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#E8F1F2] text-[#3a8890] border border-[#D9E2E3]">
             TMS
           </span>
         </div>
