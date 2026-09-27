@@ -109,6 +109,23 @@ export interface TyreDto {
   createdAt?: string;
 }
 
+export interface EmptyTripLogDto {
+  id: number;
+  vehicleId?: number;
+  vehicleNo?: string;
+  driverName?: string;
+  fromLocation?: string;
+  toLocation?: string;
+  tripDate: string;
+  distanceKm: number;
+  fuelCost: number;
+  reason?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface VehicleLoanDto {
   id: number;
   vehicleId?: number;
