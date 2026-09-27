@@ -7,10 +7,14 @@ import {
   TaxSummaryReportDto,
   PartyOutstandingReportDto,
   VendorPayableReportDto,
+  BookingRegisterReportDto,
 } from "@/types/tms";
+import { ShipmentStatus } from "@/types/shipment";
 import { reportService } from "services/reportService";
 import { useNavigation } from "@/context/NavigationContext";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+import { renderPrintHeaderHtml, PRINT_HEADER_CSS, openPrintWindow } from "@/utils/print/printHeader";
+import { toast } from "@/context/ToastContext";
 import {
   BarChart3,
   Printer,
@@ -41,6 +45,7 @@ function ReportsContent() {
   const [gstSummary, setGstSummary] = useState<TaxSummaryReportDto | null>(null);
   const [partyLedger, setPartyLedger] = useState<PartyOutstandingReportDto[]>([]);
   const [vendorLedger, setVendorLedger] = useState<VendorPayableReportDto[]>([]);
+  const [booking, setBooking] = useState<BookingRegisterReportDto | null>(null);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -72,6 +77,9 @@ function ReportsContent() {
       } else if (activeTab === "vendorLedger") {
         const res = await reportService.getVendorPayableReport();
         setVendorLedger(res || []);
+      } else if (activeTab === "booking") {
+        const res = await reportService.getBookingRegister({ fromDate, toDate });
+        setBooking(res);
       }
     } catch (err) {
       console.error("Fetch report error:", err);
@@ -80,15 +88,121 @@ function ReportsContent() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const statusLabel = (s?: ShipmentStatus | number): string => {
+    switch (s) {
+      case ShipmentStatus.Draft: return "Draft";
+      case ShipmentStatus.Booked: return "Booked";
+      case ShipmentStatus.Manifested: return "Manifested";
+      case ShipmentStatus.InTransit: return "In Transit";
+      case ShipmentStatus.OutForDelivery: return "Out for Delivery";
+      case ShipmentStatus.Delivered: return "Delivered";
+      case ShipmentStatus.Returned: return "Returned";
+      case ShipmentStatus.Cancelled: return "Cancelled";
+      default: return "—";
+    }
   };
 
-  const sampleBookingData = [
-    { lrNo: "GR-2026-00101", date: "2026-09-20", consignor: "Tata Steel Ltd", consignee: "Jindal Infra", from: "Jamshedpur", to: "Delhi", weight: "24.5 MT", freight: 68500, status: "Delivered" },
-    { lrNo: "GR-2026-00102", date: "2026-09-21", consignor: "Reliance Polymer", consignee: "Shree Plastics", from: "Hazira", to: "Kanpur", weight: "18.0 MT", freight: 52000, status: "In Transit" },
-    { lrNo: "GR-2026-00103", date: "2026-09-22", consignor: "Adani Solar", consignee: "SunEdison Power", from: "Mundra", to: "Jaipur", weight: "15.2 MT", freight: 46000, status: "Booked" },
-  ];
+  // Extracts the currently-active report as a flat dataset used by both CSV export and print.
+  const getReportDataset = (): { title: string; headers: string[]; rows: (string | number)[][] } => {
+    if (activeTab === "profitability") {
+      return {
+        title: "Trip Profitability Report",
+        headers: ["Trip No", "Date", "Vehicle", "Driver", "Route", "Revenue", "Total Cost", "Net Profit", "Margin %"],
+        rows: (profitability?.tripDetails || []).map((t) => [
+          t.tripNo, formatDate(t.tripDate), t.vehicleNo || "", t.driverName || "",
+          `${t.originLocation || ""} -> ${t.destinationLocation || ""}`,
+          t.revenue, t.totalCost, t.netProfit, `${(t.profitMarginPct || 0).toFixed(1)}%`,
+        ]),
+      };
+    }
+    if (activeTab === "gst") {
+      return {
+        title: "GST Tax Summary Report",
+        headers: ["Metric", "Amount"],
+        rows: [
+          ["Taxable Freight (Regular)", gstSummary?.totalTaxableFreight || 0],
+          ["GST RCM Freight (Reverse)", gstSummary?.totalGstRcmFreight || 0],
+          ["Exempt & Non-Taxable", gstSummary?.totalNonTaxableFreight || 0],
+          ["Total GST Tax Collected", gstSummary?.totalTaxCollected || 0],
+          ["Total Shipments", gstSummary?.totalShipmentsCount || 0],
+        ],
+      };
+    }
+    if (activeTab === "partyLedger") {
+      return {
+        title: "Customer Outstanding Ledger",
+        headers: ["Party Name", "GSTIN", "Contact", "Total Billed", "Amount Paid", "Balance Outstanding"],
+        rows: partyLedger.map((p) => [p.partyName, p.gstNo || "Unregistered", p.mobile || "", p.totalBilledAmount, p.totalPaidAmount, p.totalOutstandingDue]),
+      };
+    }
+    if (activeTab === "vendorLedger") {
+      return {
+        title: "Vendor Payable Ledger",
+        headers: ["Vendor / Broker", "PAN", "Contact", "Total Hire", "Advances Paid", "TDS Deducted", "Net Payable"],
+        rows: vendorLedger.map((v) => [v.vendorName, v.panNo || "No PAN", v.mobile || "", v.totalHireAmount, v.totalAdvancePaid, v.totalTdsDeducted, v.totalBalancePayable]),
+      };
+    }
+    return {
+      title: "Consignment Booking Register",
+      headers: ["GR No", "Booking Date", "Consignor", "Consignee", "Route", "Freight", "Grand Total", "Due", "Status"],
+      rows: (booking?.records || []).map((r) => [
+        r.shipmentNo || "", r.shipmentDate ? formatDate(r.shipmentDate) : "", r.consignorName || "", r.consigneeName || "",
+        `${r.fromLocation || ""} -> ${r.toLocation || ""}`, r.totalFreight ?? 0, r.grandTotal ?? 0, r.dueAmount ?? 0, statusLabel(r.status),
+      ]),
+    };
+  };
+
+  const handleExportCsv = () => {
+    const { title, headers, rows } = getReportDataset();
+    if (rows.length === 0) { toast.info("No data to export for this report."); return; }
+    const esc = (v: string | number) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported.");
+  };
+
+  const handlePrint = () => {
+    const { title, headers, rows } = getReportDataset();
+    const escHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+    const numericCols = new Set<number>();
+    headers.forEach((h, i) => { if (/revenue|cost|profit|amount|billed|paid|balance|freight|total|hire|tds|due/i.test(h)) numericCols.add(i); });
+    const thead = `<tr>${headers.map((h, i) => `<th style="text-align:${numericCols.has(i) ? "right" : "left"}">${escHtml(h)}</th>`).join("")}</tr>`;
+    const tbody = rows.length > 0
+      ? rows.map((r) => `<tr>${r.map((c, i) => {
+          const isNum = typeof c === "number";
+          const val = isNum ? c.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : escHtml(String(c ?? ""));
+          return `<td style="${isNum || numericCols.has(i) ? "text-align:right;font-family:monospace;" : ""}">${val}</td>`;
+        }).join("")}</tr>`).join("")
+      : `<tr><td colspan="${headers.length}" style="text-align:center;padding:24px;color:#6b7280;">No records for this report / period.</td></tr>`;
+    const period = (fromDate || toDate) ? `<div class="rp-period">Period: ${escHtml(fromDate || "…")} to ${escHtml(toDate || "…")}</div>` : "";
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>
+      ${PRINT_HEADER_CSS}
+      @media print { body { margin: 0; padding: 10mm; } @page { size: A4 landscape; margin: 10mm; } }
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; margin: 20px auto; max-width: 1100px; }
+      .rp-title { text-align:center; font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin:8px 0 2px; color:#1e293b; }
+      .rp-period { text-align:center; font-size:11px; color:#6b7280; margin-bottom:12px; }
+      table { width:100%; border-collapse:collapse; font-size:11px; }
+      th { background:#f1f5f9; border:1px solid #cbd5e1; padding:6px 8px; font-weight:700; text-transform:uppercase; font-size:10px; }
+      td { border:1px solid #e2e8f0; padding:5px 8px; }
+    </style></head><body onload="(window.__ktPrint||window.print)()">
+      ${renderPrintHeaderHtml()}
+      <div class="rp-title">${escHtml(title)}</div>
+      ${period}
+      <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
+    </body></html>`;
+    openPrintWindow(html);
+  };
 
   const reportTabs = [
     { id: "profitability", label: "Trip Profitability", icon: TrendingUp },
@@ -127,7 +241,7 @@ function ReportsContent() {
             <span>Print Report</span>
           </button>
           <button
-            onClick={() => alert("Exporting report data...")}
+            onClick={handleExportCsv}
             className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Download className="w-4 h-4" />
@@ -161,7 +275,7 @@ function ReportsContent() {
 
         {/* Date Filter & Search */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {(activeTab === "profitability" || activeTab === "gst") && (
+          {(activeTab === "profitability" || activeTab === "gst" || activeTab === "booking") && (
             <div className="flex items-center gap-2 text-xs">
               <input
                 type="date"
@@ -388,49 +502,72 @@ function ReportsContent() {
 
       {/* REPORT 5: BOOKING REGISTER */}
       {activeTab === "booking" && !loading && (
-        <div className="bg-white rounded-2xl border border-[#E5EAEB] shadow-xs overflow-hidden">
-          <div className="px-6 py-4 bg-[#F7F8F8] border-b border-[#E5EAEB] text-xs font-bold uppercase tracking-wider text-[#111827]">
-            Consignment Booking Register
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
+              <p className="text-xs font-semibold text-[#64748B]">Total Bookings</p>
+              <p className="text-xl font-bold text-[#111827] mt-1">{booking?.totalBookings || 0}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
+              <p className="text-xs font-semibold text-[#64748B]">Total Freight</p>
+              <p className="text-xl font-bold text-[#111827] font-mono mt-1">{formatCurrency(booking?.totalFreightAmount || 0)}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
+              <p className="text-xs font-semibold text-[#64748B]">Grand Total (with GST)</p>
+              <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">{formatCurrency(booking?.totalGrandTotal || 0)}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
+              <p className="text-xs font-semibold text-[#64748B]">Outstanding Due</p>
+              <p className="text-xl font-bold text-[#D95C5C] font-mono mt-1">{formatCurrency(booking?.totalDueAmount || 0)}</p>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
-                  <th className="py-3 px-4">GR No</th>
-                  <th className="py-3 px-4">Booking Date</th>
-                  <th className="py-3 px-4">Consignor</th>
-                  <th className="py-3 px-4">Consignee</th>
-                  <th className="py-3 px-4">Route</th>
-                  <th className="py-3 px-4">Weight</th>
-                  <th className="py-3 px-4 text-right">Freight</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5EAEB]">
-                {sampleBookingData.map((item) => (
-                  <tr key={item.lrNo} className="hover:bg-[#F5FAFA]">
-                    <td className="py-3 px-4 font-mono font-bold text-[#2F8E86]">{item.lrNo}</td>
-                    <td className="py-3 px-4 text-[#64748B]">{formatDate(item.date)}</td>
-                    <td className="py-3 px-4 font-semibold text-[#111827]">{item.consignor}</td>
-                    <td className="py-3 px-4 text-[#64748B]">{item.consignee}</td>
-                    <td className="py-3 px-4 text-[#64748B]">{item.from} → {item.to}</td>
-                    <td className="py-3 px-4 font-mono text-[#64748B]">{item.weight}</td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-[#2F9E8F]">{formatCurrency(item.freight)}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                        item.status === "Delivered"
-                          ? "bg-[#E8F6F4] text-[#2F9E8F] border-[#C2E9E3]"
-                          : item.status === "In Transit"
-                          ? "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]"
-                          : "bg-[#E7F1F2] text-[#25776F] border-[#D9E2E3]"
-                      }`}>
-                        {item.status}
-                      </span>
-                    </td>
+
+          <div className="bg-white rounded-2xl border border-[#E5EAEB] shadow-xs overflow-hidden">
+            <div className="px-6 py-4 bg-[#F7F8F8] border-b border-[#E5EAEB] text-xs font-bold uppercase tracking-wider text-[#111827]">
+              Consignment Booking Register
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
+                    <th className="py-3 px-4">GR No</th>
+                    <th className="py-3 px-4">Booking Date</th>
+                    <th className="py-3 px-4">Consignor</th>
+                    <th className="py-3 px-4">Consignee</th>
+                    <th className="py-3 px-4">Route</th>
+                    <th className="py-3 px-4 text-right">Freight</th>
+                    <th className="py-3 px-4 text-right">Grand Total</th>
+                    <th className="py-3 px-4 text-right">Due</th>
+                    <th className="py-3 px-4">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#E5EAEB]">
+                  {booking?.records && booking.records.length > 0 ? (
+                    booking.records.map((r) => (
+                      <tr key={r.id ?? r.shipmentNo} className="hover:bg-[#F5FAFA]">
+                        <td className="py-3 px-4 font-mono font-bold text-[#2F8E86]">{r.shipmentNo || "—"}</td>
+                        <td className="py-3 px-4 text-[#64748B]">{r.shipmentDate ? formatDate(r.shipmentDate) : "—"}</td>
+                        <td className="py-3 px-4 font-semibold text-[#111827]">{r.consignorName || "—"}</td>
+                        <td className="py-3 px-4 text-[#64748B]">{r.consigneeName || "—"}</td>
+                        <td className="py-3 px-4 text-[#64748B]">{r.fromLocation || "—"} → {r.toLocation || "—"}</td>
+                        <td className="py-3 px-4 text-right font-mono text-[#111827]">{formatCurrency(r.totalFreight || 0)}</td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-[#2F9E8F]">{formatCurrency(r.grandTotal || 0)}</td>
+                        <td className="py-3 px-4 text-right font-mono text-[#D95C5C]">{formatCurrency(r.dueAmount || 0)}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-[#E7F1F2] text-[#25776F] border-[#D9E2E3]">
+                            {statusLabel(r.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-8 text-center text-[#64748B]">No consignment bookings found for this period.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

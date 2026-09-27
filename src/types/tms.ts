@@ -757,6 +757,17 @@ export interface MaintenanceLogDto {
 // 12. REPORTS & LEDGERS
 // ==========================================
 
+export interface BookingRegisterReportDto {
+  totalBookings: number;
+  totalFreightAmount: number;
+  totalOtherCharges: number;
+  totalTaxAmount: number;
+  totalGrandTotal: number;
+  totalPaidAmount: number;
+  totalDueAmount: number;
+  records: import("@/types/shipment").Shipment[];
+}
+
 export interface TripProfitabilityReportDto {
   totalTrips: number;
   totalFreightRevenue: number;

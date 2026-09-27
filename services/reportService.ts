@@ -4,16 +4,45 @@ import {
   TaxSummaryReportDto,
   PartyOutstandingReportDto,
   VendorPayableReportDto,
+  BookingRegisterReportDto,
 } from "@/types/tms";
 
+const EMPTY_BOOKING: BookingRegisterReportDto = {
+  totalBookings: 0,
+  totalFreightAmount: 0,
+  totalOtherCharges: 0,
+  totalTaxAmount: 0,
+  totalGrandTotal: 0,
+  totalPaidAmount: 0,
+  totalDueAmount: 0,
+  records: [],
+};
+
 export const reportService = {
+  // Consignment Booking Register (all GR/bilty bookings in a period)
+  getBookingRegister: async (params?: { fromDate?: string; toDate?: string }): Promise<BookingRegisterReportDto> => {
+    const query = new URLSearchParams();
+    if (params?.fromDate) query.append("fromDate", params.fromDate);
+    if (params?.toDate) query.append("toDate", params.toDate);
+    const endpoint = query.toString() ? `/report/booking-register?${query.toString()}` : "/report/booking-register";
+    try {
+      const res = await baseService.get<BookingRegisterReportDto | { success: boolean; data: BookingRegisterReportDto }>(endpoint);
+      if ((res as any)?.data && Array.isArray((res as any).data.records)) return (res as any).data;
+      if (res && Array.isArray((res as any).records)) return res as BookingRegisterReportDto;
+      return EMPTY_BOOKING;
+    } catch (err) {
+      console.error("Booking register report error:", err);
+      return EMPTY_BOOKING;
+    }
+  },
+
   // Trip Profitability Margins & Cost breakdown
   getTripProfitabilityReport: async (params?: { fromDate?: string; toDate?: string }): Promise<TripProfitabilityReportDto> => {
     const query = new URLSearchParams();
     if (params?.fromDate) query.append("fromDate", params.fromDate);
     if (params?.toDate) query.append("toDate", params.toDate);
 
-    const endpoint = query.toString() ? `/report/profitability?${query.toString()}` : "/report/profitability";
+    const endpoint = query.toString() ? `/report/trip-profitability?${query.toString()}` : "/report/trip-profitability";
     try {
       const res = await baseService.get<TripProfitabilityReportDto | { success: boolean; data: TripProfitabilityReportDto }>(endpoint);
       if ((res as any)?.data) return (res as any).data;
@@ -40,7 +69,7 @@ export const reportService = {
     if (params?.fromDate) query.append("fromDate", params.fromDate);
     if (params?.toDate) query.append("toDate", params.toDate);
 
-    const endpoint = query.toString() ? `/report/gst-summary?${query.toString()}` : "/report/gst-summary";
+    const endpoint = query.toString() ? `/report/tax-summary?${query.toString()}` : "/report/tax-summary";
     try {
       const res = await baseService.get<TaxSummaryReportDto | { success: boolean; data: TaxSummaryReportDto }>(endpoint);
       if ((res as any)?.data) return (res as any).data;
@@ -73,7 +102,7 @@ export const reportService = {
   // Vendor / Broker Payables
   getVendorPayableReport: async (): Promise<VendorPayableReportDto[]> => {
     try {
-      const res = await baseService.get<VendorPayableReportDto[] | { success: boolean; data: VendorPayableReportDto[] }>("/report/vendor-payable");
+      const res = await baseService.get<VendorPayableReportDto[] | { success: boolean; data: VendorPayableReportDto[] }>("/report/vendor-payables");
       if (Array.isArray(res)) return res;
       if (res && Array.isArray((res as any).data)) return (res as any).data;
       return [];
