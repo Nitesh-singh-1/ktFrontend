@@ -103,14 +103,14 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-slate-900 dark:bg-slate-950 text-slate-200
-      transition-all duration-300 z-40 border-r border-slate-800 flex flex-col shadow-lg
+      className={`fixed top-0 left-0 h-screen bg-white dark:bg-slate-900 text-[#64748B] dark:text-slate-300
+      transition-all duration-300 z-40 border-r border-[#E5EAEB] dark:border-slate-800 flex flex-col shadow-xs
       ${isOpen ? "w-64" : "w-20"}`}
     >
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-3 top-6 bg-sky-600 hover:bg-sky-500 text-white p-1.5 rounded-full shadow-md transition-transform duration-200 z-50 border-2 border-slate-900 cursor-pointer"
+        className="absolute -right-3 top-6 bg-white hover:bg-[#E7F1F2] text-[#64748B] hover:text-[#3F7C82] p-1.5 rounded-full shadow-sm transition-transform duration-200 z-50 border border-[#D9E2E3] cursor-pointer"
         title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
       >
         {isOpen ? (
@@ -121,16 +121,16 @@ export default function Sidebar({
       </button>
 
       {/* Brand Header */}
-      <div className="h-16 px-5 border-b border-slate-800 flex items-center gap-3 bg-slate-950/50">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/20 shrink-0">
+      <div className="h-16 px-5 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center gap-3 bg-white dark:bg-slate-900">
+        <div className="w-9 h-9 rounded-xl bg-[#47868C] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
           <TruckIcon className="w-4 h-4 text-white" />
         </div>
         {isOpen && (
           <div className="overflow-hidden">
-            <h1 className="font-extrabold text-sm tracking-tight text-white truncate" title={companyName || "FleetPulse TMS"}>
+            <h1 className="font-bold text-sm tracking-tight text-[#111827] dark:text-white truncate" title={companyName || "FleetPulse TMS"}>
               {companyName || "FleetPulse TMS"}
             </h1>
-            <p className="text-[11px] font-medium text-sky-400 truncate">
+            <p className="text-[11px] font-medium text-[#47868C] dark:text-teal-400 truncate">
               {orgName || "Enterprise Logistics Cloud"}
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function Sidebar({
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-700">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
         {displayItems.map((item) => {
           // Simple single link
           if (!item.children || item.children.length === 0) {
@@ -147,21 +147,21 @@ export default function Sidebar({
               <Link
                 key={item.id || item.title}
                 href={item.path || "#"}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all duration-150 group ${
                   isActive
-                    ? "bg-sky-600 text-white shadow-xs font-bold"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                    ? "bg-[#E7F1F2] text-[#3F7C82] font-semibold border-l-3 border-[#47868C]"
+                    : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 font-medium"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
-                <div className={`shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`}>
+                <div className={`shrink-0 ${isActive ? "text-[#47868C]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                   {getIcon(item.icon)}
                 </div>
                 {isOpen && (
                   <div className="flex items-center justify-between w-full overflow-hidden">
                     <span className="truncate">{item.title}</span>
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#3F7C82]">
                         {item.badge}
                       </span>
                     )}
@@ -180,15 +180,15 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={() => setOpenMenu(isDropdownOpen ? null : (item.id || item.title))}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 group cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all duration-150 group cursor-pointer ${
                   hasActiveChild
-                    ? "text-white bg-slate-800/90 font-bold"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                    ? "text-[#3F7C82] bg-[#E7F1F2]/60 font-semibold"
+                    : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/50 font-medium"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`shrink-0 ${hasActiveChild ? "text-sky-400" : "text-slate-400 group-hover:text-white"}`}>
+                  <div className={`shrink-0 ${hasActiveChild ? "text-[#47868C]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                     {getIcon(item.icon)}
                   </div>
                   {isOpen && <span className="truncate">{item.title}</span>}
@@ -196,12 +196,12 @@ export default function Sidebar({
                 {isOpen && (
                   <div className="flex items-center gap-2">
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#3F7C82]">
                         {item.badge}
                       </span>
                     )}
                     <ChevronDownIcon
-                      className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-transform duration-200 ${
+                      className={`w-3.5 h-3.5 text-[#94A3B8] group-hover:text-[#64748B] transition-transform duration-200 ${
                         isDropdownOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -211,20 +211,20 @@ export default function Sidebar({
 
               {/* Sub-items */}
               {isOpen && isDropdownOpen && (
-                <div className="ml-5 pl-3 border-l border-slate-800 space-y-0.5 py-1">
+                <div className="ml-5 pl-3 border-l border-[#E5EAEB] dark:border-slate-800 space-y-0.5 py-1">
                   {item.children.map((child) => {
                     const isChildActive = pathname === child.path;
                     return (
                       <Link
                         key={child.id || child.title}
                         href={child.path || "#"}
-                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-all duration-150 ${
                           isChildActive
-                            ? "bg-sky-600/20 text-sky-300 font-bold border border-sky-500/30"
-                            : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                            ? "bg-[#E7F1F2] text-[#3F7C82] font-semibold border-l-2 border-[#47868C]"
+                            : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 font-medium"
                         }`}
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-500 shrink-0" />
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isChildActive ? "bg-[#47868C]" : "bg-[#94A3B8]"}`} />
                         <span className="truncate">{child.title}</span>
                       </Link>
                     );
@@ -237,18 +237,18 @@ export default function Sidebar({
       </nav>
 
       {/* User Profile & Logout Bottom Bar */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/60">
+      <div className="p-3 border-t border-[#E5EAEB] dark:border-slate-800 bg-[#F7F8F8] dark:bg-slate-900">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-sky-900/60 border border-sky-700/50 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] border border-[#D9E2E3] flex items-center justify-center text-[#3F7C82] font-bold text-xs shrink-0">
               {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
             </div>
             {isOpen && (
               <div className="overflow-hidden">
-                <div className="text-xs font-bold text-white truncate">
+                <div className="text-xs font-bold text-[#111827] dark:text-white truncate">
                   {user?.fullName || user?.username || "Admin"}
                 </div>
-                <div className="text-[10px] text-sky-400 truncate">
+                <div className="text-[10px] text-[#64748B] truncate">
                   {user?.role || "Fleet Manager"}
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function Sidebar({
 
           <button
             onClick={handleLogout}
-            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition cursor-pointer"
+            className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-white rounded-lg transition cursor-pointer"
             title="Sign Out"
           >
             <LogOutIcon className="w-4 h-4" />

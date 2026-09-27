@@ -8,7 +8,54 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+// Shared in-flight refresh so concurrent 401s trigger only one /auth/refresh call.
+let refreshInFlight: Promise<string | null> | null = null;
+
+async function tryRefreshToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) return null;
+
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data?.success && data?.token) {
+          localStorage.setItem("token", data.token);
+          if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+          return data.token as string;
+        }
+        return null;
+      } catch {
+        return null;
+      } finally {
+        // Clear after the microtask so all awaiters in this burst share this result.
+        setTimeout(() => { refreshInFlight = null; }, 0);
+      }
+    })();
+  }
+  return refreshInFlight;
+}
+
+function clearSessionAndRedirect() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+  sessionStorage.clear();
+  const currentPath = window.location.pathname;
+  if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard") && !currentPath.startsWith("/accept-invite")) {
+    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+  }
+}
+
+async function request<T>(endpoint: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -26,19 +73,16 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    // 401 Unauthorized handling: Auto logout & redirect to login page
+    // 401 Unauthorized: try a one-time silent refresh, then retry; otherwise sign out.
     if (response.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        sessionStorage.clear();
-
-        const currentPath = window.location.pathname;
-        if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard")) {
-          // Redirect immediately to login
-          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      const isAuthFlow = endpoint.includes("/auth/refresh") || endpoint.includes("/auth/login") || endpoint.includes("/auth/logout");
+      if (!isRetry && !isAuthFlow && typeof window !== "undefined") {
+        const newToken = await tryRefreshToken();
+        if (newToken) {
+          return request<T>(endpoint, options, true);
         }
       }
+      clearSessionAndRedirect();
       throw new Error("Session expired. Please log in again.");
     }
 

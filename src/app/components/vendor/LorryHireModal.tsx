@@ -149,19 +149,22 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-2xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Issue Lorry Hire Memo (Market Truck Contract)
+            <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
+              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
+                <FileText className="w-4 h-4 text-[#47868C]" />
+              </span>
+              <span>Issue Lorry Hire Memo (Market Truck Contract)</span>
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
               Calculate TDS deductions, fuel advances, and track balance payable to vendor/broker.
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#111827] dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-[#F7F8F8] dark:hover:bg-slate-800 transition cursor-pointer">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -176,13 +179,13 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
           {/* Vendor & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Market Broker / Vendor *
               </label>
               <select
                 value={vendorId || ""}
                 onChange={handleVendorSelect}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               >
                 <option value="">-- Direct Truck Owner / Ad-hoc --</option>
                 {vendors.map((v) => (
@@ -194,7 +197,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Agreement Date *
               </label>
               <input
@@ -202,7 +205,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 required
                 value={contractDate}
                 onChange={(e) => setContractDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
@@ -210,7 +213,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
           {/* Vehicle & Driver */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Hired Vehicle No *
               </label>
               <SearchableSelect<VehicleLookupItem>
@@ -229,7 +232,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Driver Name
               </label>
               <input
@@ -237,12 +240,12 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 placeholder="e.g. Balwinder Singh"
                 value={driverName}
                 onChange={(e) => setDriverName(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Driver Mobile
               </label>
               <input
@@ -251,7 +254,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 placeholder="9876543210"
                 value={driverMobile}
                 onChange={(e) => setDriverMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
@@ -259,7 +262,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
           {/* Route */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Loading Station (From)
               </label>
               <SearchableSelect<LocationLookupItem>
@@ -274,7 +277,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Unloading Destination (To)
               </label>
               <SearchableSelect<LocationLookupItem>
@@ -290,14 +293,14 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
           </div>
 
           {/* Financial Breakdown & TDS Balancer */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
               Lorry Freight & Settlement Balancer
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-[#64748B] dark:text-slate-400 mb-1">
                   Total Lorry Hire Rate (₹) *
                 </label>
                 <input
@@ -308,12 +311,12 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={totalHireAmount === 0 ? "" : totalHireAmount}
                   onChange={(e) => setTotalHireAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-black text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-[#64748B] dark:text-slate-400 mb-1">
                   Advance Cash Paid (₹)
                 </label>
                 <input
@@ -323,12 +326,12 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={advanceCashPaid === 0 ? "" : advanceCashPaid}
                   onChange={(e) => setAdvanceCashPaid(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-[#64748B] dark:text-slate-400 mb-1">
                   Diesel / Fuel Advance (₹)
                 </label>
                 <input
@@ -338,28 +341,28 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={dieselAdvanceAmount === 0 ? "" : dieselAdvanceAmount}
                   onChange={(e) => setDieselAdvanceAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-[#64748B] dark:text-slate-400 mb-1">
                   TDS Deduction Rate (%)
                 </label>
                 <select
                   value={tdsPercentage}
                   onChange={(e) => setTdsPercentage(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-white"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 >
                   <option value={0}>0% (Exempt)</option>
                   <option value={1}>1% (Individual / Prop)</option>
                   <option value={2}>2% (Company)</option>
                 </select>
-                <span className="text-[10px] text-slate-400">TDS: ₹{tdsAmount.toFixed(2)}</span>
+                <span className="text-[10px] text-[#94A3B8]">TDS: ₹{tdsAmount.toFixed(2)}</span>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-[#64748B] dark:text-slate-400 mb-1">
                   Other Deductions (₹)
                 </label>
                 <input
@@ -369,13 +372,13 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={otherDeductions === 0 ? "" : otherDeductions}
                   onChange={(e) => setOtherDeductions(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 flex flex-col justify-center">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Net Balance Due</span>
-                <span className="text-sm font-mono font-black text-blue-600 dark:text-blue-400">
+              <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-[#E5EAEB] dark:border-slate-700 flex flex-col justify-center">
+                <span className="text-[10px] font-bold uppercase text-[#94A3B8]">Net Balance Due</span>
+                <span className="text-sm font-mono font-black text-[#47868C]">
                   ₹{balancePayable.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -384,7 +387,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
 
           {/* Remarks */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
               Hire Remarks / Terms
             </label>
             <textarea
@@ -392,23 +395,23 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
               placeholder="e.g. Balance payable upon submission of signed POD copy"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
             />
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="btn-primary"
             >
               {loading ? "Issuing Memo..." : "Issue Lorry Hire Slip"}
             </button>

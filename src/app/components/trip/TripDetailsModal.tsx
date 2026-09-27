@@ -121,15 +121,15 @@ export default function TripDetailsModal({
     switch (status) {
       case TripStatus.Dispatched:
       case TripStatus.InTransit:
-        return { text: "IN TRANSIT", class: "bg-blue-100 text-blue-800 border-blue-300" };
+        return { text: "IN TRANSIT", class: "bg-blue-50 text-[#4A90E2] border-[#4A90E2]/30" };
       case TripStatus.Arrived:
-        return { text: "ARRIVED", class: "bg-purple-100 text-purple-800 border-purple-300" };
+        return { text: "ARRIVED", class: "bg-[#E7F1F2] text-[#3F7C82] border-[#47868C]/30" };
       case TripStatus.Completed:
-        return { text: "COMPLETED", class: "bg-emerald-100 text-emerald-800 border-emerald-300" };
+        return { text: "COMPLETED", class: "bg-[#E7F1F2] text-[#2F9E8F] border-[#2F9E8F]/30" };
       case TripStatus.Cancelled:
-        return { text: "CANCELLED", class: "bg-red-100 text-red-800 border-red-300" };
+        return { text: "CANCELLED", class: "bg-red-50 text-[#D95C5C] border-[#D95C5C]/30" };
       default:
-        return { text: "LOADING / DRAFT", class: "bg-amber-100 text-amber-800 border-amber-300" };
+        return { text: "LOADING / DRAFT", class: "bg-amber-50 text-[#B76E32] border-[#F4A261]/30" };
     }
   };
 
@@ -138,21 +138,21 @@ export default function TripDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-blue-600 text-white rounded-xl text-base font-bold shadow-2xs">
-              <Truck className="w-5 h-5" />
+            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
+              <Truck className="w-5 h-5 text-[#47868C]" />
             </span>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
                 <span>Manifest & Truck Challan:</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400 font-black">
+                <span className="font-mono text-[#47868C] font-black">
                   {trip?.tripNo || "Loading..."}
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
                 Route: <span className="font-semibold">{trip?.originLocationName || "Origin"}</span> →{" "}
                 <span className="font-semibold">{trip?.destinationLocationName || "Destination"}</span>
               </p>
@@ -160,7 +160,7 @@ export default function TripDetailsModal({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg transition cursor-pointer font-bold text-lg"
+            className="text-[#94A3B8] hover:text-[#111827] dark:hover:text-white p-1.5 rounded-lg hover:bg-[#F7F8F8] dark:hover:bg-slate-800 transition cursor-pointer font-bold"
           >
             <X className="w-5 h-5" />
           </button>
@@ -169,30 +169,30 @@ export default function TripDetailsModal({
         {/* Modal Body */}
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {loading ? (
-            <div className="p-16 text-center text-slate-500 text-xs">Loading truck challan...</div>
+            <div className="p-16 text-center text-[#94A3B8] text-xs">Loading truck challan...</div>
           ) : error ? (
-            <div className="p-4 bg-red-50 text-red-700 text-xs font-semibold rounded-xl">{error}</div>
+            <div className="p-4 bg-red-50 text-[#D95C5C] text-xs font-semibold rounded-xl border border-red-200">{error}</div>
           ) : trip ? (
             <>
               {/* Overview Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-[#F7F8F8] dark:bg-slate-800/40 rounded-xl border border-[#E5EAEB] dark:border-slate-700 text-xs">
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Assigned Lorry</p>
-                  <p className="font-mono font-black text-slate-900 dark:text-white text-sm mt-0.5">
+                  <p className="text-[10px] font-bold uppercase text-[#94A3B8]">Assigned Lorry</p>
+                  <p className="font-mono font-black text-[#111827] dark:text-white text-sm mt-0.5">
                     {trip.vehicleNo}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Driver & Crew</p>
-                  <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                  <p className="text-[10px] font-bold uppercase text-[#94A3B8]">Driver & Crew</p>
+                  <p className="font-bold text-[#111827] dark:text-slate-200 mt-0.5">
                     {trip.driverName || "—"}
                   </p>
                   {trip.driverMobile && (
-                    <p className="text-[10px] text-slate-400 font-mono">{trip.driverMobile}</p>
+                    <p className="text-[10px] text-[#94A3B8] font-mono">{trip.driverMobile}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Dispatch Status</p>
+                  <p className="text-[10px] font-bold uppercase text-[#94A3B8]">Dispatch Status</p>
                   <span
                     className={`inline-flex px-2 py-0.5 text-[10px] font-bold border rounded-md mt-0.5 ${
                       getStatusBadge(trip.status).class
@@ -202,8 +202,8 @@ export default function TripDetailsModal({
                   </span>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Net Profit Margin</p>
-                  <p className="font-mono font-black text-emerald-600 text-sm mt-0.5">
+                  <p className="text-[10px] font-bold uppercase text-[#94A3B8]">Net Profit Margin</p>
+                  <p className="font-mono font-black text-[#2F9E8F] text-sm mt-0.5">
                     ₹
                     {trip.netProfitMargin?.toLocaleString("en-IN", {
                       minimumFractionDigits: 2,
@@ -213,13 +213,13 @@ export default function TripDetailsModal({
               </div>
 
               {/* Action Buttons Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-xl shadow-2xs">
                 <div className="flex flex-wrap items-center gap-2">
                   {trip.status === TripStatus.Draft || trip.status === TripStatus.Loading ? (
                     <button
                       onClick={handleDispatch}
                       disabled={actionLoading}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="btn-primary"
                     >
                       <Send className="w-4 h-4" />
                       <span>Dispatch Truck (Mark In Transit)</span>
@@ -230,7 +230,7 @@ export default function TripDetailsModal({
                     <button
                       onClick={handleArrive}
                       disabled={actionLoading}
-                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="btn-primary"
                     >
                       <Flag className="w-4 h-4" />
                       <span>Mark Hub Arrival (Out For Delivery)</span>
@@ -239,9 +239,9 @@ export default function TripDetailsModal({
 
                   <button
                     onClick={() => setShowExpenseForm(!showExpenseForm)}
-                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-lg text-xs transition flex items-center gap-1.5 cursor-pointer"
+                    className="btn-secondary"
                   >
-                    <Fuel className="w-4 h-4" />
+                    <Fuel className="w-4 h-4 text-[#47868C]" />
                     <span>+ Record Expense</span>
                   </button>
                 </div>
@@ -353,39 +353,39 @@ export default function TripDetailsModal({
 
               {/* Loaded Bilties Table */}
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2 flex items-center justify-between">
                   <span>Loaded Bilties on Truck ({trip.shipments?.length || 0})</span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400">
+                  <span className="font-mono text-[#47868C]">
                     Total Packages: {totalLoadedPackages} | Freight: ₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </h3>
-                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-2xs">
+                <div className="border border-[#E5EAEB] dark:border-slate-700 rounded-xl overflow-hidden shadow-2xs">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <tr className="bg-[#F7F8F8] dark:bg-slate-800 border-b border-[#E5EAEB] dark:border-slate-700 text-[10px] font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
                         <th className="py-2.5 px-3">Bilty / GR No</th>
                         <th className="py-2.5 px-3">Loaded Weight</th>
                         <th className="py-2.5 px-3">Packages</th>
                         <th className="py-2.5 px-3 text-right">Freight (₹)</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
                       {trip.shipments && trip.shipments.length > 0 ? (
                         trip.shipments.map((shp) => (
-                          <tr key={shp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                            <td className="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">
+                          <tr key={shp.id} className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40">
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#47868C]">
                               {shp.shipmentNo}
                             </td>
                             <td className="py-2.5 px-3 font-semibold">{shp.loadedWeight} Kg</td>
                             <td className="py-2.5 px-3">{shp.loadedPackages} PKGS</td>
-                            <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#111827] dark:text-white">
                               ₹{shp.freightAmount}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="py-4 text-center text-slate-400">
+                          <td colSpan={4} className="py-4 text-center text-[#94A3B8]">
                             No Bilties loaded on this Challan yet.
                           </td>
                         </tr>
@@ -398,26 +398,26 @@ export default function TripDetailsModal({
               {/* On-Road Expenses Ledger */}
               {trip.expenses && trip.expenses.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2">
                     On-Road Expense Audit Trail
                   </h3>
-                  <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  <div className="border border-[#E5EAEB] dark:border-slate-700 rounded-xl overflow-hidden divide-y divide-[#E5EAEB] dark:divide-slate-800 text-xs">
                     {trip.expenses.map((exp) => (
                       <div
                         key={exp.id}
-                        className="p-3 bg-slate-50 dark:bg-slate-800 flex items-center justify-between"
+                        className="p-3 bg-[#F7F8F8] dark:bg-slate-800 flex items-center justify-between"
                       >
                         <div>
-                          <p className="font-bold text-slate-900 dark:text-white">
+                          <p className="font-bold text-[#111827] dark:text-white">
                             {exp.expenseTypeName || "Expense"}
                           </p>
-                          <p className="text-[10px] text-slate-500">
+                          <p className="text-[10px] text-[#64748B]">
                             {exp.expenseDate ? exp.expenseDate.split("T")[0] : ""}{" "}
                             {exp.receiptNo ? `• Ref: ${exp.receiptNo}` : ""}{" "}
                             {exp.remarks ? `• ${exp.remarks}` : ""}
                           </p>
                         </div>
-                        <div className="text-right font-mono font-bold text-red-600 text-sm">
+                        <div className="text-right font-mono font-bold text-[#D95C5C] text-sm">
                           - ₹{exp.amount}
                         </div>
                       </div>
@@ -430,13 +430,13 @@ export default function TripDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/70 dark:bg-slate-800/60">
-          <div className="text-xs text-slate-500">
+        <div className="px-6 py-4 border-t border-[#E5EAEB] dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
+          <div className="text-xs text-[#64748B]">
             Created: {trip?.tripDate ? trip.tripDate.split("T")[0] : ""}
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs transition cursor-pointer"
+            className="btn-secondary"
           >
             Close
           </button>

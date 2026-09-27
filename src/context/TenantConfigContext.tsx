@@ -71,9 +71,19 @@ export const TenantConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         } catch { }
       }
 
-      // If user is a sub-user, provide standard defaults without firing 403-generating config calls
+      // If user is a sub-user, provide standard defaults without firing 403-generating config calls.
+      // Still load the tenant's BRANDING (logo, company details) so their printed reports carry the
+      // organization's identity — this endpoint is readable by any authenticated tenant user.
       if (!isSuperUser) {
         setFeatureFlags(defaultFeatureFlags);
+        try {
+          const branding = await configService.getBranding();
+          try {
+            localStorage.setItem("tenant_config", JSON.stringify(branding));
+          } catch {}
+        } catch (e) {
+          console.warn("Could not load tenant branding for this user:", e);
+        }
         setIsLoading(false);
         return;
       }

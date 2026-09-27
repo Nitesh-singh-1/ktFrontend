@@ -30,18 +30,18 @@ export default function Select({
   return (
     <div className={`flex flex-col gap-1 w-full ${containerClass}`}>
       {label && (
-        <label className={`block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5 ${labelClass}`}>
+        <label className={`block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-0.5 ${labelClass}`}>
           {label}
-          {required && <span className="text-red-500 font-bold ml-0.5">*</span>}
+          {required && <span className="text-[#D95C5C] font-bold ml-0.5">*</span>}
         </label>
       )}
 
       <select
         className={`w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border ${
           error
-            ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-            : "border-slate-300 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500"
-        } rounded-lg text-slate-900 dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 transition-colors cursor-pointer disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 ${className}`}
+            ? "border-[#D95C5C] focus:ring-[#D95C5C]/20 focus:border-[#D95C5C]"
+            : "border-[#D9E2E3] dark:border-slate-700 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+        } rounded-lg text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8] ${className}`}
         {...props}
       >
         {options
@@ -54,7 +54,7 @@ export default function Select({
       </select>
 
       {error && (
-        <p className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400 flex items-center gap-1">
+        <p className="mt-0.5 text-xs font-medium text-[#D95C5C] flex items-center gap-1">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
           <span>{error}</span>
         </p>

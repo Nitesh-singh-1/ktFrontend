@@ -1,15 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Building2, Zap, Eye, EyeOff, User, Lock, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import { tenantService } from "services/tenantService";
+import { authService } from "services/authService";
 import { TenantOnboardingRequest } from "@/types/shipment";
 import BrandLogo from "@/app/components/ui/BrandLogo";
 
 export default function OnboardPage() {
   const router = useRouter();
+
+  // Public self-signup is for logged-out prospects only. A signed-in user already belongs to an org
+  // and must not create another one here; platform operators onboard clients from the in-app console.
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const [formData, setFormData] = useState<TenantOnboardingRequest>({
     organizationName: "",
@@ -99,13 +108,9 @@ export default function OnboardPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8fafc] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#F7F8F8] text-[#111827] font-sans">
       {/* Left Column: Enterprise Value Proposition */}
-      <div className="md:w-5/12 lg:w-1/2 bg-slate-950 text-white relative flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden">
-        {/* Background Ambient Glow & Grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.2),rgba(255,255,255,0))] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-
+      <div className="md:w-5/12 lg:w-1/2 bg-[#111827] text-white relative flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden">
         {/* Top: Brand Header */}
         <div className="relative z-10">
           <BrandLogo size="lg" variant="light" name="FleetPulse" tagline="Multi-Tenant TMS Platform" />
@@ -113,14 +118,14 @@ export default function OnboardPage() {
 
         {/* Middle: Onboarding Highlights */}
         <div className="relative z-10 my-auto py-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-medium text-slate-300 mb-6 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#47868C]"></span>
             Tenant Provisioning Engine
           </div>
 
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">
             Onboard Your Transport &{" "}
-            <span className="text-sky-400">
+            <span className="text-[#47868C]">
               Logistics Fleet
             </span>
           </h1>
@@ -131,16 +136,16 @@ export default function OnboardPage() {
 
           {/* Value points */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8 max-w-lg">
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
               <div className="text-sm font-bold text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-sky-400" />
+                <Building2 className="w-4 h-4 text-[#47868C]" />
                 <span>Isolated Workspace</span>
               </div>
               <p className="text-xs text-slate-400 mt-1 font-medium">Dedicated tenant scope & secure data segregation</p>
             </div>
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
               <div className="text-sm font-bold text-white flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
+                <Zap className="w-4 h-4 text-[#F4A261]" />
                 <span>Instant Activation</span>
               </div>
               <p className="text-xs text-slate-400 mt-1 font-medium">Ready-to-use consignment and dispatch workflows</p>
@@ -156,14 +161,14 @@ export default function OnboardPage() {
       </div>
 
       {/* Right Column: Onboarding Form */}
-      <div className="md:w-7/12 lg:w-1/2 flex items-center justify-center p-6 md:p-10 lg:p-14 bg-white dark:bg-slate-900 overflow-y-auto">
+      <div className="md:w-7/12 lg:w-1/2 flex items-center justify-center p-6 md:p-10 lg:p-14 bg-white overflow-y-auto">
         <div className="w-full max-w-xl">
           {/* Header */}
           <div className="mb-6">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-[#111827] tracking-tight">
               Register Organization
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            <p className="text-sm text-[#64748B] mt-1.5">
               Set up your fleet company account and provision your master administrator credentials.
             </p>
           </div>
@@ -171,15 +176,15 @@ export default function OnboardPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Organization Info Box */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-[#47868C]" />
                 Organization Details
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Organization Name *
                   </label>
                   <input
@@ -189,12 +194,12 @@ export default function OnboardPage() {
                     placeholder="e.g. Acme Express Cargo"
                     value={formData.organizationName}
                     onChange={handleOrgNameChange}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Org Code *
                   </label>
                   <input
@@ -205,22 +210,22 @@ export default function OnboardPage() {
                     placeholder="ACME"
                     value={formData.organizationCode}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-mono font-bold tracking-wider"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-mono font-bold tracking-wider"
                   />
                 </div>
               </div>
             </div>
 
             {/* Admin Info Box */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+                <User className="w-4 h-4 text-[#47868C]" />
                 Primary Administrator
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Full Name *
                   </label>
                   <input
@@ -230,12 +235,12 @@ export default function OnboardPage() {
                     placeholder="e.g. Ramesh Kumar"
                     value={formData.adminFullName}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Mobile Number
                   </label>
                   <input
@@ -245,12 +250,12 @@ export default function OnboardPage() {
                     maxLength={10}
                     value={formData.adminMobile || ""}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Username *
                   </label>
                   <input
@@ -260,12 +265,12 @@ export default function OnboardPage() {
                     placeholder="admin_acme"
                     value={formData.adminUsername}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
                     Password *
                   </label>
                   <div className="relative">
@@ -276,12 +281,12 @@ export default function OnboardPage() {
                       placeholder="••••••••••••"
                       value={formData.adminPassword}
                       onChange={handleChange}
-                      className="w-full px-3.5 py-2.5 pr-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-600 font-medium"
+                      className="w-full px-3.5 py-2.5 pr-10 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#94A3B8] hover:text-[#64748B] cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -292,16 +297,16 @@ export default function OnboardPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-xs font-semibold flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-[#D95C5C] text-xs font-semibold flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-[#D95C5C] mt-0.5 shrink-0" />
                 <div className="leading-snug">{error}</div>
               </div>
             )}
 
             {/* Success Message */}
             {successMsg && (
-              <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="p-3.5 rounded-xl bg-[#E7F1F2] border border-[#2F9E8F]/40 text-[#2F9E8F] text-xs font-semibold flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#2F9E8F] shrink-0" />
                 <div>{successMsg}</div>
               </div>
             )}
@@ -310,7 +315,7 @@ export default function OnboardPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-3.5 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <>
@@ -327,10 +332,10 @@ export default function OnboardPage() {
           </form>
 
           {/* Login Link */}
-          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="mt-6 pt-5 border-t border-[#E5EAEB] text-center">
+            <p className="text-xs text-[#64748B]">
               Already have an organization workspace?{" "}
-              <Link href="/login" className="font-bold text-sky-600 dark:text-sky-400 hover:underline">
+              <Link href="/login" className="font-bold text-[#47868C] hover:text-[#3F7C82] hover:underline">
                 Sign in to existing account
               </Link>
             </p>

@@ -154,31 +154,31 @@ export default function DynamicChargesTable({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
       {/* Header */}
-      <div className="px-5 py-3.5 bg-sky-50/60 dark:bg-slate-800/60 border-b border-sky-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-between">
+      <div className="px-5 py-3.5 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 text-[#111827] dark:text-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <IndianRupee className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <IndianRupee className="w-4 h-4 text-[#47868C]" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
             5. Freight, Ancillary Charges & Settlement Ledger
           </h3>
         </div>
-        <span className="text-[11px] text-slate-500 font-medium">Auto-calculates ledger in real-time</span>
+        <span className="text-[11px] text-[#64748B] font-medium">Auto-calculates ledger in real-time</span>
       </div>
 
       <div className="p-5 space-y-6">
         {/* Base Freight & Charge Presets */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Base Freight Input (Text field without scroll/spinner bugs) */}
-          <div className="lg:col-span-4 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="lg:col-span-4 p-4 bg-[#F7F8F8] dark:bg-slate-800/40 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              <label className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
                 Base Freight Amount (₹) *
               </label>
-              <span className="text-[10px] text-slate-400 font-semibold">Direct Input</span>
+              <span className="text-[10px] text-[#94A3B8] font-semibold">Direct Input</span>
             </div>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#94A3B8] font-bold text-sm">
                 ₹
               </span>
               <input
@@ -188,19 +188,19 @@ export default function DynamicChargesTable({
                 placeholder="0.00"
                 value={baseFreightInput}
                 onChange={(e) => handleBaseFreightTextChange(e.target.value)}
-                className="w-full h-10 pl-8 pr-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none"
+                className="w-full h-10 pl-8 pr-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold text-[#111827] dark:text-white focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] focus:outline-none"
               />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+            <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-1.5">
               Standard haulage & transportation tariff
             </p>
           </div>
 
           {/* Preset Buttons */}
-          <div className="lg:col-span-8 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+          <div className="lg:col-span-8 p-4 bg-[#F7F8F8] dark:bg-slate-800/40 rounded-xl border border-[#E5EAEB] dark:border-slate-700 flex flex-col justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-500" />
+              <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-[#F4A261]" />
                 <span>Quick Add Common Fee Line-Items:</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -214,11 +214,11 @@ export default function DynamicChargesTable({
                       onClick={() => handleAddPreset(preset)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1 ${
                         isAdded
-                          ? "bg-slate-200 dark:bg-slate-700 text-slate-400 border-slate-300 dark:border-slate-600 cursor-not-allowed"
-                          : "bg-white dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-slate-800 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-slate-700 shadow-2xs cursor-pointer"
+                          ? "bg-slate-100 dark:bg-slate-700 text-[#94A3B8] border-[#E5EAEB] dark:border-slate-600 cursor-not-allowed"
+                          : "bg-white dark:bg-slate-900 hover:bg-[#E7F1F2] dark:hover:bg-slate-800 text-[#3F7C82] dark:text-[#47868C] border-[#D9E2E3] dark:border-slate-700 shadow-2xs cursor-pointer"
                       }`}
                     >
-                      {isAdded && <CheckCircle2 className="w-3 h-3 text-slate-400" />}
+                      {isAdded && <CheckCircle2 className="w-3 h-3 text-[#94A3B8]" />}
                       <span>{preset.name}</span>
                     </button>
                   );
@@ -231,7 +231,7 @@ export default function DynamicChargesTable({
                 <button
                   type="button"
                   onClick={() => handleAddCharge("", 0, false)}
-                  className="text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-[#47868C] hover:text-[#3F7C82] flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Custom Other Fee</span>
@@ -243,13 +243,13 @@ export default function DynamicChargesTable({
 
         {/* Dynamic Charges Table */}
         {chargeItems.length > 0 && (
-          <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
-            <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex justify-between">
+          <div className="border border-[#E5EAEB] dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
+            <div className="px-4 py-2 bg-[#F7F8F8] dark:bg-slate-800 text-xs font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider flex justify-between">
               <span>Attached Charges ({chargeItems.length})</span>
               <span className="font-mono">Subtotal: ₹{totalOtherCharges.toFixed(2)}</span>
             </div>
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold">
+              <thead className="bg-[#F7F8F8] dark:bg-slate-850 border-b border-[#E5EAEB] dark:border-slate-700 text-[#64748B] dark:text-slate-400 font-semibold">
                 <tr>
                   <th className="px-4 py-2 w-12 text-center">#</th>
                   <th className="px-4 py-2">Charge Description / Fee Type</th>
@@ -258,10 +258,10 @@ export default function DynamicChargesTable({
                   {!disabled && <th className="px-3 py-2 w-12 text-center">Action</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
                 {chargeItems.map((charge, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                    <td className="px-4 py-2 text-center text-slate-400 font-bold">{idx + 1}</td>
+                  <tr key={idx} className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition">
+                    <td className="px-4 py-2 text-center text-[#94A3B8] font-bold">{idx + 1}</td>
                     <td className="px-4 py-2">
                       <input
                         type="text"
@@ -269,7 +269,7 @@ export default function DynamicChargesTable({
                         placeholder="e.g. Loading / Hamali, Delivery Surcharge"
                         value={charge.chargeName}
                         onChange={(e) => handleFieldChange(idx, "chargeName", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
                       />
                     </td>
                     <td className="px-4 py-2 text-right">
@@ -283,7 +283,7 @@ export default function DynamicChargesTable({
                           const clean = e.target.value.replace(/[^0-9.]/g, "");
                           handleFieldChange(idx, "amount", parseFloat(clean) || 0);
                         }}
-                        className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
                       />
                     </td>
                     <td className="px-4 py-2 text-center">
@@ -292,7 +292,7 @@ export default function DynamicChargesTable({
                         disabled={disabled}
                         checked={charge.isTaxable || false}
                         onChange={(e) => handleFieldChange(idx, "isTaxable", e.target.checked)}
-                        className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
+                        className="w-4 h-4 rounded text-[#47868C] focus:ring-[#47868C] border-[#D9E2E3]"
                       />
                     </td>
                     {!disabled && (
@@ -300,7 +300,7 @@ export default function DynamicChargesTable({
                         <button
                           type="button"
                           onClick={() => handleRemoveCharge(idx)}
-                          className="p-1 text-slate-400 hover:text-red-600 transition cursor-pointer"
+                          className="p-1 text-[#94A3B8] hover:text-[#D95C5C] transition cursor-pointer"
                           title="Remove charge"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -316,15 +316,15 @@ export default function DynamicChargesTable({
 
         {/* GST Rate Preset Selector for Regular Tax Invoice */}
         {taxTreatment === TaxTreatment.GST_Regular && (
-          <div className="bg-sky-50/70 dark:bg-slate-800/60 p-4 rounded-xl border border-sky-200/80 dark:border-slate-700 space-y-3">
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+                <Building2 className="w-4 h-4 text-[#47868C]" />
+                <span className="text-xs font-bold text-[#111827] dark:text-white uppercase tracking-wide">
                   GST Rate & Tax Split Matrix (GTA Regime)
                 </span>
               </div>
-              <span className="text-[11px] text-sky-700 dark:text-sky-400 font-semibold">
+              <span className="text-[11px] text-[#4A90E2] font-semibold">
                 {isInterState ? "Inter-State Route: IGST Applicable" : "Intra-State Route: CGST + SGST Applicable"}
               </span>
             </div>
@@ -339,8 +339,8 @@ export default function DynamicChargesTable({
                     onClick={() => handleGstRateSelect(g.rate)}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                       isSelected
-                        ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                        : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                        ? "bg-[#47868C] text-white border-[#47868C] shadow-xs"
+                        : "bg-white dark:bg-slate-900 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA]"
                     }`}
                   >
                     <span>{g.label}</span>
@@ -356,28 +356,28 @@ export default function DynamicChargesTable({
               })}
 
               {/* Custom GST Rate Input */}
-              <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1">
-                <span className="text-xs font-bold text-slate-500">Custom:</span>
+              <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-2.5 py-1">
+                <span className="text-xs font-bold text-[#64748B]">Custom:</span>
                 <input
                   type="text"
                   inputMode="decimal"
                   placeholder="%"
                   value={customGstRate}
                   onChange={(e) => handleCustomGstRateChange(e.target.value)}
-                  className="w-12 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none"
+                  className="w-12 text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none"
                 />
-                <span className="text-xs font-bold text-slate-500">%</span>
+                <span className="text-xs font-bold text-[#64748B]">%</span>
               </div>
             </div>
           </div>
         )}
 
         {/* Tax, Payment Terms & Totals Summary Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-[#E5EAEB] dark:border-slate-800">
           {/* Left: Payment Terms & Settlement */}
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2">
                 Freight Payment Term *
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -393,8 +393,8 @@ export default function DynamicChargesTable({
                     onClick={() => handlePaymentTermSelect(term)}
                     className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       paymentTerm === term
-                        ? "bg-sky-600 text-white border-sky-600 font-bold shadow-xs"
-                        : "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 font-medium"
+                        ? "bg-[#47868C] text-white border-[#47868C] font-bold shadow-xs"
+                        : "bg-white dark:bg-slate-900 hover:bg-[#F5FAFA] dark:hover:bg-slate-800 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 font-medium"
                     }`}
                   >
                     <IconComponent className="w-4 h-4" />
@@ -405,13 +405,13 @@ export default function DynamicChargesTable({
             </div>
 
             {/* Paid Amount Input */}
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="p-3.5 bg-[#F7F8F8] dark:bg-slate-800/40 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider">
                   Advance / Paid Amount (₹)
                 </label>
                 {paymentTerm === PaymentTerm.Paid && (
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[11px] font-semibold text-[#2F9E8F]">
                     Full Settlement (Prepaid)
                   </span>
                 )}
@@ -426,36 +426,36 @@ export default function DynamicChargesTable({
                   onPaidAmountChange(parseFloat(clean) || 0);
                 }}
                 placeholder="0.00"
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
               />
             </div>
           </div>
 
           {/* Right: Real-time Calculation Ledger */}
-          <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-xs space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2 flex justify-between">
+          <div className="bg-white dark:bg-slate-900 text-[#111827] dark:text-white p-5 rounded-xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E5EAEB] dark:border-slate-800 pb-2 flex justify-between">
               <span>Financial Ledger</span>
               <span>INR (₹)</span>
             </div>
 
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-300">
+              <div className="flex justify-between text-[#64748B] dark:text-slate-300">
                 <span>Base Freight:</span>
-                <span className="font-mono font-bold text-white">₹{totalFreight.toFixed(2)}</span>
+                <span className="font-mono font-bold text-[#111827] dark:text-white">₹{totalFreight.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between text-slate-300">
+              <div className="flex justify-between text-[#64748B] dark:text-slate-300">
                 <span>Total Other Charges:</span>
-                <span className="font-mono font-bold text-white">₹{totalOtherCharges.toFixed(2)}</span>
+                <span className="font-mono font-bold text-[#111827] dark:text-white">₹{totalOtherCharges.toFixed(2)}</span>
               </div>
 
               {/* Tax Line */}
               {isTaxApplicable && (
-                <div className="flex justify-between items-center py-1 text-slate-300 border-t border-slate-800/80">
+                <div className="flex justify-between items-center py-1 text-[#64748B] dark:text-slate-300 border-t border-[#E5EAEB] dark:border-slate-800/80">
                   <div>
                     <span>GST / Tax ({selectedGstRate ?? 5}%):</span>
                     {totalTaxAmount > 0 && (
-                      <span className="block text-[10px] text-sky-400 font-mono">
+                      <span className="block text-[10px] text-[#4A90E2] font-mono">
                         {isInterState
                           ? `IGST (${selectedGstRate ?? 5}%): ₹${totalTaxAmount.toFixed(2)}`
                           : `CGST (${((selectedGstRate ?? 5) / 2).toFixed(1)}%): ₹${(totalTaxAmount / 2).toFixed(2)} + SGST (${((selectedGstRate ?? 5) / 2).toFixed(1)}%): ₹${(totalTaxAmount / 2).toFixed(2)}`}
@@ -463,7 +463,7 @@ export default function DynamicChargesTable({
                     )}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-400 font-mono">₹</span>
+                    <span className="text-[#94A3B8] font-mono">₹</span>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -474,34 +474,34 @@ export default function DynamicChargesTable({
                         onTotalTaxAmountChange(parseFloat(clean) || 0);
                       }}
                       placeholder="0.00"
-                      className="w-24 px-2 py-0.5 text-right bg-slate-800 border border-slate-700 rounded-lg text-xs font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-400"
+                      className="w-24 px-2 py-0.5 text-right bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F9E8F] focus:outline-none focus:border-[#47868C]"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-sm font-black">
-                <span className="text-sky-300">Grand Total (Total Freight):</span>
-                <span className="font-mono text-lg text-emerald-400">
+              <div className="pt-2 border-t border-[#E5EAEB] dark:border-slate-800 flex justify-between items-center text-sm font-black">
+                <span className="text-[#47868C]">Grand Total (Total Freight):</span>
+                <span className="font-mono text-lg text-[#111827] dark:text-white">
                   ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex justify-between text-xs text-slate-400 pt-1">
+              <div className="flex justify-between text-xs text-[#64748B] dark:text-slate-400 pt-1">
                 <span>Paid / Advance at Origin:</span>
-                <span className="font-mono text-slate-200">₹{paidAmount.toFixed(2)}</span>
+                <span className="font-mono text-[#111827] dark:text-slate-200">₹{paidAmount.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between text-xs font-bold pt-1 border-t border-slate-800 text-amber-300">
+              <div className="flex justify-between text-xs font-bold pt-1 border-t border-[#E5EAEB] dark:border-slate-800 text-[#F4A261]">
                 <span>Balance Due (To Collect):</span>
                 <span className="font-mono text-sm">₹{dueAmount.toFixed(2)}</span>
               </div>
             </div>
 
             {/* In Words */}
-            <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-300">
-              <span className="font-semibold text-slate-400">In Words: </span>
-              <span className="italic text-slate-200">{numberToWords(grandTotal) || "Zero Rupees"}</span>
+            <div className="pt-2 border-t border-[#E5EAEB] dark:border-slate-800 text-[11px] text-[#64748B] dark:text-slate-300">
+              <span className="font-semibold text-[#94A3B8]">In Words: </span>
+              <span className="italic text-[#111827] dark:text-slate-200">{numberToWords(grandTotal) || "Zero Rupees"}</span>
             </div>
           </div>
         </div>

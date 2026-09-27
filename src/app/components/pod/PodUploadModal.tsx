@@ -152,18 +152,18 @@ export default function PodUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl border border-[#E5EAEB] w-full max-w-xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Electronic Proof of Delivery (e-POD)
+            <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-[#47868C]" /> Electronic Proof of Delivery (e-POD)
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[#64748B]">
               Record consignee delivery acknowledgement, recipient ID, and digital signature.
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition">
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg transition cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -171,7 +171,7 @@ export default function PodUploadModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[#D95C5C] text-xs font-semibold">
               {error}
             </div>
           )}
@@ -179,14 +179,14 @@ export default function PodUploadModal({
           {/* Consignment Selector & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Select Consignment (LR / GR) *
               </label>
               <select
                 required
                 value={shipmentId || ""}
                 onChange={(e) => setShipmentId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               >
                 <option value="">-- Choose Shipment / LR --</option>
                 {shipments.map((s) => (
@@ -198,7 +198,7 @@ export default function PodUploadModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Delivery Date *
               </label>
               <input
@@ -206,7 +206,7 @@ export default function PodUploadModal({
                 required
                 value={deliveryDate}
                 onChange={(e) => setDeliveryDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function PodUploadModal({
           {/* Receiver Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Receiver / Signatory Full Name *
               </label>
               <input
@@ -223,12 +223,12 @@ export default function PodUploadModal({
                 placeholder="e.g. Mukesh Kumar (Godown Mgr)"
                 value={receiverName}
                 onChange={(e) => setReceiverName(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Receiver Mobile Number
               </label>
               <input
@@ -237,13 +237,13 @@ export default function PodUploadModal({
                 placeholder="9876543210"
                 value={receiverMobile}
                 onChange={(e) => setReceiverMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#64748B] mb-1">
               Receiver Aadhar / ID Proof No
             </label>
             <input
@@ -251,28 +251,28 @@ export default function PodUploadModal({
               placeholder="e.g. Aadhar ending in 4920 or Company Stamp ID"
               value={receiverAadharOrId}
               onChange={(e) => setReceiverAadharOrId(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
             />
           </div>
 
           {/* Digital Signature Pad */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+          <div className="bg-[#F7F8F8] p-4 rounded-xl border border-[#E5EAEB] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <PenTool className="w-4 h-4 text-slate-600 dark:text-slate-300" /> Digital Receiver Signature (Draw on screen)
+              <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
+                <PenTool className="w-4 h-4 text-[#47868C]" /> Digital Receiver Signature (Draw on screen)
               </span>
               {hasSignature && (
                 <button
                   type="button"
                   onClick={clearSignature}
-                  className="text-[11px] font-bold text-red-600 hover:text-red-700 cursor-pointer"
+                  className="text-[11px] font-bold text-[#D95C5C] hover:underline cursor-pointer"
                 >
                   Clear Signature
                 </button>
               )}
             </div>
 
-            <div className="border border-slate-300 dark:border-slate-600 rounded-xl overflow-hidden bg-white">
+            <div className="border border-[#D9E2E3] rounded-xl overflow-hidden bg-white">
               <canvas
                 ref={canvasRef}
                 width={500}
@@ -287,12 +287,12 @@ export default function PodUploadModal({
                 className="w-full touch-none cursor-crosshair"
               />
             </div>
-            <p className="text-[10px] text-slate-400">Sign with finger or stylus</p>
+            <p className="text-[10px] text-[#94A3B8]">Sign with finger or stylus</p>
           </div>
 
           {/* Remarks */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#64748B] mb-1">
               Delivery Notes / Shortage Remarks (if any)
             </label>
             <textarea
@@ -300,23 +300,23 @@ export default function PodUploadModal({
               placeholder="e.g. Delivered 10 pkgs in sound condition with seal intact"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
             />
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[#E5EAEB] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Uploading POD..." : "Upload & Save Proof of Delivery"}
             </button>

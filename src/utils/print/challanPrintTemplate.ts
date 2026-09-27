@@ -1,4 +1,5 @@
 import { getTenantPrintProfile } from "./tenantProfile";
+import { renderPrintHeaderHtml, PRINT_HEADER_CSS } from "./printHeader";
 
 interface ChallanDetail {
   id: number;
@@ -48,21 +49,9 @@ function generateSingleCopy(challan: ChallanData, copyType: string): string {
   
   return `
     <div class="container">
-      <!-- Company Letterhead -->
-      <div class="letterhead">
-        <img src="${profile.logoUrl || '/logo.jpeg'}" alt="Company Logo" class="company-logo" onerror="this.style.display='none'" />
-        <div class="company-info">
-          <div class="company-name">${profile.companyName}</div>
-          <div class="company-details">${profile.tagline || profile.address || 'Logistics & Transportation Services'}</div>
-          <div class="company-contact">${[
-            profile.phone ? `Phone: ${profile.phone}` : '',
-            profile.email ? `Email: ${profile.email}` : '',
-            profile.gstin ? `GSTIN: ${profile.gstin}` : '',
-            profile.panNumber ? `PAN: ${profile.panNumber}` : '',
-          ].filter(Boolean).join(' | ')}</div>
-        </div>
-      </div>
-      
+      <!-- Company Letterhead (generic, logo-agnostic) -->
+      ${renderPrintHeaderHtml(profile)}
+
       <!-- Copy Type -->
       <div class="copy-type">${copyType}</div>
       
@@ -522,6 +511,7 @@ export function generateChallanPrintTemplate(challan: ChallanData): string {
               size: A4;
             }
           }
+          ${PRINT_HEADER_CSS}
         </style>
       </head>
       <body>
@@ -534,7 +524,7 @@ export function generateChallanPrintTemplate(challan: ChallanData): string {
         <!-- Account Copy -->
         ${generateSingleCopy(challan, 'ACCOUNT COPY')}
         
-        <button class="print-btn" onclick="window.print()">PRINT ALL COPIES</button>
+        <button class="print-btn" onclick="(window.__ktPrint||window.print)()">PRINT ALL COPIES</button>
       </body>
     </html>
   `;

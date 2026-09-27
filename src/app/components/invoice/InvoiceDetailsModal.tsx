@@ -53,43 +53,43 @@ export default function InvoiceDetailsModal({
   const getStatusBadge = (status: InvoicePaymentStatus) => {
     switch (status) {
       case InvoicePaymentStatus.Paid:
-        return { text: "PAID", class: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800" };
+        return { text: "PAID", class: "bg-[#E7F1F2] text-[#2F9E8F] border-[#2F9E8F]/30" };
       case InvoicePaymentStatus.PartiallyPaid:
-        return { text: "PARTIALLY PAID", class: "bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800" };
+        return { text: "PARTIALLY PAID", class: "bg-[#F0F7FF] text-[#4A90E2] border-[#D0E2FF]" };
       case InvoicePaymentStatus.Cancelled:
-        return { text: "CANCELLED", class: "bg-red-100 dark:bg-red-950/50 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800" };
+        return { text: "CANCELLED", class: "bg-red-50 text-[#D95C5C] border-red-200" };
       default:
-        return { text: "UNPAID", class: "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800" };
+        return { text: "UNPAID", class: "bg-[#FDF3E7] text-[#B76E32] border-[#F4A261]/30" };
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-3xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl border border-[#E5EAEB] w-full max-w-3xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Top Modal Bar */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div className="w-9 h-9 rounded-lg bg-[#E7F1F2] flex items-center justify-center text-[#47868C]">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Invoice Breakdown: <span className="font-mono text-blue-600 dark:text-blue-400">{invoice?.invoiceNo || "Loading..."}</span>
+              <h2 className="text-base font-bold text-[#111827]">
+                Invoice Breakdown: <span className="font-mono text-[#47868C]">{invoice?.invoiceNo || "Loading..."}</span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Official Freight Bill & Accounts Receivable Breakdown</p>
+              <p className="text-xs text-[#64748B]">Official Freight Bill & Accounts Receivable Breakdown</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
             >
               <Printer className="w-4 h-4" />
               <span>Print</span>
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition"
+              className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -100,29 +100,29 @@ export default function InvoiceDetailsModal({
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {loading ? (
             <div className="p-16 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3" />
-              <p className="text-xs text-slate-500 font-medium">Loading invoice details...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+              <p className="text-xs text-[#64748B] font-medium">Loading invoice details...</p>
             </div>
           ) : error ? (
-            <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold">
               {error}
             </div>
           ) : invoice ? (
             <>
               {/* Header Info */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] text-xs">
                 <div>
-                  <p className="text-[10px] font-bold uppercase text-slate-400">Billed To (Customer):</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{invoice.partyName || invoice.party?.name}</p>
-                  <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                  <p className="text-[10px] font-bold uppercase text-[#64748B]">Billed To (Customer):</p>
+                  <p className="font-bold text-[#111827] text-sm mt-0.5">{invoice.partyName || invoice.party?.name}</p>
+                  <p className="text-[#64748B] mt-0.5">
                     GSTIN: <span className="font-mono font-semibold">{invoice.partyGstNo || invoice.party?.gstNo || "N/A"}</span>
                   </p>
-                  <p className="text-slate-500 dark:text-slate-400 mt-0.5">{invoice.partyAddress || invoice.party?.address || "—"}</p>
+                  <p className="text-[#94A3B8] mt-0.5">{invoice.partyAddress || invoice.party?.address || "—"}</p>
                 </div>
 
                 <div className="text-right space-y-1">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-slate-400 mr-2">Status:</span>
+                    <span className="text-[10px] font-bold uppercase text-[#64748B] mr-2">Status:</span>
                     <span
                       className={`inline-flex px-2 py-0.5 text-[10px] font-bold border rounded-md ${
                         getStatusBadge(invoice.paymentStatus).class
@@ -131,12 +131,12 @@ export default function InvoiceDetailsModal({
                       {getStatusBadge(invoice.paymentStatus).text}
                     </span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400">
-                    Invoice Date: <span className="font-bold text-slate-800 dark:text-slate-200">{invoice.invoiceDate ? invoice.invoiceDate.split("T")[0] : "—"}</span>
+                  <p className="text-[#64748B]">
+                    Invoice Date: <span className="font-bold text-[#111827]">{invoice.invoiceDate ? invoice.invoiceDate.split("T")[0] : "—"}</span>
                   </p>
                   {invoice.dueDate && (
-                    <p className="text-slate-600 dark:text-slate-400">
-                      Due Date: <span className="font-bold text-slate-800 dark:text-slate-200">{invoice.dueDate.split("T")[0]}</span>
+                    <p className="text-[#64748B]">
+                      Due Date: <span className="font-bold text-[#111827]">{invoice.dueDate.split("T")[0]}</span>
                     </p>
                   )}
                 </div>
@@ -144,13 +144,13 @@ export default function InvoiceDetailsModal({
 
               {/* Line Items Table */}
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
                   Invoice Items
                 </h3>
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
+                <div className="border border-[#E5EAEB] rounded-xl overflow-hidden shadow-2xs">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
                         <th className="py-2.5 px-3">Description</th>
                         <th className="py-2.5 px-3">Shipment Ref</th>
                         <th className="py-2.5 px-3 text-center">Qty</th>
@@ -159,23 +159,23 @@ export default function InvoiceDetailsModal({
                         <th className="py-2.5 px-3 text-right">Total</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-[#E5EAEB]">
                       {(invoice.items && invoice.items.length > 0) ? (
                         invoice.items.map((it, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                            <td className="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{it.description}</td>
-                            <td className="py-2.5 px-3 font-mono text-blue-600 dark:text-blue-400">{it.shipmentNo || "—"}</td>
-                            <td className="py-2.5 px-3 text-center font-bold text-slate-800 dark:text-slate-200">{it.quantity}</td>
-                            <td className="py-2.5 px-3 text-right font-mono text-slate-700 dark:text-slate-300">₹{it.rate}</td>
-                            <td className="py-2.5 px-3 text-right font-mono text-slate-700 dark:text-slate-300">{it.taxRate ? `${it.taxRate}%` : "—"}</td>
-                            <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          <tr key={idx} className="hover:bg-[#F5FAFA]">
+                            <td className="py-2.5 px-3 font-semibold text-[#111827]">{it.description}</td>
+                            <td className="py-2.5 px-3 font-mono text-[#47868C]">{it.shipmentNo || "—"}</td>
+                            <td className="py-2.5 px-3 text-center font-bold text-[#111827]">{it.quantity}</td>
+                            <td className="py-2.5 px-3 text-right font-mono text-[#111827]">₹{it.rate}</td>
+                            <td className="py-2.5 px-3 text-right font-mono text-[#64748B]">{it.taxRate ? `${it.taxRate}%` : "—"}</td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#111827]">
                               ₹{(it.quantity * it.rate).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="py-4 text-center text-slate-400">
+                          <td colSpan={6} className="py-4 text-center text-[#94A3B8]">
                             Standard Freight Charges
                           </td>
                         </tr>
@@ -186,37 +186,37 @@ export default function InvoiceDetailsModal({
               </div>
 
               {/* Financial Ledger Breakdown */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-end">
+              <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] flex justify-end">
                 <div className="w-64 space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between text-[#64748B]">
                     <span>Subtotal:</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">₹{invoice.subTotal}</span>
+                    <span className="font-mono font-bold text-[#111827]">₹{invoice.subTotal}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between text-[#64748B]">
                     <span>GST ({invoice.taxRate}%):</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">₹{invoice.taxAmount}</span>
+                    <span className="font-mono font-bold text-[#111827]">₹{invoice.taxAmount}</span>
                   </div>
                   {invoice.otherCharges > 0 && (
-                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                    <div className="flex justify-between text-[#64748B]">
                       <span>Other Charges:</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">₹{invoice.otherCharges}</span>
+                      <span className="font-mono font-bold text-[#111827]">₹{invoice.otherCharges}</span>
                     </div>
                   )}
                   {invoice.discount > 0 && (
-                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                    <div className="flex justify-between text-[#64748B]">
                       <span>Discount:</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">- ₹{invoice.discount}</span>
+                      <span className="font-mono font-bold text-[#2F9E8F]">- ₹{invoice.discount}</span>
                     </div>
                   )}
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between font-black text-slate-900 dark:text-white text-sm">
+                  <div className="pt-2 border-t border-[#E5EAEB] flex justify-between font-black text-[#111827] text-sm">
                     <span>Grand Total:</span>
-                    <span className="font-mono text-blue-600 dark:text-blue-400">₹{invoice.grandTotal}</span>
+                    <span className="font-mono text-[#47868C]">₹{invoice.grandTotal}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400 pt-1">
+                  <div className="flex justify-between text-[#64748B] pt-1">
                     <span>Paid Amount:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{invoice.paidAmount}</span>
+                    <span className="font-mono font-bold text-[#2F9E8F]">₹{invoice.paidAmount}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-amber-700 dark:text-amber-400">
+                  <div className="flex justify-between font-bold text-[#F4A261]">
                     <span>Outstanding Balance:</span>
                     <span className="font-mono">₹{invoice.balanceAmount}</span>
                   </div>
@@ -226,21 +226,21 @@ export default function InvoiceDetailsModal({
               {/* Payments Ledger Trail */}
               {invoice.payments && invoice.payments.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
                     Payment Receipts Log
                   </h3>
-                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  <div className="border border-[#E5EAEB] rounded-xl overflow-hidden divide-y divide-[#E5EAEB] text-xs">
                     {invoice.payments.map((pmt) => (
-                      <div key={pmt.id} className="p-3 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between">
+                      <div key={pmt.id} className="p-3 bg-[#E7F1F2]/50 flex items-center justify-between">
                         <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{pmt.paymentMode}</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                          <p className="font-bold text-[#111827]">{pmt.paymentMode}</p>
+                          <p className="text-[10px] text-[#64748B]">
                             {pmt.paymentDate ? pmt.paymentDate.split("T")[0] : ""} {pmt.referenceNo ? `• Ref: ${pmt.referenceNo}` : ""}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm">+ ₹{pmt.amount}</p>
-                          <p className="text-[10px] text-slate-400">{pmt.createdByName || "Cashier"}</p>
+                          <p className="font-mono font-bold text-[#2F9E8F] text-sm">+ ₹{pmt.amount}</p>
+                          <p className="text-[10px] text-[#94A3B8]">{pmt.createdByName || "Cashier"}</p>
                         </div>
                       </div>
                     ))}
@@ -252,14 +252,14 @@ export default function InvoiceDetailsModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-t border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           {invoice && invoice.balanceAmount > 0 && onRecordPayment ? (
             <button
               onClick={() => {
                 onClose();
                 onRecordPayment(invoice);
               }}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             >
               <CreditCard className="w-4 h-4" />
               <span>Record Payment (₹{invoice.balanceAmount} due)</span>
@@ -270,7 +270,7 @@ export default function InvoiceDetailsModal({
 
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
+            className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
           >
             Close
           </button>

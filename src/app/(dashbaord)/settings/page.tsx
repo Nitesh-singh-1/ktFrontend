@@ -14,6 +14,8 @@ import {
   TenantUserItem,
 } from "../../../../services/navigationService";
 import { userService, SubUserDetails } from "../../../../services/userService";
+import { authService } from "../../../../services/authService";
+import { downloadTenantExport } from "../../../../services/exportService";
 import { useTenantConfig } from "@/context/TenantConfigContext";
 import { useNavigation } from "@/context/NavigationContext";
 import { previewSequenceNumber } from "@/utils/configFormatter";
@@ -224,8 +226,23 @@ export default function SettingsPage() {
   const { config: globalConfig, updateConfig: updateGlobalConfig, refreshConfig } = useTenantConfig();
   const { refreshNavigation } = useNavigation();
 
-  const [activeTab, setActiveTab] = useState<TabKey>("menu_entitlements");
+  const [activeTab, setActiveTab] = useState<TabKey>("general");
+  // Entitlement/subscription control is PLATFORM-operator only. A tenant admin must never be able to
+  // grant their own org modules/reports or change their plan — those tabs are gated on this flag.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
+  const [exporting, setExporting] = useState<boolean>(false);
   const [matrixMode, setMatrixMode] = useState<MatrixMode>("menus");
+
+  const handleExportData = async () => {
+    try {
+      setExporting(true);
+      await downloadTenantExport();
+    } catch (e: any) {
+      setErrorMessage(e?.message || "Failed to export data.");
+    } finally {
+      setExporting(false);
+    }
+  };
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
@@ -375,6 +392,21 @@ export default function SettingsPage() {
       webhookUrl: "",
     },
   });
+
+  // Determine whether the current user is the platform operator (controls entitlements/subscription).
+  useEffect(() => {
+    authService
+      .getMyProfile()
+      .then((p) => {
+        const platform = !!p.isPlatformAdmin;
+        setIsPlatformAdmin(platform);
+        if (platform) {
+          // Platform operator lands on the entitlement matrix; tenant admins stay on their org settings.
+          setActiveTab("menu_entitlements");
+        }
+      })
+      .catch(() => setIsPlatformAdmin(false));
+  }, []);
 
   // Load configuration, tenants, users and subscription data
   useEffect(() => {
@@ -675,21 +707,24 @@ export default function SettingsPage() {
 
       const targetTenantId = selectedTenantId || formData.tenantId;
 
-      const payload: TenantMenuEntitlements = {
-        ...menuEntitlements,
-        userOverridesJson: JSON.stringify(userOverrides),
-        roleOverridesJson: JSON.stringify(roleOverrides),
-      };
-
-      const [updatedConfig, updatedEntitlements] = await Promise.all([
-        updateGlobalConfig(formData),
-        selectedTenantId
-          ? navigationService.updateMenuEntitlementsForTenant(targetTenantId, payload)
-          : navigationService.updateMenuEntitlements(payload),
-      ]);
-
+      // Every admin can save their OWN organization config (branding/logo, numbering, tax, workflows).
+      const updatedConfig = await updateGlobalConfig(formData);
       setFormData((prev) => ({ ...prev, ...updatedConfig }));
-      setMenuEntitlements(updatedEntitlements);
+
+      // Entitlement changes are platform-operator only (the endpoint is locked); tenant admins skip it,
+      // so saving branding never fails with a 403 from the entitlement matrix.
+      if (isPlatformAdmin) {
+        const payload: TenantMenuEntitlements = {
+          ...menuEntitlements,
+          userOverridesJson: JSON.stringify(userOverrides),
+          roleOverridesJson: JSON.stringify(roleOverrides),
+        };
+        const updatedEntitlements = selectedTenantId
+          ? await navigationService.updateMenuEntitlementsForTenant(targetTenantId, payload)
+          : await navigationService.updateMenuEntitlements(payload);
+        setMenuEntitlements(updatedEntitlements);
+      }
+
       await refreshNavigation();
 
       setSaveSuccess(true);
@@ -732,7 +767,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-3 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-3 border-[#47868C] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">Loading SaaS Configuration & Permission Engine...</p>
         </div>
       </div>
@@ -741,22 +776,22 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-16">
-      {/* Header Bar - Light Blue & Crisp White */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs">
+      {/* Header Bar - FleetPulse White & Teal */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-sky-600 flex items-center justify-center shadow-xs text-white font-bold text-xl shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#47868C] flex items-center justify-center shadow-xs text-white font-bold text-xl shrink-0">
             <Settings className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                SaaS Configuration & Permission Engine
+              <h1 className="text-xl sm:text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
+                {isPlatformAdmin ? "SaaS Configuration & Permission Engine" : "Organization Settings"}
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 rounded-md dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-md dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700">
                 {menuEntitlements.planTier || "Enterprise"}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400">
               Manage client menus, subscription plan tiers, dedicated user pages, document sequences, and tax policies
             </p>
           </div>
@@ -766,14 +801,14 @@ export default function SettingsPage() {
           <button
             onClick={handleResetDefaults}
             disabled={saving}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl transition cursor-pointer"
+            className="px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
           >
             Reset Defaults
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -791,8 +826,8 @@ export default function SettingsPage() {
 
       {/* Notifications */}
       {saveSuccess && (
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-800 dark:text-emerald-300 flex items-center gap-3 animate-fade-in">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-[#2F9E8F]/30 rounded-xl text-[#2F9E8F] flex items-center gap-3 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5 text-[#2F9E8F] shrink-0" />
           <span className="text-xs sm:text-sm font-semibold">
             SaaS Configuration, Menu Entitlements & User Dedicated Pages saved successfully! Navigation updated live.
           </span>
@@ -800,32 +835,34 @@ export default function SettingsPage() {
       )}
 
       {errorMessage && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-800 dark:text-red-300 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-[#D95C5C]/30 rounded-xl text-[#D95C5C] flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[#D95C5C] shrink-0" />
           <span className="text-xs sm:text-sm font-semibold">{errorMessage}</span>
         </div>
       )}
 
       {/* Main Tabs Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-sky-100 dark:border-slate-800 pb-2 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-[#E5EAEB] dark:border-slate-800 pb-2 scrollbar-none">
         {[
-          { id: "menu_entitlements", label: "Menu & Permission Matrix", icon: Shield },
+          { id: "menu_entitlements", label: "Menu & Permission Matrix", icon: Shield, platformOnly: true },
           { id: "general", label: "General & Branding", icon: Building2 },
           { id: "billing", label: "Billing, GST & Tax", icon: Receipt },
           { id: "sequences", label: "Document Sequences", icon: Hash },
           { id: "workflows", label: "Operational Rules", icon: Zap },
-          { id: "modules", label: "Subscription & Limits", icon: Crown },
+          { id: "modules", label: "Subscription & Limits", icon: Crown, platformOnly: true },
           { id: "integrations", label: "Integrations & API", icon: Plug },
-        ].map((tab) => {
+        ]
+          .filter((tab) => isPlatformAdmin || !(tab as { platformOnly?: boolean }).platformOnly)
+          .map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabKey)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-sky-600 text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 hover:bg-sky-50 dark:hover:bg-slate-800"
+                  ? "bg-[#47868C] text-white shadow-xs"
+                  : "text-[#64748B] dark:text-slate-400 hover:text-[#111827] hover:bg-[#E7F1F2] dark:hover:bg-slate-800"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -835,14 +872,14 @@ export default function SettingsPage() {
         })}
       </div>
 
-      {/* TAB: MENU & PERMISSION MATRIX (COMPREHENSIVE MULTI-TIER ENGINE) */}
-      {activeTab === "menu_entitlements" && (
+      {/* TAB: MENU & PERMISSION MATRIX (COMPREHENSIVE MULTI-TIER ENGINE) — PLATFORM OPERATOR ONLY */}
+      {activeTab === "menu_entitlements" && isPlatformAdmin && (
         <div className="space-y-6">
           {/* Tenant Selector & Sub-Matrix Mode Switcher Bar */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100 dark:border-slate-800 shadow-xs space-y-5">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#47868C] dark:text-teal-400 bg-[#E7F1F2] dark:bg-slate-800 px-2 py-0.5 rounded border border-[#D9E2E3] dark:border-slate-700">
                   Client & User Permission Engine
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -861,7 +898,7 @@ export default function SettingsPage() {
                 <select
                   value={selectedTenantId}
                   onChange={(e) => handleTenantSelect(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-sky-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2 text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-[#47868C]"
                 >
                   {tenantsList.length > 0 ? (
                     tenantsList.map((t) => (
@@ -893,7 +930,7 @@ export default function SettingsPage() {
                     onClick={() => setMatrixMode(mode.id as MatrixMode)}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                       matrixMode === mode.id
-                        ? "bg-sky-100 text-sky-800 border border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 shadow-2xs"
+                        ? "bg-[#E7F1F2] text-[#3F7C82] border border-[#47868C]/30 dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700 shadow-2xs"
                         : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
                     }`}
                   >
@@ -907,7 +944,7 @@ export default function SettingsPage() {
 
           {/* SUB-VIEW 1: SUBSCRIPTION TIER PRESETS */}
           {matrixMode === "subscriptions" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   1-Click Subscription Tier & Client Presets
@@ -919,9 +956,9 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Starter Plan */}
-                <div className="p-5 rounded-2xl border-2 border-sky-100 bg-sky-50/40 dark:bg-slate-850 dark:border-slate-800 space-y-4 hover:border-sky-300 transition">
+                <div className="p-5 rounded-2xl border-2 border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-850 dark:border-slate-800 space-y-4 hover:border-[#47868C] transition">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-sky-700 bg-sky-100 dark:bg-sky-950 dark:text-sky-300 px-2 py-0.5 rounded flex items-center gap-1">
+                    <span className="text-xs font-bold uppercase text-[#47868C] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-2 py-0.5 rounded flex items-center gap-1">
                       <Rocket className="w-3.5 h-3.5" />
                       <span>Starter Tier</span>
                     </span>
@@ -954,20 +991,20 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={applyStarterPlan}
-                    className="w-full py-2 bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 font-bold text-xs rounded-xl transition cursor-pointer shadow-2xs dark:bg-slate-800 dark:border-slate-700 dark:text-sky-400"
+                    className="w-full py-2 bg-white hover:bg-[#E7F1F2] text-[#47868C] border border-[#D9E2E3] font-bold text-xs rounded-xl transition cursor-pointer shadow-2xs dark:bg-slate-800 dark:border-slate-700 dark:text-teal-300"
                   >
                     Apply Starter Preset
                   </button>
                 </div>
 
                 {/* Professional Plan */}
-                <div className="p-5 rounded-2xl border-2 border-sky-300 bg-sky-50/80 dark:bg-slate-850 dark:border-sky-700 space-y-4 shadow-xs">
+                <div className="p-5 rounded-2xl border-2 border-[#47868C] bg-[#E7F1F2]/40 dark:bg-slate-850 dark:border-teal-700 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-white bg-sky-600 px-2 py-0.5 rounded flex items-center gap-1">
+                    <span className="text-xs font-bold uppercase text-white bg-[#47868C] px-2 py-0.5 rounded flex items-center gap-1">
                       <Star className="w-3.5 h-3.5" />
                       <span>Professional Tier</span>
                     </span>
-                    <span className="text-xs font-bold text-sky-700 dark:text-sky-300">Most Popular</span>
+                    <span className="text-xs font-bold text-[#47868C] dark:text-teal-300">Most Popular</span>
                   </div>
                   <div>
                     <h4 className="text-lg font-black text-slate-900 dark:text-white">Bilties + Challans + Billing</h4>
@@ -996,14 +1033,14 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={applyProfessionalPlan}
-                    className="w-full py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs"
+                    className="w-full py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs"
                   >
                     Apply Professional Preset
                   </button>
                 </div>
 
                 {/* Enterprise Plan */}
-                <div className="p-5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-slate-850 dark:border-slate-700 space-y-4 hover:border-sky-400 transition">
+                <div className="p-5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-slate-850 dark:border-slate-700 space-y-4 hover:border-[#47868C] transition">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-emerald-800 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded flex items-center gap-1">
                       <Crown className="w-3.5 h-3.5" />
@@ -1038,7 +1075,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={applyEnterprisePlan}
-                    className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs dark:bg-sky-700 dark:hover:bg-sky-600"
+                    className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs dark:bg-[#47868C] dark:hover:bg-[#3F7C82]"
                   >
                     Apply Enterprise Preset
                   </button>
@@ -1070,14 +1107,14 @@ export default function SettingsPage() {
 
           {/* SUB-VIEW 2: DEDICATED USER PAGE ASSIGNMENT MATRIX */}
           {matrixMode === "users" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sky-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5EAEB] dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2.5">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
                       Sub-User Management & Feature Permissions
                     </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-300 border border-[#D9E2E3]">
                       Dual-Tier Security
                     </span>
                   </div>
@@ -1093,7 +1130,7 @@ export default function SettingsPage() {
                       setCreateUserError(null);
                       setShowCreateUserModal(true);
                     }}
-                    className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Create Sub-User</span>
@@ -1102,9 +1139,9 @@ export default function SettingsPage() {
               </div>
 
               {/* User Selection and Status Controls */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-sky-50/60 dark:bg-slate-850 border border-sky-100 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white font-black text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#47868C] flex items-center justify-center text-white font-black text-sm">
                     {selectedUserId.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -1114,7 +1151,7 @@ export default function SettingsPage() {
                     <select
                       value={selectedUserId}
                       onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="bg-white dark:bg-slate-800 border border-sky-300 dark:border-slate-700 rounded-lg px-3 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                      className="bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#47868C]"
                     >
                       {tenantUsers.map((u) => (
                         <option key={u.id} value={u.username}>
@@ -1141,7 +1178,7 @@ export default function SettingsPage() {
                         : "Deactivate User"}
                     </button>
                   )}
-                  <span className="text-xs font-bold text-sky-700 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-sky-200 dark:border-slate-700 shadow-2xs">
+                  <span className="text-xs font-bold text-[#47868C] bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 shadow-2xs">
                     {(userOverrides[selectedUserId] || []).length} Assigned
                   </span>
                 </div>
@@ -1152,10 +1189,10 @@ export default function SettingsPage() {
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span>
-                    <strong className="text-slate-800 dark:text-white">Subscription Filter:</strong> Showing only modules included in your organization's <strong className="text-sky-700 dark:text-sky-400">{menuEntitlements.planTier || "Active"} Plan</strong>. Unsubscribed modules cannot be assigned.
+                    <strong className="text-slate-800 dark:text-white">Subscription Filter:</strong> Showing only modules included in your organization's <strong className="text-[#47868C] dark:text-teal-400">{menuEntitlements.planTier || "Active"} Plan</strong>. Unsubscribed modules cannot be assigned.
                   </span>
                 </span>
-                <span className="font-bold text-sky-700 dark:text-sky-400 shrink-0 ml-2">
+                <span className="font-bold text-[#47868C] dark:text-teal-400 shrink-0 ml-2">
                   {menuEntitlements.enabledMenuKeys.length} Subscribed Features
                 </span>
               </div>
@@ -1188,7 +1225,7 @@ export default function SettingsPage() {
                         key={menu.key}
                         className={`p-3.5 rounded-xl border transition-all ${
                           isChecked
-                            ? "bg-sky-50/40 dark:bg-slate-850 border-sky-200 dark:border-slate-700"
+                            ? "bg-[#E7F1F2]/40 dark:bg-slate-850 border-[#47868C]/30 dark:border-slate-700"
                             : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800"
                         }`}
                       >
@@ -1197,7 +1234,7 @@ export default function SettingsPage() {
                           className="flex items-center justify-between gap-3 cursor-pointer"
                         >
                           <div className="flex items-center gap-2.5">
-                            {renderCatalogIcon(menu.key, "w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0")}
+                            {renderCatalogIcon(menu.key, "w-4 h-4 text-[#47868C] dark:text-teal-400 shrink-0")}
                             <div>
                               <h4 className="text-xs font-bold text-slate-900 dark:text-white">{menu.title}</h4>
                               <p className="text-[11px] text-slate-500">{menu.desc}</p>
@@ -1207,23 +1244,23 @@ export default function SettingsPage() {
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => {}}
-                            className="w-4 h-4 accent-sky-600 rounded cursor-pointer shrink-0"
+                            className="w-4 h-4 accent-[#47868C] rounded cursor-pointer shrink-0"
                           />
                         </div>
 
                         {/* Sub-items for this menu */}
                         {assignableSubItems.length > 0 && (
-                          <div className="ml-6 pl-3 border-l border-sky-100 dark:border-slate-700 space-y-1.5 pt-2 mt-2">
+                          <div className="ml-6 pl-3 border-l border-[#E5EAEB] dark:border-slate-700 space-y-1.5 pt-2 mt-2">
                             {assignableSubItems.map((sub) => {
                               const isSubChecked = activeUserPages.includes(sub.key);
                               return (
                                 <div
                                   key={sub.key}
                                   onClick={() => toggleUserPage(selectedUserId, sub.key)}
-                                  className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-slate-800 cursor-pointer"
+                                  className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-[#E7F1F2] dark:hover:bg-slate-800 cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2">
-                                    {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-sky-500 shrink-0")}
+                                    {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-[#47868C] shrink-0")}
                                     <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                       {sub.title}
                                     </span>
@@ -1232,7 +1269,7 @@ export default function SettingsPage() {
                                     type="checkbox"
                                     checked={isSubChecked}
                                     onChange={() => {}}
-                                    className="w-3.5 h-3.5 accent-sky-600 rounded cursor-pointer shrink-0"
+                                    className="w-3.5 h-3.5 accent-[#47868C] rounded cursor-pointer shrink-0"
                                   />
                                 </div>
                               );
@@ -1247,10 +1284,12 @@ export default function SettingsPage() {
               {/* Create Sub-User Modal */}
               {showCreateUserModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-sky-100 dark:border-slate-800 max-w-lg w-full p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 max-w-lg w-full p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <User className="w-5 h-5 text-sky-600" />
+                        <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
+                          <User className="w-4 h-4" />
+                        </div>
                         <div>
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create New Sub-User</h3>
                           <p className="text-[11px] text-slate-500">Add an operator account and assign organization-subscribed features</p>
@@ -1283,7 +1322,7 @@ export default function SettingsPage() {
                             placeholder="e.g. nitesh"
                             value={newUsername}
                             onChange={(e) => setNewUsername(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                           />
                         </div>
                         <div>
@@ -1296,7 +1335,7 @@ export default function SettingsPage() {
                             placeholder="••••••••"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                           />
                         </div>
                       </div>
@@ -1312,7 +1351,7 @@ export default function SettingsPage() {
                             placeholder="e.g. Nitesh Sharma"
                             value={newFullName}
                             onChange={(e) => setNewFullName(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                           />
                         </div>
                         <div>
@@ -1324,7 +1363,7 @@ export default function SettingsPage() {
                             placeholder="e.g. 9876543210"
                             value={newMobile}
                             onChange={(e) => setNewMobile(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                           />
                         </div>
                       </div>
@@ -1334,7 +1373,7 @@ export default function SettingsPage() {
                         <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
                           Assign Subscribed Features ({newAssignedFeatures.length} selected):
                         </label>
-                        <div className="max-h-48 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div className="max-h-48 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-[#D9E2E3] dark:border-slate-700 space-y-2">
                           {fullMenuCatalog
                             .filter(
                               (m) =>
@@ -1349,7 +1388,7 @@ export default function SettingsPage() {
                               return (
                                 <label key={m.key} className="flex items-center justify-between p-1 text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                                   <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                    {renderCatalogIcon(m.key, "w-3.5 h-3.5 text-sky-600 dark:text-sky-400")}
+                                    {renderCatalogIcon(m.key, "w-3.5 h-3.5 text-[#47868C] dark:text-teal-400")}
                                     <span>{m.title}</span>
                                   </span>
                                   <input
@@ -1360,7 +1399,7 @@ export default function SettingsPage() {
                                         checked ? prev.filter((k) => k !== m.key) : [...prev, m.key]
                                       );
                                     }}
-                                    className="w-3.5 h-3.5 accent-sky-600 rounded"
+                                    className="w-3.5 h-3.5 accent-[#47868C] rounded"
                                   />
                                 </label>
                               );
@@ -1379,7 +1418,7 @@ export default function SettingsPage() {
                         <button
                           type="submit"
                           disabled={creatingUser}
-                          className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
+                          className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
                         >
                           {creatingUser ? "Creating..." : "Save Sub-User"}
                         </button>
@@ -1393,8 +1432,8 @@ export default function SettingsPage() {
 
           {/* SUB-VIEW 3: GLOBAL MENU & ROUTE MATRIX */}
           {matrixMode === "menus" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-sky-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E5EAEB] dark:border-slate-800">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Tenant Navigation & Module Entitlements
@@ -1404,7 +1443,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-sky-700 bg-sky-50 dark:bg-sky-950 dark:text-sky-300 px-3 py-1 rounded-lg border border-sky-200 dark:border-sky-800">
+                  <span className="text-xs font-bold text-[#47868C] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-3 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700">
                     {menuEntitlements.enabledMenuKeys.length} Modules Active
                   </span>
                   <button
@@ -1430,7 +1469,7 @@ export default function SettingsPage() {
                       key={menu.key}
                       className={`p-4 rounded-2xl border transition-all ${
                         isChecked
-                          ? "bg-white dark:bg-slate-850 border-sky-200 dark:border-slate-700 shadow-2xs"
+                          ? "bg-white dark:bg-slate-850 border-[#47868C]/40 dark:border-slate-700 shadow-2xs"
                           : "bg-slate-50/60 dark:bg-slate-900 border-slate-200/60 dark:border-slate-800 opacity-60"
                       }`}
                     >
@@ -1439,7 +1478,7 @@ export default function SettingsPage() {
                         className="flex items-center justify-between gap-3 cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          {renderCatalogIcon(menu.key, "w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0")}
+                          {renderCatalogIcon(menu.key, "w-5 h-5 text-[#47868C] dark:text-teal-400 shrink-0")}
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="text-xs font-bold text-slate-900 dark:text-white">{menu.title}</h4>
@@ -1455,7 +1494,7 @@ export default function SettingsPage() {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}}
-                          className="w-4 h-4 accent-sky-600 rounded cursor-pointer shrink-0"
+                          className="w-4 h-4 accent-[#47868C] rounded cursor-pointer shrink-0"
                         />
                       </div>
 
@@ -1470,12 +1509,12 @@ export default function SettingsPage() {
                                 onClick={() => toggleMenuKey(sub.key)}
                                 className={`flex items-center justify-between p-2 rounded-xl border text-xs cursor-pointer transition ${
                                   isSubChecked
-                                    ? "bg-sky-50/60 border-sky-200 text-sky-900 dark:bg-slate-800 dark:text-sky-300 dark:border-slate-700"
+                                    ? "bg-[#E7F1F2]/60 border-[#47868C]/30 text-[#111827] dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700"
                                     : "bg-white border-slate-200 text-slate-500 dark:bg-slate-850 dark:border-slate-800"
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-sky-500 shrink-0")}
+                                  {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-[#47868C] shrink-0")}
                                   <div>
                                     <span className="font-semibold">{sub.title}</span>
                                     <span className="block text-[10px] text-slate-400">{sub.desc}</span>
@@ -1485,7 +1524,7 @@ export default function SettingsPage() {
                                   type="checkbox"
                                   checked={isSubChecked}
                                   onChange={() => {}}
-                                  className="w-3.5 h-3.5 accent-sky-600 rounded cursor-pointer shrink-0"
+                                  className="w-3.5 h-3.5 accent-[#47868C] rounded cursor-pointer shrink-0"
                                 />
                               </div>
                             );
@@ -1501,7 +1540,7 @@ export default function SettingsPage() {
 
           {/* SUB-VIEW 4: ROLE-BASED PERMISSION MATRIX (RBAC) */}
           {matrixMode === "roles" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   Role-Based Access Control (RBAC) Matrix
@@ -1513,7 +1552,7 @@ export default function SettingsPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-sky-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase font-bold border-b border-sky-100 dark:border-slate-700">
+                  <thead className="bg-[#F7F8F8] dark:bg-slate-800 text-[#64748B] dark:text-slate-300 uppercase font-bold border-b border-[#E5EAEB] dark:border-slate-700">
                     <tr>
                       <th className="px-4 py-3">Module / Route</th>
                       {standardRoles.map((role) => (
@@ -1528,7 +1567,7 @@ export default function SettingsPage() {
                       <tr key={menu.key} className="hover:bg-slate-50 dark:hover:bg-slate-850">
                         <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
                           <span className="inline-flex items-center gap-2">
-                            {renderCatalogIcon(menu.key, "w-4 h-4 text-sky-600 dark:text-sky-400")}
+                            {renderCatalogIcon(menu.key, "w-4 h-4 text-[#47868C] dark:text-teal-400")}
                             <span>{menu.title}</span>
                           </span>
                         </td>
@@ -1540,7 +1579,7 @@ export default function SettingsPage() {
                                 type="checkbox"
                                 checked={isAssigned}
                                 onChange={() => toggleRolePage(role, menu.key)}
-                                className="w-4 h-4 accent-sky-600 rounded cursor-pointer"
+                                className="w-4 h-4 accent-[#47868C] rounded cursor-pointer"
                               />
                             </td>
                           );
@@ -1555,8 +1594,8 @@ export default function SettingsPage() {
 
           {/* SUB-VIEW 5: GRANULAR REPORTS CATALOG */}
           {matrixMode === "reports" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-sky-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E5EAEB] dark:border-slate-800">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Granular Sub-Report Entitlements
@@ -1589,7 +1628,7 @@ export default function SettingsPage() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500">{report.description}</p>
-                      <span className="inline-block font-mono text-[10px] text-sky-700 dark:text-sky-400">
+                      <span className="inline-block font-mono text-[10px] text-[#47868C] dark:text-teal-400">
                         Path: {report.path}
                       </span>
                     </div>
@@ -1610,9 +1649,10 @@ export default function SettingsPage() {
 
       {/* TAB 1: GENERAL & BRANDING */}
       {activeTab === "general" && (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-5">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
               <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
                 Company & Tenant Information
               </h2>
@@ -1628,7 +1668,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, companyName: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -1642,7 +1682,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, legalName: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -1656,7 +1696,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, supportEmail: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -1670,7 +1710,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, supportPhone: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -1685,9 +1725,51 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, logoUrl: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                   <p className="text-[11px] text-slate-400 mt-1">This logo will automatically appear on all printed Bilties, GR Consignment notes, and Challans for this organization.</p>
+
+                  {/* Or upload a logo file directly (stored inline, so it prints without external hosting) */}
+                  <div className="mt-3 flex items-center gap-3 flex-wrap">
+                    {formData.general.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={formData.general.logoUrl} alt="Logo preview" className="h-14 w-14 object-contain rounded-lg border border-[#E5EAEB] dark:border-slate-700 bg-white p-1" />
+                    ) : (
+                      <div className="h-14 w-14 rounded-lg border border-dashed border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#94A3B8] text-[10px] text-center">No logo</div>
+                    )}
+                    <label className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#3F7C82] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold cursor-pointer transition">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 400 * 1024) {
+                            setErrorMessage("Logo image must be under 400 KB. Please upload a smaller file.");
+                            e.target.value = "";
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () =>
+                            setFormData((prev) => ({ ...prev, general: { ...prev.general, logoUrl: String(reader.result) } }));
+                          reader.readAsDataURL(file);
+                          e.target.value = "";
+                        }}
+                      />
+                      Upload Logo
+                    </label>
+                    {formData.general.logoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, general: { ...formData.general, logoUrl: "" } })}
+                        className="text-xs text-[#D95C5C] font-semibold hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Upload a PNG/JPG/SVG (max 400 KB). Uploading sets the logo above automatically. Remember to click Save.</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -1700,13 +1782,13 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, address: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-5">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
               <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
                 Locale & Currency Settings
               </h2>
@@ -1736,7 +1818,7 @@ export default function SettingsPage() {
                         },
                       });
                     }}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C]"
                   >
                     <option value="INR">INR (₹ - Indian Rupee)</option>
                     <option value="USD">USD ($ - US Dollar)</option>
@@ -1755,7 +1837,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, timeZone: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C]"
                   >
                     <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
                     <option value="Asia/Dubai">Asia/Dubai (GST +4:00)</option>
@@ -1773,7 +1855,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, general: { ...formData.general, dateFormat: e.target.value } })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C]"
                   >
                     <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 24/09/2026)</option>
                     <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 09/24/2026)</option>
@@ -1786,35 +1868,35 @@ export default function SettingsPage() {
 
           {/* Right Card: Live Preview */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-4">
+              <h3 className="text-sm font-bold text-[#111827] dark:text-white uppercase tracking-wider">
                 Live Branding Preview
               </h3>
-              <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/50 dark:bg-slate-850 space-y-3">
+              <div className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-850 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-[#47868C] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                     {formData.general.companyName ? formData.general.companyName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "FP"}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                    <h4 className="font-bold text-sm text-[#111827] dark:text-white">
                       {formData.general.companyName || "Company Name"}
                     </h4>
-                    <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                    <p className="text-[11px] text-[#47868C] dark:text-teal-400">
                       {formData.general.legalName || "Legal Name"}
                     </p>
                   </div>
                 </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 pt-2 border-t border-sky-100 dark:border-slate-800">
+                <div className="text-xs text-[#64748B] dark:text-slate-400 space-y-1.5 pt-2 border-t border-[#E5EAEB] dark:border-slate-800">
                   <p className="flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-[#47868C] shrink-0" />
                     <span>{formData.general.supportEmail || "support@transport.com"}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <Phone className="w-3.5 h-3.5 text-[#47868C] shrink-0" />
                     <span>{formData.general.supportPhone || "+91 98765 43210"}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-[#47868C] shrink-0" />
                     <span>{formData.general.address || "Zero Mile, Pahari, Patna-7"}</span>
                   </p>
                 </div>
@@ -1822,11 +1904,28 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Data export (portability) */}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">Data Export</h2>
+          <p className="text-xs text-[#64748B] dark:text-slate-400 mb-4">
+            Download a JSON copy of your organization's core data (parties, vehicles, shipments, invoices, trips, challans, and more). Only your organization's data is included.
+          </p>
+          <button
+            type="button"
+            onClick={handleExportData}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#3F7C82] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-bold transition disabled:opacity-50 cursor-pointer"
+          >
+            {exporting ? "Preparing export…" : "Export Organization Data"}
+          </button>
+        </div>
+        </>
       )}
 
       {/* TAB 2: BILLING, GST & TAX */}
       {activeTab === "billing" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
           <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             GST Compliance & Tax Rules
           </h2>
@@ -1843,7 +1942,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, billingAndTax: { ...formData.billingAndTax, gstin: e.target.value } })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-sky-500 uppercase"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15 uppercase"
               />
             </div>
 
@@ -1858,7 +1957,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, billingAndTax: { ...formData.billingAndTax, panNumber: e.target.value } })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-sky-500 uppercase"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15 uppercase"
               />
             </div>
 
@@ -1876,7 +1975,7 @@ export default function SettingsPage() {
                     billingAndTax: { ...formData.billingAndTax, defaultCgstRate: parseFloat(e.target.value) || 0 },
                   })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
               />
             </div>
 
@@ -1894,7 +1993,7 @@ export default function SettingsPage() {
                     billingAndTax: { ...formData.billingAndTax, defaultSgstRate: parseFloat(e.target.value) || 0 },
                   })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
               />
             </div>
 
@@ -1912,7 +2011,7 @@ export default function SettingsPage() {
                     billingAndTax: { ...formData.billingAndTax, defaultIgstRate: parseFloat(e.target.value) || 0 },
                   })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
               />
             </div>
 
@@ -1929,7 +2028,7 @@ export default function SettingsPage() {
                     billingAndTax: { ...formData.billingAndTax, eWayBillThresholdAmount: parseInt(e.target.value) || 50000 },
                   })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
               />
             </div>
           </div>
@@ -1938,7 +2037,7 @@ export default function SettingsPage() {
 
       {/* TAB 3: DOCUMENT SEQUENCES */}
       {activeTab === "sequences" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Document Numbering & Sequences</h2>
             <p className="text-xs text-slate-500">Configure prefixes, padding, and numbering for Invoices, Bilties (GR), and Challans</p>
@@ -1961,7 +2060,7 @@ export default function SettingsPage() {
                     type="text"
                     value={seq.prefix}
                     onChange={(e) => handleSequenceChange(idx, "prefix", e.target.value)}
-                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-[#47868C]"
                   />
                 </div>
 
@@ -1971,7 +2070,7 @@ export default function SettingsPage() {
                     type="number"
                     value={seq.nextNumber}
                     onChange={(e) => handleSequenceChange(idx, "nextNumber", parseInt(e.target.value) || 1)}
-                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-[#47868C]"
                   />
                 </div>
 
@@ -1981,13 +2080,13 @@ export default function SettingsPage() {
                     type="number"
                     value={seq.paddingDigits}
                     onChange={(e) => handleSequenceChange(idx, "paddingDigits", parseInt(e.target.value) || 4)}
-                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold"
+                    className="w-full bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-[#47868C]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sample Preview</label>
-                  <span className="inline-block font-mono font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded border border-sky-200 text-xs">
+                  <span className="inline-block font-mono font-bold text-[#47868C] bg-[#E7F1F2] px-2.5 py-1 rounded border border-[#D9E2E3] text-xs">
                     {previewSequenceNumber(seq.prefix, seq.suffix, seq.paddingDigits, seq.nextNumber)}
                   </span>
                 </div>
@@ -1999,7 +2098,7 @@ export default function SettingsPage() {
 
       {/* TAB 4: OPERATIONAL RULES */}
       {activeTab === "workflows" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
           <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             Operational Rules & Dispatch Workflows
           </h2>
@@ -2042,7 +2141,7 @@ export default function SettingsPage() {
                   }
                   className={`p-4 rounded-xl border flex items-center justify-between gap-4 cursor-pointer transition ${
                     isChecked
-                      ? "bg-sky-50/50 border-sky-200 dark:bg-slate-850 dark:border-slate-700"
+                      ? "bg-[#E7F1F2]/40 border-[#47868C]/30 dark:bg-slate-850 dark:border-slate-700"
                       : "bg-white border-slate-200 dark:bg-slate-900"
                   }`}
                 >
@@ -2054,7 +2153,7 @@ export default function SettingsPage() {
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => {}}
-                    className="w-4 h-4 accent-sky-600 rounded cursor-pointer shrink-0"
+                    className="w-4 h-4 accent-[#47868C] rounded cursor-pointer shrink-0"
                   />
                 </div>
               );
@@ -2063,28 +2162,28 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* TAB 5: SUBSCRIPTION & LIMITS */}
-      {activeTab === "modules" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+      {/* TAB 5: SUBSCRIPTION & LIMITS — PLATFORM OPERATOR ONLY */}
+      {activeTab === "modules" && isPlatformAdmin && (
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Subscription & Resource Quotas</h2>
               <p className="text-xs text-slate-500">Live usage metrics against allocated plan limits</p>
             </div>
-            <span className="text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1 rounded-lg border border-sky-200">
+            <span className="text-xs font-bold text-[#47868C] bg-[#E7F1F2] px-3 py-1 rounded-lg border border-[#D9E2E3]">
               Plan: {subscription?.planName || "Enterprise"} ({subscription?.planTier || "Enterprise"})
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-sky-50/50 dark:bg-slate-850 border border-sky-100 dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Vehicles Quota</span>
-              <h3 className="text-2xl font-black text-sky-700 dark:text-sky-400">
+              <h3 className="text-2xl font-black text-[#47868C] dark:text-teal-400">
                 {subscription?.currentVehicles || 8} / {subscription?.maxVehicles || 25}
               </h3>
               <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-sky-600 h-full rounded-full"
+                  className="bg-[#47868C] h-full rounded-full"
                   style={{
                     width: `${Math.min(100, ((subscription?.currentVehicles || 8) / (subscription?.maxVehicles || 25)) * 100)}%`,
                   }}
@@ -2092,14 +2191,14 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-sky-50/50 dark:bg-slate-850 border border-sky-100 dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Active Users</span>
-              <h3 className="text-2xl font-black text-sky-700 dark:text-sky-400">
+              <h3 className="text-2xl font-black text-[#47868C] dark:text-teal-400">
                 {subscription?.currentUsers || 3} / {subscription?.maxUsers || 10}
               </h3>
               <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-sky-600 h-full rounded-full"
+                  className="bg-[#47868C] h-full rounded-full"
                   style={{
                     width: `${Math.min(100, ((subscription?.currentUsers || 3) / (subscription?.maxUsers || 10)) * 100)}%`,
                   }}
@@ -2107,14 +2206,14 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-sky-50/50 dark:bg-slate-850 border border-sky-100 dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Monthly Shipments</span>
-              <h3 className="text-2xl font-black text-sky-700 dark:text-sky-400">
+              <h3 className="text-2xl font-black text-[#47868C] dark:text-teal-400">
                 {subscription?.currentMonthlyShipments || 120} / {subscription?.maxMonthlyShipments || 1000}
               </h3>
               <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-sky-600 h-full rounded-full"
+                  className="bg-[#47868C] h-full rounded-full"
                   style={{
                     width: `${Math.min(100, ((subscription?.currentMonthlyShipments || 120) / (subscription?.maxMonthlyShipments || 1000)) * 100)}%`,
                   }}
@@ -2127,7 +2226,7 @@ export default function SettingsPage() {
 
       {/* TAB 6: INTEGRATIONS & API */}
       {activeTab === "integrations" && (
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
           <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             External Integrations & Webhooks
           </h2>
@@ -2148,7 +2247,7 @@ export default function SettingsPage() {
                     },
                   })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#47868C]"
               >
                 <option value="None">None (Disabled)</option>
                 <option value="WheelsEye">WheelsEye GPS</option>
@@ -2168,7 +2267,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, integrations: { ...formData.integrations, webhookUrl: e.target.value } })
                 }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm font-mono focus:outline-none focus:border-[#47868C]"
               />
             </div>
           </div>

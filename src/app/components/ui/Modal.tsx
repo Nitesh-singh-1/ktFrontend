@@ -64,20 +64,20 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs overflow-y-auto">
       <div
-        className={`relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col w-full my-auto transition-all animate-in fade-in zoom-in-95 duration-150 ${
+        className={`relative bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xl overflow-hidden flex flex-col w-full my-auto transition-all animate-in fade-in zoom-in-95 duration-150 ${
           maxWidthMap[maxWidth] || "max-w-3xl"
         }`}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/50">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
               {title}
             </h3>
             {subtitle && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
                 {subtitle}
               </p>
             )}
@@ -85,7 +85,7 @@ export default function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700 transition cursor-pointer"
+            className="p-1.5 text-[#94A3B8] hover:text-[#111827] dark:hover:text-white rounded-lg hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer"
             title="Close"
           >
             <X className="w-4 h-4" />
@@ -101,7 +101,7 @@ export default function Modal({
         {footer ? (
           footer
         ) : showFooterButtons ? (
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/50 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
             <Button variant="secondary" onClick={onClose} disabled={isSaving}>
               {cancelText}
             </Button>

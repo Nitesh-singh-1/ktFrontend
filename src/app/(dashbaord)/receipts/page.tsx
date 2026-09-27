@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { MoneyReceiptDto } from "@/types/moneyReceipt";
 import { moneyReceiptService } from "services/moneyReceiptService";
 import { numberToWords } from "@/utils/numberToWords";
+import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
 import {
   Banknote,
   Search,
@@ -28,6 +29,8 @@ export default function MoneyReceiptsPage() {
 
   // Modal / Print View
   const [selectedReceipt, setSelectedReceipt] = useState<MoneyReceiptDto | null>(null);
+  // Tenant branding for the printed receipt (company name, logo, address).
+  const printProfile = getTenantPrintProfile();
 
   useEffect(() => {
     fetchReceipts();
@@ -75,20 +78,20 @@ export default function MoneyReceiptsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-1.5 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-2xs flex items-center justify-center">
+            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg text-sm font-bold flex items-center justify-center">
               <Banknote className="w-5 h-5" />
             </span>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Money Receipts (MR) & Counter Cash Collections
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#2F9E8F] border border-[#2F9E8F]/30 rounded-full">
               Paid Bilties
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Official legal money receipts generated exclusively for Paid Bilties (including Freight, Hamali, D.D. Charge, Stationery, and Surcharges).
           </p>
         </div>
@@ -96,39 +99,39 @@ export default function MoneyReceiptsPage() {
 
       {/* Financial KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Money Receipts</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{receipts.length}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Paid Bilty transactions</p>
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs">
+          <p className="text-xs font-semibold text-[#64748B]">Total Money Receipts</p>
+          <p className="text-2xl font-black text-[#111827] mt-1">{receipts.length}</p>
+          <p className="text-[10px] text-[#94A3B8] mt-1">Paid Bilty transactions</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Collections (₹)</p>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs">
+          <p className="text-xs font-semibold text-[#64748B]">Total Collections (₹)</p>
+          <p className="text-2xl font-black text-[#2F9E8F] font-mono mt-1">
             ₹{totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-1">Across filtered date range</p>
+          <p className="text-[10px] text-[#2F9E8F] mt-1">Across filtered date range</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Cash Collections</p>
-          <p className="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs">
+          <p className="text-xs font-semibold text-[#64748B]">Cash Collections</p>
+          <p className="text-xl font-black text-[#111827] font-mono mt-1">
             ₹{totalCash.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Physical counter cash</p>
+          <p className="text-[10px] text-[#94A3B8] mt-1">Physical counter cash</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">UPI / Bank Transfers</p>
-          <p className="text-xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs">
+          <p className="text-xs font-semibold text-[#64748B]">UPI / Bank Transfers</p>
+          <p className="text-xl font-black text-[#4A90E2] font-mono mt-1">
             ₹{totalOnline.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-blue-700 dark:text-blue-400 mt-1">Digital payments</p>
+          <p className="text-[10px] text-[#4A90E2] mt-1">Digital payments</p>
         </div>
       </div>
 
       {/* Date Range & Search Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-2xs flex flex-col lg:flex-row items-center justify-between gap-4">
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="relative w-full lg:w-80">
           <input
@@ -136,12 +139,12 @@ export default function MoneyReceiptsPage() {
             placeholder="Search MR No, Bilty No, Payer..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-24 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full h-10 pl-9 pr-24 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
           />
-          <Search className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+          <Search className="absolute left-3 top-3 text-[#94A3B8] w-4 h-4" />
           <button
             type="submit"
-            className="absolute right-1.5 top-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md text-xs transition cursor-pointer"
+            className="absolute right-1.5 top-1.5 px-3 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-md text-xs transition cursor-pointer"
           >
             Search
           </button>
@@ -149,24 +152,24 @@ export default function MoneyReceiptsPage() {
 
         {/* Date Range Inputs */}
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
+            <Calendar className="w-3.5 h-3.5 text-[#94A3B8]" />
             <span>From:</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="h-10 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
             <span>To:</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="h-10 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
             />
           </div>
 
@@ -184,23 +187,23 @@ export default function MoneyReceiptsPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Money Receipts Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-2xs overflow-hidden">
         {loading ? (
-          <div className="p-16 text-center text-slate-500 text-xs">Loading money receipts...</div>
+          <div className="p-16 text-center text-[#64748B] text-xs">Loading money receipts...</div>
         ) : receipts.length === 0 ? (
           <div className="p-16 text-center space-y-3">
             <div className="flex justify-center">
-              <Receipt className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+              <Receipt className="w-12 h-12 text-[#94A3B8]" />
             </div>
-            <p className="text-sm font-bold text-slate-800 dark:text-white">No Money Receipts Found</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            <p className="text-sm font-bold text-[#111827]">No Money Receipts Found</p>
+            <p className="text-xs text-[#64748B] max-w-sm mx-auto">
               Money Receipts are automatically generated when Bilties are booked with payment term &ldquo;Paid&rdquo;.
             </p>
           </div>
@@ -208,7 +211,7 @@ export default function MoneyReceiptsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                   <th className="py-3 px-4">MR No</th>
                   <th className="py-3 px-4">Receipt Date</th>
                   <th className="py-3 px-4">Bilty / GR No</th>
@@ -220,11 +223,11 @@ export default function MoneyReceiptsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#E5EAEB]">
                 {receipts.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                  <tr key={r.id} className="hover:bg-[#F5FAFA] transition">
                     {/* MR No */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                    <td className="py-3.5 px-4 font-mono font-bold text-[#47868C]">
                       <button
                         type="button"
                         onClick={() => setSelectedReceipt(r)}
@@ -235,40 +238,40 @@ export default function MoneyReceiptsPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
+                    <td className="py-3.5 px-4 font-medium text-[#111827]">
                       {r.receiptDate ? r.receiptDate.split("T")[0] : "—"}
                     </td>
 
                     {/* Bilty No */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-blue-600 dark:text-blue-400">
+                    <td className="py-3.5 px-4 font-mono font-bold text-[#4A90E2]">
                       {r.shipmentNo}
                     </td>
 
                     {/* Payer Name */}
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white">{r.payerName}</div>
-                      {r.payerGstNo && <div className="text-[10px] text-slate-400 font-mono">GST: {r.payerGstNo}</div>}
+                      <div className="font-semibold text-[#111827]">{r.payerName}</div>
+                      {r.payerGstNo && <div className="text-[10px] text-[#94A3B8] font-mono">GST: {r.payerGstNo}</div>}
                     </td>
 
                     {/* Route */}
-                    <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
-                      {r.fromLocation || "Pahari"} &rarr; {r.toLocation || "—"}
+                    <td className="py-3.5 px-4 text-[#111827]">
+                      {r.fromLocation || "Origin"} &rarr; {r.toLocation || "—"}
                     </td>
 
                     {/* Packages */}
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
+                    <td className="py-3.5 px-4 text-center font-bold text-[#111827]">
                       {r.totalPackages} PKG
                     </td>
 
                     {/* Payment Mode */}
                     <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800">
+                      <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] text-[#2F9E8F] border border-[#2F9E8F]/30 rounded-md">
                         {r.paymentMode || "CASH"}
                       </span>
                     </td>
 
                     {/* Amount */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#2F9E8F] text-sm">
                       ₹{r.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </td>
 
@@ -277,7 +280,7 @@ export default function MoneyReceiptsPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedReceipt(r)}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition cursor-pointer shadow-2xs flex items-center gap-1.5 ml-auto"
+                        className="px-3 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs transition cursor-pointer shadow-2xs flex items-center gap-1.5 ml-auto"
                       >
                         <Printer className="w-3.5 h-3.5" />
                         <span>Print MR</span>
@@ -323,20 +326,36 @@ export default function MoneyReceiptsPage() {
 
             {/* Authentic Money Receipt Slip Layout */}
             <div className="bg-[#f0fdf4] border-2 border-emerald-500 p-6 rounded-xl space-y-4 font-sans text-emerald-950">
-              {/* Receipt Header */}
-              <div className="text-center border-b-2 border-emerald-500 pb-3">
-                <span className="text-[10px] font-bold tracking-widest uppercase bg-emerald-700 text-white px-3 py-0.5 rounded-full">
-                  OFFICIAL MONEY RECEIPT (MR)
-                </span>
-                <h1 className="text-2xl font-black text-emerald-900 mt-1.5 tracking-tight">
-                  KESHRI TRANSPORT
-                </h1>
-                <p className="text-xs font-bold text-emerald-800">
-                  HEAD OFFICE: ZERO MILE, PAHARI, PATNA-7
-                </p>
-                <p className="text-[11px] text-emerald-700">
-                  Goods Transport Agency (GTA) • Freight & Handling Cash Receipt
-                </p>
+              {/* Receipt Header — neutral white band + tenant logo (in a white box) top-left, so any logo colour reads cleanly */}
+              <div className="bg-white -mx-6 -mt-6 px-6 pt-5 pb-4 rounded-t-xl border-b-2 border-slate-800">
+                <div className="flex items-start gap-3">
+                  {printProfile.logoUrl && (
+                    <div className="w-16 h-16 shrink-0 bg-white border border-slate-200 rounded-md p-1 flex items-center justify-center overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={printProfile.logoUrl}
+                        alt="Company Logo"
+                        className="max-w-full max-h-full object-contain"
+                        onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-bold tracking-widest uppercase bg-slate-800 text-white px-3 py-0.5 rounded-full">
+                      OFFICIAL MONEY RECEIPT (MR)
+                    </span>
+                    <h1 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight uppercase">
+                      {printProfile.companyName}
+                    </h1>
+                    {printProfile.address && (
+                      <p className="text-xs font-bold text-slate-600">{printProfile.address}</p>
+                    )}
+                    <p className="text-[11px] text-slate-500">
+                      Goods Transport Agency (GTA) • Freight &amp; Handling Cash Receipt
+                      {printProfile.gstin ? ` • GSTIN: ${printProfile.gstin}` : ""}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Receipt Meta Grid */}

@@ -9,6 +9,7 @@ export interface LoginResponse {
   success: boolean;
   message?: string;
   token?: string;
+  refreshToken?: string;
   tenantId?: string;
   organizationName?: string;
   user?: {
@@ -42,17 +43,20 @@ export const authService = {
     const res = await baseService.post<LoginResponse>("/auth/login", data);
 
     if (res.success && res.token) {
-      authService.setSession(res.token, res.user, res.tenantId, res.organizationName);
+      authService.setSession(res.token, res.user, res.tenantId, res.organizationName, res.refreshToken);
     }
 
     return res;
   },
 
-  setSession: (token: string, user?: any, tenantId?: string, organizationName?: string) => {
+  setSession: (token: string, user?: any, tenantId?: string, organizationName?: string, refreshToken?: string) => {
     if (typeof window === "undefined") return;
 
     localStorage.setItem("token", token);
     localStorage.setItem("isLoggedIn", "true");
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
 
     const decoded = parseJwt(token);
     const resolvedTenantId = tenantId || decoded?.tenant_id || decoded?.tenantId;
@@ -75,11 +79,18 @@ export const authService = {
 
   logout: () => {
     if (typeof window === "undefined") return;
+    const refreshToken = localStorage.getItem("refreshToken");
+    // Clear the session synchronously so callers can redirect immediately...
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem("tenantId");
     localStorage.removeItem("organizationName");
     localStorage.removeItem("isLoggedIn");
+    // ...then best-effort revoke the refresh token server-side in the background.
+    if (refreshToken) {
+      try { baseService.post("/auth/logout", { refreshToken }).catch(() => {}); } catch {}
+    }
   },
 
   getToken: () => {
@@ -114,5 +125,29 @@ export const authService = {
 
   verifyAndResetPassword: async (payload: { username: string; mobile: string; verificationCode: string; newPassword: string }): Promise<{ success: boolean; message?: string }> => {
     return await baseService.post("/auth/forgot-password/verify-and-reset", payload);
+  },
+
+  getMyProfile: async (): Promise<{ id: number; username: string; fullName: string; role: string; mobile?: string; email?: string; isPlatformAdmin?: boolean }> => {
+    return await baseService.get("/auth/me");
+  },
+
+  updateMyProfile: async (payload: { fullName?: string; mobile?: string; email?: string }): Promise<{ success: boolean; message?: string; profile?: any }> => {
+    return await baseService.put("/auth/profile", payload);
+  },
+
+  changePassword: async (payload: { oldPassword: string; newPassword: string }): Promise<{ success: boolean; message?: string }> => {
+    return await baseService.post("/auth/change-password", payload);
+  },
+
+  getInvite: async (token: string): Promise<{ valid: boolean; email?: string; organizationName?: string; role?: string; message?: string }> => {
+    return await baseService.get(`/auth/invite/${encodeURIComponent(token)}`);
+  },
+
+  acceptInvite: async (payload: { token: string; username: string; password: string; fullName: string; mobile?: string }): Promise<LoginResponse> => {
+    const res = await baseService.post<LoginResponse>("/auth/accept-invite", payload);
+    if (res.success && res.token) {
+      authService.setSession(res.token, res.user, res.tenantId, res.organizationName, res.refreshToken);
+    }
+    return res;
   },
 };

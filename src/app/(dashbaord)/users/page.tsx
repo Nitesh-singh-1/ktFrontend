@@ -6,6 +6,7 @@ import {
   SubUserDetails,
   CreateSubUserPayload,
   UpdateSubUserPayload,
+  InviteItem,
 } from "../../../../services/userService";
 import {
   User,
@@ -28,6 +29,9 @@ import {
   Phone,
   Filter,
   Users,
+  Mail,
+  Send,
+  Copy,
 } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
 
@@ -63,6 +67,45 @@ export default function UsersManagementPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPermModal, setShowPermModal] = useState(false);
+
+  // Invite state
+  const [invites, setInvites] = useState<InviteItem[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteForm, setInviteForm] = useState<{ email: string; role: string }>({ email: "", role: "SUB_USER" });
+  const [submittingInvite, setSubmittingInvite] = useState(false);
+
+  const loadInvites = async () => {
+    setInvites(await userService.getInvites());
+  };
+
+  const handleSendInvite = async () => {
+    if (!inviteForm.email.trim()) {
+      setNotification({ type: "error", message: "Please enter an email address." });
+      return;
+    }
+    try {
+      setSubmittingInvite(true);
+      const res = await userService.inviteUser({ email: inviteForm.email.trim(), role: inviteForm.role, assignedFeatures: [] });
+      if (res.success) {
+        setNotification({ type: "success", message: res.message || "Invitation sent." });
+        setShowInviteModal(false);
+        setInviteForm({ email: "", role: "SUB_USER" });
+        loadInvites();
+      } else {
+        setNotification({ type: "error", message: res.message || "Failed to send invite." });
+      }
+    } catch (e: any) {
+      setNotification({ type: "error", message: e?.message || "Failed to send invite." });
+    } finally {
+      setSubmittingInvite(false);
+    }
+  };
+
+  const handleRevokeInvite = async (id: number) => {
+    const res = await userService.revokeInvite(id);
+    setNotification({ type: res.success ? "success" : "error", message: res.message || "" });
+    loadInvites();
+  };
 
   // Selected User for Actions
   const [selectedUser, setSelectedUser] = useState<SubUserDetails | null>(null);
@@ -106,6 +149,7 @@ export default function UsersManagementPage() {
 
   useEffect(() => {
     loadUsers();
+    loadInvites();
   }, []);
 
   const showToast = (type: "success" | "error", message: string) => {
@@ -288,28 +332,28 @@ export default function UsersManagementPage() {
     const r = role.toLowerCase();
     if (r === "admin" || r === "superadmin" || r === "tenantadmin") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
-          <Shield className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E7F1F2] text-[#3F7C82] dark:bg-slate-800 dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700">
+          <Shield className="w-3 h-3 text-[#47868C]" />
           Admin
         </span>
       );
     }
     if (r === "operator" || r === "dispatch") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-[#4A90E2] dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60">
           Operator
         </span>
       );
     }
     if (r === "accounts" || r === "billing") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-[#2F9E8F] dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
           Accounts
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#F7F8F8] text-[#64748B] dark:bg-slate-800 dark:text-slate-300 border border-[#D9E2E3] dark:border-slate-700">
         Standard User
       </span>
     );
@@ -345,14 +389,14 @@ export default function UsersManagementPage() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#47868C] dark:text-teal-400 mb-1">
               <ShieldCheck className="w-4 h-4" />
               <span>Superadmin Control Center</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] dark:text-white tracking-tight">
               User Accounts & Role Permissions
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400 mt-1">
               Create sub-users with default standard rights, reset user passwords, and manage granular feature access.
             </p>
           </div>
@@ -361,37 +405,76 @@ export default function UsersManagementPage() {
             <button
               onClick={loadUsers}
               disabled={loading}
-              className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </button>
 
             <button
+              onClick={() => setShowInviteModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer"
+            >
+              <Mail className="w-4 h-4" />
+              <span>Invite by Email</span>
+            </button>
+
+            <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 active:from-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/20 transition flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add New User</span>
+              <span>Add Directly</span>
             </button>
           </div>
         </div>
 
+        {/* Pending Invitations */}
+        {invites.filter((i) => i.status === "Pending").length > 0 && (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs">
+            <div className="flex items-center gap-2 mb-3 text-sm font-bold text-[#111827] dark:text-white">
+              <Send className="w-4 h-4 text-[#47868C]" /> Pending Invitations
+            </div>
+            <div className="space-y-2">
+              {invites.filter((i) => i.status === "Pending").map((inv) => (
+                <div key={inv.id} className="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-[#E5EAEB] dark:border-slate-800 text-xs">
+                  <div className="min-w-0">
+                    <span className="font-semibold text-[#111827] dark:text-slate-200">{inv.email}</span>
+                    <span className="ml-2 text-[#64748B]">· {inv.role === "admin" ? "Administrator" : "Standard User"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {inv.acceptUrl && (
+                      <button
+                        onClick={() => { navigator.clipboard?.writeText(inv.acceptUrl!); setNotification({ type: "success", message: "Invite link copied." }); }}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-[#E7F1F2] text-[#3F7C82] font-semibold hover:bg-[#d9ecec] cursor-pointer"
+                        title="Copy invite link (email delivery is off)"
+                      >
+                        <Copy className="w-3 h-3" /> Copy link
+                      </button>
+                    )}
+                    <button onClick={() => handleRevokeInvite(inv.id)} className="text-[#D95C5C] font-semibold hover:underline cursor-pointer">Revoke</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
                 Total Users
               </span>
-              <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
                 <Users className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">
+            <div className="text-2xl font-bold text-[#111827] dark:text-white mt-2">
               {users.length}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">Across this organization</div>
+            <div className="text-[11px] text-[#94A3B8] mt-1">Across this organization</div>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -414,42 +497,42 @@ export default function UsersManagementPage() {
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Standard Users
               </span>
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] flex items-center justify-center">
                 <User className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2">
+            <div className="text-2xl font-black text-[#111827] dark:text-white mt-2">
               {users.filter((u) => u.role.toLowerCase() === "sub_user" || u.role.toLowerCase() === "user").length}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">Default restricted rights</div>
+            <div className="text-[11px] text-[#64748B] mt-1">Default restricted rights</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
                 Admins & Managers
               </span>
-              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
                 <Shield className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2">
+            <div className="text-2xl font-bold text-[#111827] dark:text-white mt-2">
               {users.filter((u) => u.role.toLowerCase() !== "sub_user" && u.role.toLowerCase() !== "user").length}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">Administrative operators</div>
+            <div className="text-[11px] text-[#94A3B8] mt-1">Administrative operators</div>
           </div>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+        <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#64748B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search by name, username, mobile, or role..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
             />
           </div>
 
@@ -457,7 +540,7 @@ export default function UsersManagementPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-sky-500"
+              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:border-[#47868C]"
             >
               <option value="all">All Roles</option>
               <option value="sub_user">Standard User (SUB_USER)</option>
@@ -469,7 +552,7 @@ export default function UsersManagementPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-sky-500"
+              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:border-[#47868C]"
             >
               <option value="all">All Status</option>
               <option value="active">Active Only</option>
@@ -497,7 +580,7 @@ export default function UsersManagementPage() {
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full" />
+                        <div className="animate-spin h-6 w-6 border-2 border-[#47868C] border-t-transparent rounded-full" />
                         <span>Loading user directory...</span>
                       </div>
                     </td>
@@ -520,7 +603,7 @@ export default function UsersManagementPage() {
                       {/* User Info */}
                       <td className="py-3.5 px-4 sm:px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#47868C] text-white font-bold text-xs flex items-center justify-center shadow-xs">
                             {u.fullName ? u.fullName.charAt(0).toUpperCase() : u.username.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -578,7 +661,7 @@ export default function UsersManagementPage() {
                             setSelectedPerms(u.assignedFeatures || []);
                             setShowPermModal(true);
                           }}
-                          className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-semibold text-[#47868C] hover:text-[#3F7C82] dark:text-teal-400 hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>
@@ -632,17 +715,69 @@ export default function UsersManagementPage() {
         </div>
 
         {/* MODAL 1: ADD NEW USER */}
+        {/* Invite by Email Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-2xl w-full max-w-md">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800">
+                <div className="flex items-center gap-2 text-base font-bold text-[#111827] dark:text-white">
+                  <Mail className="w-4 h-4 text-[#47868C]" /> Invite a Teammate
+                </div>
+                <button onClick={() => setShowInviteModal(false)} className="p-1.5 rounded-lg hover:bg-[#F7F8F8] dark:hover:bg-slate-800 text-[#64748B] cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-[#64748B] dark:text-slate-400">
+                  They'll get an email with a secure link to set their own username and password. You can fine-tune their module access after they join.
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    value={inviteForm.email}
+                    onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                    placeholder="teammate@company.com"
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">Role</label>
+                  <select
+                    value={inviteForm.role}
+                    onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  >
+                    <option value="SUB_USER">Standard User</option>
+                    <option value="admin">Administrator (Full Org Control)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[#E5EAEB] dark:border-slate-800">
+                <button onClick={() => setShowInviteModal(false)} className="px-4 py-2 rounded-lg text-xs font-semibold text-[#64748B] hover:bg-[#F7F8F8] dark:hover:bg-slate-800 cursor-pointer">Cancel</button>
+                <button
+                  onClick={handleSendInvite}
+                  disabled={submittingInvite}
+                  className="px-4 py-2 rounded-lg bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-bold flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" /> {submittingInvite ? "Sending…" : "Send Invitation"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showAddModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
               {/* Modal Header */}
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
                     <UserPlus className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-slate-900 dark:text-white">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
                       Create New User Account
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -671,7 +806,7 @@ export default function UsersManagementPage() {
                       placeholder="e.g. rajesh_ops"
                       value={addForm.username}
                       onChange={(e) => setAddForm({ ...addForm, username: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                     />
                   </div>
 
@@ -685,7 +820,7 @@ export default function UsersManagementPage() {
                       placeholder="e.g. Rajesh Kumar"
                       value={addForm.fullName}
                       onChange={(e) => setAddForm({ ...addForm, fullName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                     />
                   </div>
                 </div>
@@ -701,7 +836,7 @@ export default function UsersManagementPage() {
                       placeholder="At least 6 characters"
                       value={addForm.password}
                       onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                     />
                   </div>
 
@@ -715,7 +850,7 @@ export default function UsersManagementPage() {
                       placeholder="e.g. 9876543210"
                       value={addForm.mobile}
                       onChange={(e) => setAddForm({ ...addForm, mobile: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                     />
                   </div>
                 </div>
@@ -728,7 +863,7 @@ export default function UsersManagementPage() {
                   <select
                     value={addForm.role}
                     onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C]"
                   >
                     <option value="SUB_USER">Standard User (SUB_USER) - Default</option>
                     <option value="operator">Operator (Dispatch & Operations)</option>
@@ -745,7 +880,7 @@ export default function UsersManagementPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
                     Permitted Features & Workspaces
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-[#D9E2E3] dark:border-slate-700">
                     {SYSTEM_MODULES.map((mod) => {
                       const isChecked = addForm.assignedFeatures.includes(mod.key);
                       return (
@@ -771,7 +906,7 @@ export default function UsersManagementPage() {
                                 });
                               }
                             }}
-                            className="w-3.5 h-3.5 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
+                            className="w-3.5 h-3.5 rounded text-[#47868C] focus:ring-[#47868C] border-slate-300"
                           />
                           <span>{mod.label}</span>
                         </label>
@@ -792,7 +927,7 @@ export default function UsersManagementPage() {
                   <button
                     type="submit"
                     disabled={submittingAdd}
-                    className="px-5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submittingAdd ? (
                       <>
@@ -904,7 +1039,7 @@ export default function UsersManagementPage() {
                   <button
                     type="submit"
                     disabled={submittingReset}
-                    className="px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submittingReset ? (
                       <>
@@ -931,11 +1066,11 @@ export default function UsersManagementPage() {
               {/* Header */}
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
                     <Edit3 className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-slate-900 dark:text-white">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
                       Edit User Profile
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -961,7 +1096,7 @@ export default function UsersManagementPage() {
                     type="text"
                     value={editForm.fullName || ""}
                     onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -974,7 +1109,7 @@ export default function UsersManagementPage() {
                     maxLength={15}
                     value={editForm.mobile || ""}
                     onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C] focus:ring-2 focus:ring-[#47868C]/15"
                   />
                 </div>
 
@@ -985,7 +1120,7 @@ export default function UsersManagementPage() {
                   <select
                     value={editForm.role || "SUB_USER"}
                     onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#47868C]"
                   >
                     <option value="SUB_USER">Standard User (SUB_USER)</option>
                     <option value="operator">Operator (Dispatch & Trips)</option>
@@ -994,7 +1129,7 @@ export default function UsersManagementPage() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-[#D9E2E3] dark:border-slate-700">
                   <div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white">Active Status</div>
                     <div className="text-[11px] text-slate-400">Allow user to sign in to console</div>
@@ -1003,7 +1138,7 @@ export default function UsersManagementPage() {
                     type="checkbox"
                     checked={editForm.isActive ?? true}
                     onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
-                    className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 cursor-pointer"
+                    className="w-4 h-4 rounded text-[#47868C] focus:ring-[#47868C] border-slate-300 cursor-pointer"
                   />
                 </div>
 
@@ -1018,7 +1153,7 @@ export default function UsersManagementPage() {
                   <button
                     type="submit"
                     disabled={submittingEdit}
-                    className="px-5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submittingEdit ? (
                       <>
@@ -1045,11 +1180,11 @@ export default function UsersManagementPage() {
               {/* Header */}
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] dark:text-teal-400 flex items-center justify-center">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-slate-900 dark:text-white">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
                       Granular Module Permissions
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1067,7 +1202,7 @@ export default function UsersManagementPage() {
 
               {/* Body */}
               <form onSubmit={handlePermsSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-[#D9E2E3] dark:border-slate-700">
                   {SYSTEM_MODULES.map((mod) => {
                     const isChecked = selectedPerms.includes(mod.key);
                     return (
@@ -1085,7 +1220,7 @@ export default function UsersManagementPage() {
                               setSelectedPerms(selectedPerms.filter((k) => k !== mod.key));
                             }
                           }}
-                          className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
+                          className="w-4 h-4 rounded text-[#47868C] focus:ring-[#47868C] border-slate-300"
                         />
                         <span>{mod.label}</span>
                       </label>
@@ -1104,7 +1239,7 @@ export default function UsersManagementPage() {
                   <button
                     type="submit"
                     disabled={submittingPerms}
-                    className="px-5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submittingPerms ? (
                       <>

@@ -80,39 +80,39 @@ export default function ClaimsPage() {
   const getStatusBadge = (status: ClaimStatus) => {
     switch (status) {
       case ClaimStatus.Approved:
-        return { text: "APPROVED", class: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800" };
+        return { text: "APPROVED", class: "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]" };
       case ClaimStatus.Settled:
-        return { text: "SETTLED", class: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800" };
+        return { text: "SETTLED", class: "bg-[#E8F6F4] text-[#2F9E8F] border-[#C2E9E3]" };
       case ClaimStatus.Rejected:
-        return { text: "REJECTED", class: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800" };
+        return { text: "REJECTED", class: "bg-[#FDF2F2] text-[#D95C5C] border-[#F8B4B4]" };
       case ClaimStatus.Investigating:
-        return { text: "INVESTIGATING", class: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800" };
+        return { text: "INVESTIGATING", class: "bg-[#FEF6EE] text-[#F4A261] border-[#FBD38D]" };
       default:
-        return { text: "REPORTED", class: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800" };
+        return { text: "REPORTED", class: "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]" };
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-6 border border-[#E5EAEB] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Cargo Damage, Shortage & Loss Claims
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full dark:bg-red-950 dark:text-red-300 dark:border-red-800">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#FEF6EE] text-[#F4A261] border border-[#FBD38D] rounded-full">
               Insurance & Claims
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Log transit damage incidents, investigate shortage shortages, track insurance claims, and record compensation settlements.
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Report New Claim</span>
@@ -121,50 +121,50 @@ export default function ClaimsPage() {
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Reported Incidents</p>
-            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalClaims}</p>
+            <p className="text-xs font-semibold text-[#64748B]">Total Reported Incidents</p>
+            <p className="text-2xl font-bold text-[#111827] mt-1">{totalClaims}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center font-bold text-lg">
-            <AlertTriangle className="w-5 h-5 text-rose-600" />
+          <div className="w-10 h-10 rounded-xl bg-[#FEF6EE] text-[#F4A261] flex items-center justify-center font-bold text-lg">
+            <AlertTriangle className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Open Under Investigation</p>
-            <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{openCount}</p>
+            <p className="text-xs font-semibold text-[#64748B]">Open Under Investigation</p>
+            <p className="text-2xl font-bold text-[#F4A261] mt-1">{openCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg">
+          <div className="w-10 h-10 rounded-xl bg-[#FEF6EE] text-[#F4A261] flex items-center justify-center font-bold text-lg">
             <Search className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Compensation Settled</p>
-            <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+            <p className="text-xs font-semibold text-[#64748B]">Total Compensation Settled</p>
+            <p className="text-xl font-bold text-[#2F9E8F] font-mono mt-1">
               ₹{totalSettled.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
+          <div className="w-10 h-10 rounded-xl bg-[#E8F6F4] text-[#2F9E8F] flex items-center justify-center font-bold text-lg">
             <ShieldCheck className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-96">
           <input
             type="text"
             placeholder="Search claim no, LR no, claimant..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
           />
-          <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
+          <Search className="absolute left-3 top-2.5 text-[#94A3B8] w-4 h-4" />
         </div>
 
         {/* Filter Tabs */}
@@ -184,8 +184,8 @@ export default function ClaimsPage() {
                 onClick={() => setStatusFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? "bg-slate-900 text-white dark:bg-sky-600 dark:text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+                    ? "bg-[#47868C] text-white shadow-xs"
+                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#3F7C82] border border-[#E5EAEB]"
                 }`}
               >
                 {tab.label}
@@ -197,28 +197,28 @@ export default function ClaimsPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div className="p-4 bg-[#FDF2F2] border border-[#F8B4B4] rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Claims Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-xs overflow-hidden">
         {loading ? (
-          <div className="p-16 text-center text-slate-500 text-xs">Loading cargo claims...</div>
+          <div className="p-16 text-center text-[#64748B] text-xs">Loading cargo claims...</div>
         ) : claims.length === 0 ? (
           <div className="p-16 text-center space-y-3">
             <div className="flex justify-center">
-              <ShieldCheck className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+              <ShieldCheck className="w-12 h-12 text-[#94A3B8]" />
             </div>
-            <p className="text-sm font-bold text-slate-800 dark:text-white">No Cargo Claims Reported</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            <p className="text-sm font-bold text-[#111827]">No Cargo Claims Reported</p>
+            <p className="text-xs text-[#64748B] max-w-sm mx-auto">
               All consignments are moving intact with 0 incident reports on record.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Report Incident / Claim</span>
@@ -228,7 +228,7 @@ export default function ClaimsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                   <th className="py-3 px-4">Claim ID</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Consignment (LR)</th>
@@ -240,38 +240,38 @@ export default function ClaimsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#E5EAEB]">
                 {claims.map((c) => {
                   const statusBadge = getStatusBadge(c.status);
                   return (
-                    <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                    <tr key={c.id} className="hover:bg-[#F5FAFA] transition">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#111827]">
                         {c.claimNo}
                       </td>
 
-                      <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      <td className="py-3.5 px-4 font-medium text-[#111827]">
                         {c.claimDate ? c.claimDate.split("T")[0] : "—"}
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono font-bold text-blue-600 dark:text-blue-400">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#4A90E2]">
                         {c.shipmentNo || "—"}
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{c.claimTypeName || "Damage"}</span>
-                        <div className="text-[10px] text-slate-400 max-w-xs truncate">{c.description}</div>
+                        <span className="font-semibold text-[#111827]">{c.claimTypeName || "Damage"}</span>
+                        <div className="text-[10px] text-[#64748B] max-w-xs truncate">{c.description}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{c.claimantName || "Consignee"}</div>
-                        {c.claimantMobile && <div className="text-[10px] text-slate-400 font-mono">{c.claimantMobile}</div>}
+                        <div className="font-semibold text-[#111827]">{c.claimantName || "Consignee"}</div>
+                        {c.claimantMobile && <div className="text-[10px] text-[#64748B] font-mono">{c.claimantMobile}</div>}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-red-600">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-[#D95C5C]">
                         ₹{c.claimedAmount}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-[#2F9E8F]">
                         ₹{c.settledAmount || 0}
                       </td>
 
@@ -284,7 +284,7 @@ export default function ClaimsPage() {
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => handleUpdateStatus(c)}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
+                          className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
                         >
                           Resolve
                         </button>

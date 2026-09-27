@@ -98,4 +98,23 @@ export const tenantService = {
   // Update menu entitlements for a tenant
   updateEntitlements: (id: string, data: TenantMenuEntitlements) =>
     baseService.put<TenantMenuEntitlements>(`/tenant/${id}/entitlements`, data),
+
+  // Platform-operator: list a tenant's users
+  getTenantUsers: (id: string) =>
+    baseService.get<TenantUser[]>(`/tenant/${id}/users`),
+
+  // Platform-operator: set a tenant user's role (promote to admin / demote to standard user)
+  setTenantUserRole: (id: string, userId: number, role: "admin" | "SUB_USER") =>
+    baseService.put<{ success: boolean; message: string }>(`/tenant/${id}/users/${userId}/role`, { userId, role }),
 };
+
+export interface TenantUser {
+  id: number;
+  username: string;
+  fullName: string;
+  role: string;
+  mobile?: string;
+  email?: string;
+  isActive: boolean;
+  isAdmin: boolean;
+}

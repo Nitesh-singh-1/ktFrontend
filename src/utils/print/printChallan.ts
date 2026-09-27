@@ -1,5 +1,6 @@
 import { apiService } from "../../../services/apiservice";
 import { generateChallanPrintTemplate } from "./challanPrintTemplate";
+import { openPrintWindow } from "./printHeader";
 
 export async function printChallan(id: number): Promise<void> {
   try {
@@ -13,19 +14,9 @@ export async function printChallan(id: number): Promise<void> {
 
     const challan = response.data;
 
-    // Generate HTML from template
+    // Generate HTML from template and open a load-gated print window (waits for the logo to load).
     const htmlContent = generateChallanPrintTemplate(challan);
-
-    // Open print window
-    const printWindow = window.open("", "_blank");
-    
-    if (!printWindow) {
-      alert("Please allow popups to print");
-      return;
-    }
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    openPrintWindow(htmlContent);
   } catch (err: any) {
     alert(err.message || "Failed to generate print document");
     console.error("Error printing challan:", err);

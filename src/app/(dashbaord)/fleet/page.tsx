@@ -128,17 +128,17 @@ export default function FleetMasterPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-sky-100 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Stations, Drivers & Fleet Master
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 rounded-full dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
               Operations Directory
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Maintain master records for operating stations/hubs, commercial drivers, and fleet vehicles.
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function FleetMasterPage() {
                 setEditingLocation(null);
                 setLocationModalOpen(true);
               }}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Station / Hub</span>
@@ -163,7 +163,7 @@ export default function FleetMasterPage() {
                 setEditingDriver(null);
                 setDriverModalOpen(true);
               }}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Driver</span>
@@ -176,7 +176,7 @@ export default function FleetMasterPage() {
                 setEditingVehicle(null);
                 setVehicleModalOpen(true);
               }}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Vehicle</span>
@@ -190,19 +190,19 @@ export default function FleetMasterPage() {
         {/* 1. Stations & Hubs */}
         <div
           onClick={() => setActiveTab("locations")}
-          className={`p-4 rounded-xl border transition cursor-pointer shadow-xs ${
+          className={`p-4 rounded-xl border transition cursor-pointer shadow-2xs ${
             activeTab === "locations"
-              ? "bg-sky-50/80 border-sky-600 ring-1 ring-sky-600/30 dark:bg-sky-950/40 dark:border-sky-500"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              ? "bg-[#E7F1F2] border-[#47868C] ring-1 ring-[#47868C]/30"
+              : "bg-white border-[#E5EAEB] hover:bg-[#F7F8F8]"
           }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">1. Stations & Operating Hubs</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{locations.length}</p>
+              <p className="text-xs font-semibold text-[#64748B]">1. Stations & Operating Hubs</p>
+              <p className="text-2xl font-black text-[#111827] mt-1">{locations.length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300 flex items-center justify-center font-bold text-lg">
-              <MapPin className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <div className="w-10 h-10 rounded-xl bg-white text-[#47868C] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
+              <MapPin className="w-5 h-5 text-[#47868C]" />
             </div>
           </div>
         </div>
@@ -210,19 +210,19 @@ export default function FleetMasterPage() {
         {/* 2. Drivers */}
         <div
           onClick={() => setActiveTab("drivers")}
-          className={`p-4 rounded-xl border transition cursor-pointer shadow-xs ${
+          className={`p-4 rounded-xl border transition cursor-pointer shadow-2xs ${
             activeTab === "drivers"
-              ? "bg-sky-50/80 border-sky-600 ring-1 ring-sky-600/30 dark:bg-sky-950/40 dark:border-sky-500"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              ? "bg-[#E7F1F2] border-[#47868C] ring-1 ring-[#47868C]/30"
+              : "bg-white border-[#E5EAEB] hover:bg-[#F7F8F8]"
           }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">2. Fleet Drivers</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{drivers.length}</p>
+              <p className="text-xs font-semibold text-[#64748B]">2. Fleet Drivers</p>
+              <p className="text-2xl font-black text-[#111827] mt-1">{drivers.length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300 flex items-center justify-center font-bold text-lg">
-              <User className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <div className="w-10 h-10 rounded-xl bg-white text-[#47868C] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
+              <User className="w-5 h-5 text-[#47868C]" />
             </div>
           </div>
         </div>
@@ -230,26 +230,26 @@ export default function FleetMasterPage() {
         {/* 3. Vehicles */}
         <div
           onClick={() => setActiveTab("vehicles")}
-          className={`p-4 rounded-xl border transition cursor-pointer shadow-xs ${
+          className={`p-4 rounded-xl border transition cursor-pointer shadow-2xs ${
             activeTab === "vehicles"
-              ? "bg-sky-50/80 border-sky-600 ring-1 ring-sky-600/30 dark:bg-sky-950/40 dark:border-sky-500"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              ? "bg-[#E7F1F2] border-[#47868C] ring-1 ring-[#47868C]/30"
+              : "bg-white border-[#E5EAEB] hover:bg-[#F7F8F8]"
           }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">3. Fleet Vehicles (Trucks)</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{vehicles.length}</p>
+              <p className="text-xs font-semibold text-[#64748B]">3. Fleet Vehicles (Trucks)</p>
+              <p className="text-2xl font-black text-[#111827] mt-1">{vehicles.length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300 flex items-center justify-center font-bold text-lg">
-              <Truck className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <div className="w-10 h-10 rounded-xl bg-white text-[#47868C] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
+              <Truck className="w-5 h-5 text-[#47868C]" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Tab Selector & Search Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation Tabs (Ordered: Station/Hub -> Driver -> Vehicle) */}
         <div className="flex items-center gap-1.5 w-full md:w-auto">
           {[
@@ -268,8 +268,8 @@ export default function FleetMasterPage() {
                 }}
                 className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                   isSelected
-                    ? "bg-slate-900 dark:bg-sky-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    ? "bg-[#47868C] text-white shadow-xs"
+                    : "bg-white text-[#64748B] hover:bg-[#E7F1F2] border border-[#E5EAEB]"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -277,8 +277,8 @@ export default function FleetMasterPage() {
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                     isSelected
-                      ? "bg-slate-700 dark:bg-sky-800 text-white"
-                      : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                      ? "bg-[#3F7C82] text-white"
+                      : "bg-[#F7F8F8] text-[#64748B]"
                   }`}
                 >
                   {tab.count}
@@ -295,26 +295,26 @@ export default function FleetMasterPage() {
             placeholder={`Search ${activeTab === 'locations' ? 'stations' : activeTab}...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-2.5" />
         </div>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Master Data Tables */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-2xs overflow-hidden">
         {loading ? (
           <div className="p-16 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto mb-3" />
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Loading station and fleet records...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+            <p className="text-xs text-[#64748B] font-medium">Loading station and fleet records...</p>
           </div>
         ) : (
           <>
@@ -323,11 +323,11 @@ export default function FleetMasterPage() {
               <div>
                 {filteredLocations.length === 0 ? (
                   <div className="p-16 text-center space-y-3">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-[#E7F1F2] flex items-center justify-center">
+                      <MapPin className="w-6 h-6 text-[#47868C]" />
                     </div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">No Stations / Hubs Found</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    <p className="text-sm font-bold text-[#111827]">No Stations / Hubs Found</p>
+                    <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Add operational booking hubs and destination stations to enable route selection.
                     </p>
                     <button
@@ -335,7 +335,7 @@ export default function FleetMasterPage() {
                         setEditingLocation(null);
                         setLocationModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
+                      className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
                       + Add First Station / Hub
                     </button>
@@ -344,7 +344,7 @@ export default function FleetMasterPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                           <th className="py-3 px-4">Station / Hub Name</th>
                           <th className="py-3 px-4">Station Code</th>
                           <th className="py-3 px-4">City</th>
@@ -352,19 +352,19 @@ export default function FleetMasterPage() {
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                      <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
                         {filteredLocations.map((l) => (
-                          <tr key={l.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                          <tr key={l.id} className="hover:bg-[#F5FAFA] transition">
+                            <td className="py-3.5 px-4 font-bold text-[#111827]">
                               {l.name}
                             </td>
-                            <td className="py-3.5 px-4 font-mono font-bold text-sky-600 dark:text-sky-400">
+                            <td className="py-3.5 px-4 font-mono font-bold text-[#47868C]">
                               {l.code || "—"}
                             </td>
                             <td className="py-3.5 px-4 font-semibold">
                               {l.city || "—"}
                             </td>
-                            <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400">
+                            <td className="py-3.5 px-4 text-[#64748B]">
                               {l.state || "—"}
                             </td>
                             <td className="py-3.5 px-4 text-right">
@@ -374,13 +374,13 @@ export default function FleetMasterPage() {
                                     setEditingLocation(l);
                                     setLocationModalOpen(true);
                                   }}
-                                  className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-sky-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                                  className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteLocation(l)}
-                                  className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer"
+                                  className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
                                   title="Delete Station"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -401,11 +401,11 @@ export default function FleetMasterPage() {
               <div>
                 {filteredDrivers.length === 0 ? (
                   <div className="p-16 text-center space-y-3">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center">
-                      <User className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-[#E7F1F2] flex items-center justify-center">
+                      <User className="w-6 h-6 text-[#47868C]" />
                     </div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">No Drivers Registered</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    <p className="text-sm font-bold text-[#111827]">No Drivers Registered</p>
+                    <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Add commercial drivers with license details and verified mobile numbers.
                     </p>
                     <button
@@ -413,7 +413,7 @@ export default function FleetMasterPage() {
                         setEditingDriver(null);
                         setDriverModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
+                      className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
                       + Register First Driver
                     </button>
@@ -422,7 +422,7 @@ export default function FleetMasterPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                           <th className="py-3 px-4">Driver Name</th>
                           <th className="py-3 px-4">License Number (DL)</th>
                           <th className="py-3 px-4">Mobile Number</th>
@@ -430,19 +430,19 @@ export default function FleetMasterPage() {
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                      <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
                         {filteredDrivers.map((d) => (
-                          <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                          <tr key={d.id} className="hover:bg-[#F5FAFA] transition">
+                            <td className="py-3.5 px-4 font-bold text-[#111827]">
                               {d.name}
                             </td>
-                            <td className="py-3.5 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">
+                            <td className="py-3.5 px-4 font-mono font-bold text-[#111827]">
                               {d.licenseNo || "—"}
                             </td>
-                            <td className="py-3.5 px-4 font-mono text-slate-700 dark:text-slate-300 font-semibold">
+                            <td className="py-3.5 px-4 font-mono text-[#64748B] font-semibold">
                               {d.mobile || "—"}
                             </td>
-                            <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 max-w-xs truncate">
+                            <td className="py-3.5 px-4 text-[#64748B] max-w-xs truncate">
                               {d.address || "—"}
                             </td>
                             <td className="py-3.5 px-4 text-right">
@@ -452,13 +452,13 @@ export default function FleetMasterPage() {
                                     setEditingDriver(d);
                                     setDriverModalOpen(true);
                                   }}
-                                  className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-sky-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                                  className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteDriver(d)}
-                                  className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer"
+                                  className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
                                   title="Delete Driver"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -479,11 +479,11 @@ export default function FleetMasterPage() {
               <div>
                 {filteredVehicles.length === 0 ? (
                   <div className="p-16 text-center space-y-3">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center">
-                      <Truck className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-[#E7F1F2] flex items-center justify-center">
+                      <Truck className="w-6 h-6 text-[#47868C]" />
                     </div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-white">No Vehicles Found</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    <p className="text-sm font-bold text-[#111827]">No Vehicles Found</p>
+                    <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Register trucks and lorries to enable dispatch assignment in Challans.
                     </p>
                     <button
@@ -491,7 +491,7 @@ export default function FleetMasterPage() {
                         setEditingVehicle(null);
                         setVehicleModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
+                      className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
                       + Add First Vehicle
                     </button>
@@ -500,7 +500,7 @@ export default function FleetMasterPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
-                        <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                           <th className="py-3 px-4">Vehicle / Lorry No</th>
                           <th className="py-3 px-4">Body Type</th>
                           <th className="py-3 px-4">Carrying Capacity</th>
@@ -509,10 +509,10 @@ export default function FleetMasterPage() {
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                      <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
                         {filteredVehicles.map((v) => (
-                          <tr key={v.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                            <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                          <tr key={v.id} className="hover:bg-[#F5FAFA] transition">
+                            <td className="py-3.5 px-4 font-mono font-bold text-[#111827]">
                               {v.vehicleNo}
                             </td>
                             <td className="py-3.5 px-4 font-medium">
@@ -522,15 +522,15 @@ export default function FleetMasterPage() {
                               {v.capacity || "—"}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-semibold text-slate-900 dark:text-white">{v.driverName || "—"}</div>
+                              <div className="font-semibold text-[#111827]">{v.driverName || "—"}</div>
                               {v.driverMobile && (
-                                <div className="text-[10px] text-slate-400 font-mono">{v.driverMobile}</div>
+                                <div className="text-[10px] text-[#94A3B8] font-mono">{v.driverMobile}</div>
                               )}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-medium">{v.ownerName || "Self Owned"}</div>
+                              <div className="font-medium text-[#111827]">{v.ownerName || "Self Owned"}</div>
                               {v.ownerMobile && (
-                                <div className="text-[10px] text-slate-400 font-mono">{v.ownerMobile}</div>
+                                <div className="text-[10px] text-[#94A3B8] font-mono">{v.ownerMobile}</div>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right">
@@ -540,13 +540,13 @@ export default function FleetMasterPage() {
                                     setEditingVehicle(v);
                                     setVehicleModalOpen(true);
                                   }}
-                                  className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-sky-700 font-bold rounded-lg text-xs transition cursor-pointer"
+                                  className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteVehicle(v)}
-                                  className="p-1 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer"
+                                  className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
                                   title="Delete Vehicle"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

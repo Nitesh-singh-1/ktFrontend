@@ -16,7 +16,7 @@ export default function GREntryPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center p-16">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#47868C] mx-auto" />
         </div>
       }
     >

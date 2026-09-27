@@ -1,5 +1,6 @@
 import { apiService } from "../../../services/apiservice";
 import { generateGRPrintTemplate } from "./grPrintTemplate";
+import { openPrintWindow } from "./printHeader";
 
 export async function printGREntry(id: number): Promise<void> {
   try {
@@ -13,19 +14,9 @@ export async function printGREntry(id: number): Promise<void> {
 
     const entry = response.data;
 
-    // Generate HTML from template
+    // Generate HTML from template and open a load-gated print window (waits for the logo to load).
     const htmlContent = generateGRPrintTemplate(entry);
-
-    // Open print window
-    const printWindow = window.open("", "_blank");
-    
-    if (!printWindow) {
-      alert("Please allow popups to print");
-      return;
-    }
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    openPrintWindow(htmlContent);
   } catch (err: any) {
     alert(err.message || "Failed to generate print document");
     console.error("Error printing GR entry:", err);

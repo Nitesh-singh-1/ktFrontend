@@ -124,21 +124,21 @@ export default function SearchableSelect<T>({
           placeholder={placeholder}
           disabled={disabled}
           required={required && !searchTerm}
-          className={`w-full rounded-lg border border-slate-300 bg-white py-2 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition disabled:bg-slate-100 disabled:text-slate-500
+          className={`w-full rounded-lg border border-[#D9E2E3] bg-white py-2 text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]/30 transition disabled:bg-[#F7F8F8] disabled:text-[#94A3B8]
           ${icon ? "pl-9" : "pl-3"}
           ${searchTerm && !disabled ? "pr-14" : "pr-8"}`}
         />
 
         <div className="absolute right-2.5 flex items-center gap-1">
           {loading && (
-            <div className="animate-spin h-3.5 w-3.5 border-2 border-blue-600 border-t-transparent rounded-full" />
+            <div className="animate-spin h-3.5 w-3.5 border-2 border-[#47868C] border-t-transparent rounded-full" />
           )}
 
           {searchTerm && !disabled && (
             <button
               type="button"
               onClick={handleClear}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer transition"
+              className="text-[#94A3B8] hover:text-[#64748B] dark:hover:text-slate-200 p-0.5 rounded cursor-pointer transition"
               title="Clear"
             >
               <X className="w-3 h-3" />
@@ -148,7 +148,7 @@ export default function SearchableSelect<T>({
           <button
             type="button"
             onClick={() => !disabled && setIsOpen(!isOpen)}
-            className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            className="text-[#94A3B8] hover:text-[#64748B] p-0.5 rounded cursor-pointer"
           >
             <svg
               className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -164,13 +164,13 @@ export default function SearchableSelect<T>({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg z-50 py-1 divide-y divide-slate-100">
+        <div className="absolute left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto rounded-lg border border-[#E5EAEB] bg-white shadow-md z-50 py-1 divide-y divide-[#F7F8F8]">
           {results.length > 0 ? (
             results.map((item) => (
               <div
                 key={getItemKey(item)}
                 onClick={() => handleSelect(item)}
-                className="px-3 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-900 cursor-pointer transition flex items-center justify-between gap-2"
+                className="px-3 py-2 text-xs text-[#111827] hover:bg-[#E7F1F2] hover:text-[#3F7C82] cursor-pointer transition flex items-center justify-between gap-2"
               >
                 {renderItem ? (
                   renderItem(item)
@@ -180,13 +180,13 @@ export default function SearchableSelect<T>({
               </div>
             ))
           ) : (
-            <div className="px-3 py-3 text-center text-xs text-slate-500">
+            <div className="px-3 py-3 text-center text-xs text-[#64748B]">
               {loading ? (
                 <span>Searching masters...</span>
               ) : allowCustom && searchTerm ? (
                 <div className="space-y-1">
-                  <p className="text-slate-600">No exact match for <span className="font-bold">"{searchTerm}"</span></p>
-                  <p className="text-[10px] text-blue-600 font-medium">Using custom entered value</p>
+                  <p className="text-[#64748B]">No exact match for <span className="font-bold">"{searchTerm}"</span></p>
+                  <p className="text-[10px] text-[#47868C] font-medium">Using custom entered value</p>
                 </div>
               ) : (
                 <span>No records found</span>

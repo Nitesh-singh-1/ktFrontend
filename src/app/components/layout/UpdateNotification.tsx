@@ -53,9 +53,9 @@ export default function UpdateNotification() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-sky-200 dark:border-slate-800 p-4 transform transition-all duration-300">
+    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#E5EAEB] dark:border-slate-800 p-4 transform transition-all duration-300">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white text-lg flex-shrink-0 shadow-xs">
+        <div className="w-10 h-10 rounded-xl bg-[#47868C] flex items-center justify-center text-white text-lg flex-shrink-0 shadow-xs">
           {updateState.status === "downloaded" ? (
             <Sparkles className="w-5 h-5" />
           ) : updateState.status === "downloading" ? (
@@ -99,7 +99,7 @@ export default function UpdateNotification() {
           {updateState.status === "downloading" && (
             <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-2.5 overflow-hidden">
               <div
-                className="bg-sky-600 h-full rounded-full transition-all duration-300"
+                className="bg-[#47868C] h-full rounded-full transition-all duration-300"
                 style={{ width: `${updateState.percent || 0}%` }}
               />
             </div>
@@ -110,13 +110,13 @@ export default function UpdateNotification() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleRestart}
-                className="flex-1 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
+                className="flex-1 px-3 py-1.5 bg-[#47868C] hover:bg-[#3F7C82] text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
               >
                 Restart & Apply Update
               </button>
               <button
                 onClick={handleDismiss}
-                className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 text-[#3F7C82] dark:text-slate-300 rounded-xl text-xs font-medium hover:bg-[#E7F1F2] dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Later
               </button>

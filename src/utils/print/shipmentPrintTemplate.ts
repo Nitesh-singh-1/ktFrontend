@@ -180,18 +180,23 @@ export function generateShipmentPrintTemplate(shipment: Shipment): string {
     }
   </style>
 </head>
-<body onload="window.print()">
+<body onload="(window.__ktPrint||window.print)()">
   <div class="bill-wrapper">
     <!-- Header -->
     <table class="header-table">
       <tr>
         <td style="vertical-align: top;">
-          <div class="brand-title">${profile.companyName}</div>
-          <div style="font-size: 12px; color: #475569; font-weight: 500;">
-            ${profile.tagline || "Fleet & Logistics Management Platform"}
-          </div>
-          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-            ${profile.address ? `Head Office: ${profile.address}` : ""} ${profile.phone ? `• Ph: ${profile.phone}` : ""} ${profile.gstin ? `• GSTIN: ${profile.gstin}` : ""}
+          <div style="display:flex; align-items:center; gap:12px;">
+            ${profile.logoUrl ? `<div style="width:60px;height:60px;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;"><img src="${profile.logoUrl}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentNode.style.display='none'" /></div>` : ""}
+            <div>
+              <div class="brand-title">${profile.companyName}</div>
+              <div style="font-size: 12px; color: #475569; font-weight: 500;">
+                ${profile.tagline || "Fleet & Logistics Management Platform"}
+              </div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                ${profile.address ? `Head Office: ${profile.address}` : ""} ${profile.phone ? `• Ph: ${profile.phone}` : ""} ${profile.gstin ? `• GSTIN: ${profile.gstin}` : ""}
+              </div>
+            </div>
           </div>
         </td>
         <td style="text-align: right; vertical-align: top;">

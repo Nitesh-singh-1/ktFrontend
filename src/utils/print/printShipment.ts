@@ -1,5 +1,6 @@
 import { shipmentService } from "services/shipmentService";
 import { generateShipmentPrintTemplate } from "./shipmentPrintTemplate";
+import { openPrintWindow } from "./printHeader";
 import { Shipment } from "@/types/shipment";
 
 export async function printShipment(shipmentOrId: Shipment | number): Promise<void> {
@@ -17,16 +18,9 @@ export async function printShipment(shipmentOrId: Shipment | number): Promise<vo
       shipmentData = shipmentOrId;
     }
 
+    // Load-gated print so the logo (a base64 data URL) is fully loaded before the print dialog fires.
     const htmlContent = generateShipmentPrintTemplate(shipmentData);
-
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Please allow popups to print the consignment note.");
-      return;
-    }
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    openPrintWindow(htmlContent);
   } catch (err: any) {
     console.error("Print shipment error:", err);
     alert(err?.message || "Failed to generate print document.");

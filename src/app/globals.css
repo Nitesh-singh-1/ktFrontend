@@ -4,22 +4,56 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f0f7ff;
-  --foreground: #0f172a;
-  --primary-color: #0284c7;
-  --accent-color: #38bdf8;
+  /* =========================================================================
+     FleetPulse Global Design System Core Tokens
+     ========================================================================= */
+  --fp-primary: #47868C;
+  --fp-primary-dark: #3F7C82;
+  --fp-primary-soft: #E7F1F2;
+  --fp-background: #F7F8F8;
+  --fp-surface: #FFFFFF;
+  --fp-text-primary: #111827;
+  --fp-text-secondary: #64748B;
+  --fp-text-muted: #94A3B8;
+  --fp-border: #D9E2E3;
+  --fp-border-light: #E5EAEB;
+  --fp-info: #4A90E2;
+  --fp-accent: #F4A261;
+  --fp-success: #2F9E8F;
+  --fp-warning: #F4A261;
+  --fp-error: #D95C5C;
+
+  --background: var(--fp-background);
+  --foreground: var(--fp-text-primary);
+  --primary-color: var(--fp-primary);
+  --accent-color: var(--fp-info);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --color-fp-primary: #47868C;
+  --color-fp-primary-dark: #3F7C82;
+  --color-fp-primary-soft: #E7F1F2;
+  --color-fp-background: #F7F8F8;
+  --color-fp-surface: #FFFFFF;
+  --color-fp-text-primary: #111827;
+  --color-fp-text-secondary: #64748B;
+  --color-fp-text-muted: #94A3B8;
+  --color-fp-border: #D9E2E3;
+  --color-fp-border-light: #E5EAEB;
+  --color-fp-info: #4A90E2;
+  --color-fp-accent: #F4A261;
+  --color-fp-success: #2F9E8F;
+  --color-fp-warning: #F4A261;
+  --color-fp-error: #D95C5C;
 }
 
 html,
 body {
-  background-color: #f0f7ff;
-  color: #0f172a;
+  background-color: #F7F8F8;
+  color: #111827;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -27,7 +61,7 @@ body {
 }
 
 html.dark body {
-  background-color: #090d16 !important;
+  background-color: #0c131a !important;
   color: #f8fafc;
 }
 
@@ -48,7 +82,7 @@ input[type="number"].no-spinners {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F7F8F8;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -62,59 +96,59 @@ input[type="number"].no-spinners {
 
 /* Sidebar scrollbar */
 aside::-webkit-scrollbar-thumb {
-  background: #bae6fd;
+  background: #D9E2E3;
 }
 
 aside::-webkit-scrollbar-thumb:hover {
-  background: #7dd3fc;
+  background: #94a3b8;
 }
 
 /* =========================================================================
-   Standard SaaS Design System Classes - Light Blue & Crisp White
+   FleetPulse Standard Design System Component Classes (Clean, Flat, Solid)
    ========================================================================= */
 
 @layer components {
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 rounded-xl shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px];
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-[#47868C] hover:bg-[#3F7C82] active:bg-[#356B70] rounded-xl shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/30 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#3F7C82] bg-white hover:bg-[#E7F1F2] active:bg-[#D8EAEC] border border-[#D9E2E3] rounded-xl shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-sky-600 dark:text-sky-400 bg-transparent hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-sky-600 dark:border-sky-500 rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer min-w-[100px];
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#47868C] bg-transparent hover:bg-[#E7F1F2] border border-[#47868C] rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/30 cursor-pointer min-w-[100px];
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl shadow-xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
+    @apply inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-[#D95C5C] hover:bg-[#C54A4A] active:bg-[#B23C3C] rounded-xl shadow-xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#D95C5C]/30 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px];
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1.5 h-10 px-3 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800 rounded-xl transition-all duration-150 cursor-pointer;
+    @apply inline-flex items-center justify-center gap-1.5 h-10 px-3 text-sm font-semibold text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-xl transition-all duration-150 cursor-pointer;
   }
 
   /* Form Controls */
   .form-input {
-    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500 disabled:cursor-not-allowed;
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8] disabled:cursor-not-allowed;
   }
 
   .form-select {
-    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors cursor-pointer disabled:bg-slate-100 dark:disabled:bg-slate-800/60 disabled:text-slate-500;
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8];
   }
 
   .form-date {
-    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors cursor-pointer disabled:bg-slate-100 dark:disabled:bg-slate-800/60;
+    @apply w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60;
   }
 
   .form-label {
-    @apply block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 tracking-wide;
+    @apply block text-xs font-semibold text-[#111827] dark:text-slate-300 mb-1.5 tracking-wide;
   }
 
   /* Container Cards */
   .form-card {
-    @apply bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs p-6 transition-shadow;
+    @apply bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-xl shadow-xs p-6 transition-shadow;
   }
 
   /* Modals */
@@ -123,14 +157,14 @@ aside::-webkit-scrollbar-thumb:hover {
   }
 
   .modal-container {
-    @apply relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col w-full my-auto transition-all;
+    @apply relative bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xl overflow-hidden flex flex-col w-full my-auto transition-all;
   }
 
   .modal-header {
-    @apply px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-sky-50/60 dark:bg-slate-800/60;
+    @apply px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60;
   }
 
   .modal-footer {
-    @apply px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3;
+    @apply px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/50 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3;
   }
 }

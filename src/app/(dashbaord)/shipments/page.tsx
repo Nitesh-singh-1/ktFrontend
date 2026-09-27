@@ -134,7 +134,7 @@ export default function ShipmentsListPage() {
 
         <Link
           href="/shipments/create"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Consignment</span>
@@ -142,12 +142,12 @@ export default function ShipmentsListPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search Form */}
           <form onSubmit={handleSearchSubmit} className="flex-1 flex gap-2">
             <div className="relative flex-1">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#94A3B8]">
                 <Search className="w-3.5 h-3.5" />
               </span>
               <input
@@ -155,12 +155,12 @@ export default function ShipmentsListPage() {
                 placeholder="Search by GR No, Sender, Receiver, Vehicle, or City..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-[#47868C]/30 focus:border-[#47868C]"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-slate-800 dark:bg-blue-600 hover:bg-slate-900 dark:hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition cursor-pointer"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white rounded-lg text-xs font-semibold transition cursor-pointer"
             >
               Search
             </button>
@@ -171,7 +171,7 @@ export default function ShipmentsListPage() {
                   setSearchQuery("");
                   fetchShipments("");
                 }}
-                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold transition cursor-pointer"
+                className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#3F7C82] border border-[#D9E2E3] rounded-lg text-xs font-semibold transition cursor-pointer"
               >
                 Clear
               </button>
@@ -180,14 +180,14 @@ export default function ShipmentsListPage() {
 
           {/* Status Dropdown */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">Status:</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 whitespace-nowrap">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2.5 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C]/30 focus:border-[#47868C]"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.label} value={opt.value}>
@@ -199,8 +199,8 @@ export default function ShipmentsListPage() {
         </div>
 
         {/* Tax Treatment Filter Chips */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1">Tax Regime:</span>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E5EAEB] dark:border-slate-800">
+          <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 mr-1">Tax Regime:</span>
           {TAX_FILTER_CHIPS.map((chip) => {
             const isSelected = taxFilter === chip.value;
             return (
@@ -213,8 +213,8 @@ export default function ShipmentsListPage() {
                 }}
                 className={`px-2.5 py-1 rounded-md text-xs font-semibold transition border cursor-pointer ${
                   isSelected
-                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                    : "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                    ? "bg-[#47868C] text-white border-[#47868C] shadow-xs"
+                    : "bg-[#F7F8F8] dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700"
                 }`}
               >
                 {chip.label}
@@ -241,19 +241,19 @@ export default function ShipmentsListPage() {
       )}
 
       {/* Shipments Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-        <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-slate-800 dark:text-slate-200">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
+        <div className="px-5 py-3 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between text-[#111827] dark:text-slate-200">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
             Consignment Records ({totalCount})
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <div className="text-xs text-[#64748B] dark:text-slate-400 font-medium">
             Page {page} of {totalPages}
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider">
+            <thead className="bg-[#F7F8F8] dark:bg-slate-800/40 border-b border-[#E5EAEB] dark:border-slate-800 text-[#64748B] dark:text-slate-400 font-bold uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">GR / Waybill No</th>
                 <th className="px-4 py-3">Booking Date</th>
@@ -265,23 +265,23 @@ export default function ShipmentsListPage() {
                 <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
               {loading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2" />
-                    <span className="text-slate-400 text-xs font-medium">Loading consignments...</span>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-2" />
+                    <span className="text-[#94A3B8] text-xs font-medium">Loading consignments...</span>
                   </td>
                 </tr>
               ) : shipments.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12">
-                    <Package className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                    <div className="text-slate-700 dark:text-slate-300 font-bold text-sm">No consignments found</div>
-                    <p className="text-slate-400 text-xs mt-1">Try adjusting your filters or create a new consignment.</p>
+                    <Package className="w-8 h-8 text-[#94A3B8] mx-auto mb-2" />
+                    <div className="text-[#111827] dark:text-slate-300 font-bold text-sm">No consignments found</div>
+                    <p className="text-[#64748B] text-xs mt-1">Try adjusting your filters or create a new consignment.</p>
                     <Link
                       href="/shipments/create"
-                      className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs"
+                      className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-lg text-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Book Consignment</span>
@@ -290,45 +290,45 @@ export default function ShipmentsListPage() {
                 </tr>
               ) : (
                 shipments.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                  <tr key={s.id} className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition-colors">
                     {/* Shipment No */}
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Link
                         href={`/shipments/details?id=${s.id}`}
-                        className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline text-xs block"
+                        className="font-mono font-bold text-[#47868C] dark:text-teal-400 hover:text-[#3F7C82] hover:underline text-xs block"
                       >
                         {s.shipmentNo}
                       </Link>
                       {s.invoiceNo && (
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                        <span className="text-[10px] text-[#94A3B8] block mt-0.5">
                           Inv: {s.invoiceNo}
                         </span>
                       )}
                     </td>
 
                     {/* Date */}
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-400 font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap text-[#64748B] dark:text-slate-400 font-medium">
                       {new Date(s.shipmentDate || s.createdAt).toLocaleDateString('en-IN')}
                     </td>
 
                     {/* Route */}
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center gap-1.5 font-bold text-[#111827] dark:text-slate-200">
                         <span>{s.fromLocation}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                        <ArrowRight className="w-3.5 h-3.5 text-[#4A90E2] shrink-0" />
                         <span>{s.toLocation}</span>
                       </div>
                     </td>
 
                     {/* Consignor / Consignee */}
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-slate-900 dark:text-white">{s.consignorName}</div>
-                      <div className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">To: {s.consigneeName}</div>
+                      <div className="font-semibold text-[#111827] dark:text-white">{s.consignorName}</div>
+                      <div className="text-[#64748B] dark:text-slate-400 text-[11px] mt-0.5">To: {s.consigneeName}</div>
                     </td>
 
                     {/* Vehicle */}
-                    <td className="px-4 py-3 whitespace-nowrap font-mono font-bold text-slate-700 dark:text-slate-300">
-                      {s.truckNo || <span className="text-slate-400 font-normal">—</span>}
+                    <td className="px-4 py-3 whitespace-nowrap font-mono font-bold text-[#111827] dark:text-slate-300">
+                      {s.truckNo || <span className="text-[#94A3B8] font-normal">—</span>}
                     </td>
 
                     {/* Status */}
@@ -337,10 +337,10 @@ export default function ShipmentsListPage() {
                     </td>
 
                     {/* Grand Total */}
-                    <td className="px-4 py-3 whitespace-nowrap text-right font-mono font-bold text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 whitespace-nowrap text-right font-mono font-bold text-[#111827] dark:text-white">
                       <div>₹{(s.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       <div className={`text-[10px] font-semibold ${
-                        s.paymentTerm === PaymentTerm.Paid ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                        s.paymentTerm === PaymentTerm.Paid ? "text-[#2F9E8F]" : "text-[#F4A261]"
                       }`}>
                         {s.paymentTerm === PaymentTerm.Paid ? "PAID" : s.paymentTerm === PaymentTerm.TBB ? "TBB" : "TO PAY"}
                       </div>
@@ -352,7 +352,7 @@ export default function ShipmentsListPage() {
                         {/* View / Tracking */}
                         <Link
                           href={`/shipments/details?id=${s.id}`}
-                          className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md font-semibold text-[11px] transition"
+                          className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition"
                           title="View Details & Timeline"
                         >
                           View
@@ -362,7 +362,7 @@ export default function ShipmentsListPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedForStatus(s)}
-                          className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-md font-semibold text-[11px] transition cursor-pointer"
+                          className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition cursor-pointer"
                           title="Update Status Stage"
                         >
                           Status
@@ -372,7 +372,7 @@ export default function ShipmentsListPage() {
                         <button
                           type="button"
                           onClick={() => printShipment(s)}
-                          className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md transition cursor-pointer"
+                          className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer"
                           title="Print Waybill"
                         >
                           <Printer className="w-3.5 h-3.5" />
@@ -381,7 +381,7 @@ export default function ShipmentsListPage() {
                         {/* Edit */}
                         <Link
                           href={`/shipments/create?id=${s.id}`}
-                          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
+                          className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-md transition"
                           title="Edit Consignment"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -392,7 +392,7 @@ export default function ShipmentsListPage() {
                           <button
                             type="button"
                             onClick={() => handleCancelShipment(s.id, s.shipmentNo)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition cursor-pointer"
+                            className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 rounded-md transition cursor-pointer"
                             title="Cancel Consignment"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -409,8 +409,8 @@ export default function ShipmentsListPage() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <div className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="px-5 py-3 bg-[#F7F8F8] dark:bg-slate-800/60 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
+            <div className="text-xs text-[#64748B] dark:text-slate-400">
               Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
             </div>
             <div className="flex items-center gap-2">
@@ -418,18 +418,18 @@ export default function ShipmentsListPage() {
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
+                className="px-3 py-1 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#3F7C82] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
               >
                 Previous
               </button>
-              <span className="text-xs font-bold px-2 text-slate-700 dark:text-slate-300">
+              <span className="text-xs font-semibold px-2 text-[#111827] dark:text-slate-300">
                 {page} / {totalPages}
               </span>
               <button
                 type="button"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
+                className="px-3 py-1 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#3F7C82] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
               >
                 Next
               </button>

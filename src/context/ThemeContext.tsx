@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type ThemeKey = "light-blue" | "ocean-blue" | "corporate-navy" | "slate-clean" | "dark-blue" | "emerald";
+export type ThemeKey = "fleetpulse-teal" | "light-blue" | "ocean-blue" | "corporate-navy" | "slate-clean" | "dark-blue" | "emerald";
 
 export interface ThemeOption {
   id: ThemeKey;
@@ -16,8 +16,17 @@ export interface ThemeOption {
 
 export const availableThemes: ThemeOption[] = [
   {
+    id: "fleetpulse-teal",
+    name: "FleetPulse Teal (Default)",
+    description: "Muted teal, pure white surfaces and light gray canvas",
+    primaryColor: "#47868C",
+    accentColor: "#4A90E2",
+    bgPreview: "bg-[#E7F1F2] border-[#D9E2E3]",
+    isDark: false,
+  },
+  {
     id: "light-blue",
-    name: "Light Blue & White (Default)",
+    name: "Light Blue & White",
     description: "Crisp sky blue with pure white cards and soft blue canvas",
     primaryColor: "#0284c7",
     accentColor: "#38bdf8",
@@ -83,7 +92,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<ThemeKey>("light-blue");
+  const [theme, setThemeState] = useState<ThemeKey>("fleetpulse-teal");
   const [density, setDensityState] = useState<"comfortable" | "compact">("comfortable");
   const [isDark, setIsDark] = useState<boolean>(false);
 
@@ -93,7 +102,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (savedTheme && availableThemes.some((t) => t.id === savedTheme)) {
         setThemeState(savedTheme);
       } else {
-        setThemeState("light-blue");
+        setThemeState("fleetpulse-teal");
       }
 
       const savedDensity = localStorage.getItem("kt_app_density") as "comfortable" | "compact";

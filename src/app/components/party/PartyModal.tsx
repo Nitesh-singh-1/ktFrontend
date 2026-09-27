@@ -245,22 +245,24 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-sky-50/50 dark:bg-slate-800/60">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
+              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
+                <Users className="w-4 h-4 text-[#47868C]" />
+              </span>
               <span>{initialParty ? "Edit Master Party / Customer" : "Add New Master Party (Consignor / Consignee)"}</span>
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
               Maintain company directory with automated alias, GST & PAN formatting.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg transition cursor-pointer"
+            className="text-[#94A3B8] hover:text-[#111827] dark:hover:text-white p-1.5 rounded-lg hover:bg-[#F7F8F8] dark:hover:bg-slate-800 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -270,7 +272,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -278,7 +280,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
           {/* Party Type & Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Company / Party Name *
               </label>
               <input
@@ -287,16 +289,16 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="e.g. ABC Cargo & Logistics Ltd."
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
                   Party Alias / Code
                 </label>
-                <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">Auto-generated</span>
+                <span className="text-[10px] text-[#47868C] font-semibold">Auto-generated</span>
               </div>
               <input
                 type="text"
@@ -306,15 +308,15 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                   setCode(e.target.value.toUpperCase());
                   setIsCodeAutoGenerated(false);
                 }}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-sky-700 dark:text-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#47868C] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
 
           {/* Role Type & Default Term */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-sky-50/40 dark:bg-slate-800/40 p-3.5 rounded-xl border border-sky-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F7F8F8] dark:bg-slate-800/40 p-3.5 rounded-xl border border-[#E5EAEB] dark:border-slate-800">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1.5">
                 Party Role (Interchangeable)
               </label>
               <div className="grid grid-cols-3 gap-1.5">
@@ -329,8 +331,8 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                     onClick={() => setPartyType(item.value)}
                     className={`py-1.5 px-2 rounded-lg text-[11px] font-bold border transition text-center cursor-pointer ${
                       partyType === item.value
-                        ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                        ? "bg-[#47868C] text-white border-[#47868C] shadow-2xs"
+                        : "bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA]"
                     }`}
                   >
                     {item.label}
@@ -340,13 +342,13 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1.5">
                 Default Payment Term
               </label>
               <select
                 value={defaultPaymentTerm}
                 onChange={(e) => setDefaultPaymentTerm(Number(e.target.value))}
-                className="w-full h-9 px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                className="w-full h-9 px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
               >
                 <option value={PaymentTerm.ToPay}>To Pay (Consignee Paid)</option>
                 <option value={PaymentTerm.Paid}>Paid (Consignor Paid)</option>
@@ -359,10 +361,10 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
                   GSTIN (15 Digits)
                 </label>
-                <span className="text-[10px] text-slate-400">e.g. 27AAACB1234F1Z1</span>
+                <span className="text-[10px] text-[#94A3B8]">e.g. 27AAACB1234F1Z1</span>
               </div>
               <input
                 type="text"
@@ -370,16 +372,16 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="27AAACB1234F1Z1"
                 value={gstNo}
                 onChange={(e) => handleGstChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 uppercase"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] uppercase"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
                   PAN Number (10 Chars)
                 </label>
-                <span className="text-[10px] text-slate-400">e.g. AAACB1234F</span>
+                <span className="text-[10px] text-[#94A3B8]">e.g. AAACB1234F</span>
               </div>
               <input
                 type="text"
@@ -387,7 +389,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="AAACB1234F"
                 value={panNo}
                 onChange={(e) => handlePanChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 uppercase"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] uppercase"
               />
             </div>
           </div>
@@ -395,7 +397,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
           {/* Contacts (Person, Mobile, Email) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Contact Person
               </label>
               <input
@@ -403,16 +405,16 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="e.g. Rajesh Sharma"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
                   Mobile (10 Digits)
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-[#94A3B8] font-mono">
                   {mobile.length}/10
                 </span>
               </div>
@@ -422,12 +424,12 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="9876543210"
                 value={mobile}
                 onChange={(e) => handleMobileChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Email Address
               </label>
               <input
@@ -435,14 +437,14 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="billing@abccargo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
 
           {/* Address */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
               Premises / Street Address
             </label>
             <input
@@ -450,14 +452,14 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
               placeholder="Plot 45, Industrial Area, Phase II"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
             />
           </div>
 
           {/* City, State Dropdown, Pincode (6 digits) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 City
               </label>
               <input
@@ -465,18 +467,18 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="e.g. Pune"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 State (GST State Code)
               </label>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
               >
                 {INDIAN_STATES.map((s) => (
                   <option key={s.code} value={s.name}>
@@ -488,10 +490,10 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
                   Pincode (6 Digits)
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-[#94A3B8] font-mono">
                   {pincode.length}/6
                 </span>
               </div>
@@ -501,19 +503,19 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 placeholder="411018"
                 value={pincode}
                 onChange={(e) => handlePincodeChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-sky-600 focus:ring-sky-500"
+                className="rounded text-[#47868C] focus:ring-[#47868C]"
               />
               <span>Active in Autocomplete Directory</span>
             </label>
@@ -522,14 +524,14 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="btn-primary"
               >
                 {loading ? "Saving..." : initialParty ? "Update Party" : "Save Master Party"}
               </button>

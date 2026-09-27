@@ -234,18 +234,18 @@ function ChallanEntryContent() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* HEADER */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
             {editId ? "Edit Challan" : "New Challan Entry"}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+          <p className="text-[#64748B] dark:text-slate-400 text-xs mt-1">
             {editId ? `Editing Challan: ${form.challanNo}` : "Create a new trip dispatch challan"}
           </p>
         </div>
 
         <button 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl shadow-xs transition font-bold text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" 
+          className="btn-primary" 
           onClick={handleSubmit}
           disabled={loading}
         >
@@ -330,24 +330,24 @@ function ChallanEntryContent() {
       {/* SUMMARY */}
       <Card title="Summary">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Bills</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{totals.totalBills}</p>
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
+            <p className="text-xs text-[#64748B] uppercase font-semibold mb-1">Total Bills</p>
+            <p className="text-2xl font-bold text-[#111827] dark:text-white font-mono">{totals.totalBills}</p>
           </div>
           
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Quantity</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{totals.totalQuantity}</p>
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
+            <p className="text-xs text-[#64748B] uppercase font-semibold mb-1">Total Quantity</p>
+            <p className="text-2xl font-bold text-[#111827] dark:text-white font-mono">{totals.totalQuantity}</p>
           </div>
           
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Freight</p>
-            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">₹{totals.totalFreight.toFixed(2)}</p>
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
+            <p className="text-xs text-[#64748B] uppercase font-semibold mb-1">Total Freight</p>
+            <p className="text-2xl font-bold text-[#2F9E8F] font-mono">₹{totals.totalFreight.toFixed(2)}</p>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Avg Freight/Bill</p>
-            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
+            <p className="text-xs text-[#64748B] uppercase font-semibold mb-1">Avg Freight/Bill</p>
+            <p className="text-2xl font-bold text-[#47868C] font-mono">
               ₹{totals.totalBills > 0 ? (totals.totalFreight / totals.totalBills).toFixed(2) : "0.00"}
             </p>
           </div>

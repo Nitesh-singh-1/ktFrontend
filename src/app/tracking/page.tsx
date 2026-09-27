@@ -55,14 +55,14 @@ export default function PublicTrackingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F7F8F8] text-[#111827] flex flex-col font-sans">
       {/* Top Brand Bar */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-3.5 px-6 sm:px-12 flex items-center justify-between shadow-2xs">
+      <header className="bg-white border-b border-[#E5EAEB] py-3.5 px-6 sm:px-12 flex items-center justify-between shadow-2xs">
         <BrandLogo size="md" variant="auto" name="FleetPulse" tagline="Consignment Tracking Radar" />
 
         <Link
           href="/login"
-          className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-lg text-xs transition flex items-center gap-1.5"
+          className="px-3.5 py-1.5 bg-[#F7F8F8] hover:bg-[#E7F1F2] text-[#3F7C82] font-semibold border border-[#D9E2E3] rounded-lg text-xs transition flex items-center gap-1.5"
         >
           <span>Staff Login</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -70,16 +70,16 @@ export default function PublicTrackingPage() {
       </header>
 
       {/* Hero Search Section */}
-      <div className="bg-sky-900 dark:bg-slate-900 text-white py-12 px-6 text-center shadow-xs border-b dark:border-slate-800">
+      <div className="bg-white border-b border-[#E5EAEB] py-10 px-6 text-center">
         <div className="max-w-2xl mx-auto space-y-4">
-          <span className="text-xs uppercase font-bold tracking-widest px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full inline-flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5" />
+          <span className="text-xs uppercase font-bold tracking-widest px-3 py-1 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full inline-flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5 text-[#47868C]" />
             Universal Consignment Tracker
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827]">
             Track Your Consignment in Real-Time
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto">
+          <p className="text-xs sm:text-sm text-[#64748B] max-w-lg mx-auto">
             Enter your Goods Receipt (GR) or Lorry Receipt (LR) number to monitor route dispatch, hub transit, and proof of delivery.
           </p>
 
@@ -89,12 +89,12 @@ export default function PublicTrackingPage() {
               placeholder="e.g. GR-2026-0001 or LR Number..."
               value={lrNo}
               onChange={(e) => setLrNo(e.target.value)}
-              className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl text-xs sm:text-sm font-mono font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-lg border dark:border-slate-700"
+              className="flex-1 px-4 py-3 bg-white text-[#111827] rounded-xl text-xs sm:text-sm font-mono font-bold placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] shadow-2xs border border-[#D9E2E3]"
             />
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Search className="w-4 h-4" />
               <span>{loading ? "Tracking..." : "Track Now"}</span>
@@ -107,8 +107,8 @@ export default function PublicTrackingPage() {
       <main className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-8 space-y-6">
         {/* Error Notice */}
         {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -116,8 +116,8 @@ export default function PublicTrackingPage() {
         {/* Loading Indicator */}
         {loading && (
           <div className="p-16 text-center">
-            <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-blue-600 mx-auto mb-3" />
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Querying consignment satellite timeline...</p>
+            <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-[#47868C] mx-auto mb-3" />
+            <p className="text-xs text-[#64748B] font-medium">Querying consignment satellite timeline...</p>
           </div>
         )}
 
@@ -125,15 +125,15 @@ export default function PublicTrackingPage() {
         {trackingData && !loading && (
           <div className="space-y-6 animate-in fade-in zoom-in duration-200">
             {/* Summary Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-3">
+            <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E5EAEB] gap-3">
                 <div>
-                  <div className="text-[10px] font-bold uppercase text-slate-400">Waybill / LR Number</div>
-                  <div className="text-xl font-mono font-black text-blue-600 dark:text-blue-400">{trackingData.trackingNumber}</div>
+                  <div className="text-[10px] font-bold uppercase text-[#64748B]">Waybill / LR Number</div>
+                  <div className="text-xl font-mono font-black text-[#47868C]">{trackingData.trackingNumber}</div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 rounded-lg">
+                  <span className="text-xs font-bold px-3 py-1 bg-[#F0F7FF] text-[#4A90E2] border border-[#D0E2FF] rounded-lg">
                     {trackingData.currentStatus || "In Transit"}
                   </span>
                 </div>
@@ -142,37 +142,37 @@ export default function PublicTrackingPage() {
               {/* Route & Cargo Specs */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Origin Hub</p>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5">{trackingData.fromLocation || "Origin Station"}</p>
+                  <p className="text-[10px] font-bold text-[#64748B] uppercase">Origin Hub</p>
+                  <p className="font-bold text-[#111827] mt-0.5">{trackingData.fromLocation || "Origin Station"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Destination</p>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5">{trackingData.toLocation || "Destination City"}</p>
+                  <p className="text-[10px] font-bold text-[#64748B] uppercase">Destination</p>
+                  <p className="font-bold text-[#111827] mt-0.5">{trackingData.toLocation || "Destination City"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Booking Date</p>
-                  <p className="font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{trackingData.bookingDate ? trackingData.bookingDate.split("T")[0] : "—"}</p>
+                  <p className="text-[10px] font-bold text-[#64748B] uppercase">Booking Date</p>
+                  <p className="font-semibold text-[#111827] mt-0.5">{trackingData.bookingDate ? trackingData.bookingDate.split("T")[0] : "—"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Packages</p>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5">{trackingData.totalPackages || 1} PKGS ({trackingData.totalWeightKg || 0} Kg)</p>
+                  <p className="text-[10px] font-bold text-[#64748B] uppercase">Total Packages</p>
+                  <p className="font-bold text-[#111827] mt-0.5">{trackingData.totalPackages || 1} PKGS ({trackingData.totalWeightKg || 0} Kg)</p>
                 </div>
               </div>
 
               {/* Delivery Receipt Details if Delivered */}
               {trackingData.deliveredToPerson && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-xs">
+                <div className="p-3 bg-[#E7F1F2] rounded-xl border border-[#2F9E8F]/30 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2F9E8F] shrink-0" />
                     <div>
-                      <span className="font-bold text-emerald-800 dark:text-emerald-300">Delivered Successfully</span>
-                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
+                      <span className="font-bold text-[#2F9E8F]">Delivered Successfully</span>
+                      <p className="text-[11px] text-[#3F7C82] mt-0.5">
                         Received by: <span className="font-bold">{trackingData.deliveredToPerson}</span>
                       </p>
                     </div>
                   </div>
                   {trackingData.deliveredAt && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+                    <span className="text-[10px] text-[#2F9E8F] font-mono">
                       {trackingData.deliveredAt.split("T")[0]}
                     </span>
                   )}
@@ -181,35 +181,35 @@ export default function PublicTrackingPage() {
             </div>
 
             {/* Event Timeline Stepper */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-2 border-b border-[#E5EAEB] pb-3">
+                <MapPin className="w-4 h-4 text-[#4A90E2]" />
                 Waybill Journey & Milestone Audit Log
               </h3>
 
               {trackingData.timeline && trackingData.timeline.length > 0 ? (
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
+                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E5EAEB]">
                   {trackingData.timeline.map((event, idx) => (
                     <div key={idx} className="relative group">
                       {/* Node Bullet */}
                       <div
-                        className={`absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 bg-white dark:bg-slate-900 ${
-                          event.isCompleted ? "border-blue-600 bg-blue-600 ring-2 ring-blue-100 dark:ring-blue-900" : "border-slate-300 dark:border-slate-700"
+                        className={`absolute -left-6 top-1 w-3.5 h-3.5 rounded-full border-2 bg-white ${
+                          event.isCompleted ? "border-[#4A90E2] bg-[#4A90E2] ring-2 ring-[#4A90E2]/20" : "border-[#D9E2E3]"
                         }`}
                       />
 
                       <div>
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-900 dark:text-white">{event.eventTitle}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">{event.timestamp ? event.timestamp.split("T")[0] : ""}</span>
+                          <span className="font-bold text-[#111827]">{event.eventTitle}</span>
+                          <span className="text-[10px] text-[#94A3B8] font-mono">{event.timestamp ? event.timestamp.split("T")[0] : ""}</span>
                         </div>
                         {event.location && (
-                          <p className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
+                          <p className="text-[11px] text-[#4A90E2] font-semibold mt-0.5">
                             Station / Hub: {event.location}
                           </p>
                         )}
                         {event.description && (
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          <p className="text-[11px] text-[#64748B] mt-0.5 leading-relaxed">
                             {event.description}
                           </p>
                         )}
@@ -218,7 +218,7 @@ export default function PublicTrackingPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-400 text-xs">
+                <div className="p-8 text-center text-[#94A3B8] text-xs">
                   Consignment booked and scheduled for dispatch.
                 </div>
               )}
@@ -228,8 +228,8 @@ export default function PublicTrackingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400">
-        Enterprise Freight Dispatch System • Powered by K-Transport TMS
+      <footer className="bg-white border-t border-[#E5EAEB] py-4 text-center text-xs text-[#94A3B8]">
+        Enterprise Freight Dispatch System • Powered by FleetPulse TMS
       </footer>
     </div>
   );

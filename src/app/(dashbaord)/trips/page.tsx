@@ -83,40 +83,40 @@ export default function TripsPage() {
     switch (status) {
       case TripStatus.Dispatched:
       case TripStatus.InTransit:
-        return { text: "IN TRANSIT", class: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800" };
+        return { text: "IN TRANSIT", class: "bg-[#4A90E2]/10 text-[#4A90E2] border-[#4A90E2]/20 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800" };
       case TripStatus.Arrived:
-        return { text: "ARRIVED AT HUB", class: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800" };
+        return { text: "ARRIVED AT HUB", class: "bg-[#E7F1F2] text-[#3F7C82] border-[#D9E2E3] dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800" };
       case TripStatus.Completed:
-        return { text: "COMPLETED", class: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800" };
+        return { text: "COMPLETED", class: "bg-[#E7F1F2] text-[#2F9E8F] border-[#2F9E8F]/20 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800" };
       case TripStatus.Cancelled:
-        return { text: "CANCELLED", class: "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" };
+        return { text: "CANCELLED", class: "bg-[#D95C5C]/10 text-[#D95C5C] border-[#D95C5C]/20 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-700" };
       default:
-        return { text: "MANIFESTED / LOADING", class: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800" };
+        return { text: "MANIFESTED / LOADING", class: "bg-[#F4A261]/10 text-[#F4A261] border-[#F4A261]/20 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800" };
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header Banner - Primary / Secondary / Neutral Design */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Banner - FleetPulse Solid Style */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <Truck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight flex items-center gap-2">
+              <Truck className="w-5 h-5 text-[#47868C]" />
               <span>Manifest & Dispatch (LR / Truck Challans)</span>
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+            <span className="text-xs font-semibold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
               Step 4 & 5: Manifest → Dispatch
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#64748B] dark:text-slate-400 mt-1">
             Consolidate booked Bilties into vehicle loading sheets (Manifest), assign driver/truck, and dispatch directly onto the road.
           </p>
         </div>
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Create Manifest & Challan</span>
@@ -125,41 +125,41 @@ export default function TripsPage() {
 
       {/* Financial & Operational KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Neutral Metric */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Manifests / Challans</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{trips.length}</p>
-          <p className="text-[10px] text-slate-400 mt-1">{draftCount} loading / pending dispatch</p>
+        {/* Total Metric */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Manifests / Challans</p>
+          <p className="text-2xl font-bold text-[#111827] dark:text-white mt-1">{trips.length}</p>
+          <p className="text-[10px] text-[#94A3B8] mt-1">{draftCount} loading / pending dispatch</p>
         </div>
 
         {/* Primary Metric */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Vehicles In-Transit</p>
-          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{activeInTransit}</p>
-          <p className="text-[10px] text-blue-700 dark:text-blue-400 mt-1">Active on the road</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Vehicles In-Transit</p>
+          <p className="text-2xl font-bold text-[#111827] dark:text-white mt-1">{activeInTransit}</p>
+          <p className="text-[10px] text-[#4A90E2] mt-1">Active on the road</p>
         </div>
 
-        {/* Tertiary Metric */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Loaded Freight</p>
-          <p className="text-xl font-black text-slate-900 dark:text-white font-mono mt-1">
+        {/* Cargo Metric */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Loaded Freight</p>
+          <p className="text-xl font-bold text-[#111827] dark:text-white font-mono mt-1">
             ₹{totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">Consolidated manifest cargo</p>
+          <p className="text-[10px] text-[#94A3B8] mt-1">Consolidated manifest cargo</p>
         </div>
 
-        {/* Semantic Success Metric */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Net Route Margin</p>
-          <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+        {/* Margin Metric */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Net Route Margin</p>
+          <p className="text-xl font-bold text-[#2F9E8F] font-mono mt-1">
             ₹{totalMargin.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-1">After driver advances & fuel</p>
+          <p className="text-[10px] text-[#64748B] mt-1">After driver advances & fuel</p>
         </div>
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="relative w-full md:w-96">
           <input
@@ -167,12 +167,12 @@ export default function TripsPage() {
             placeholder="Search Challan / Manifest no, truck, driver, route..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-20 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-9 pr-20 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#47868C]/30 focus:border-[#47868C]"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-2.5" />
           <button
             type="submit"
-            className="absolute right-1.5 top-1 px-3 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-white font-bold rounded-md text-[11px] transition cursor-pointer"
+            className="absolute right-1.5 top-1 px-3 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-md text-[11px] transition cursor-pointer"
           >
             Search
           </button>
@@ -192,10 +192,10 @@ export default function TripsPage() {
               <button
                 key={tab.value}
                 onClick={() => setStatusFilter(tab.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    ? "bg-[#47868C] text-white shadow-xs"
+                    : "bg-[#F7F8F8] dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] border border-[#D9E2E3]"
                 }`}
               >
                 {tab.label}
@@ -207,28 +207,28 @@ export default function TripsPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-[#D95C5C]/30 text-[#D95C5C] rounded-xl text-xs font-semibold flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Challans / Manifests Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
         {loading ? (
-          <div className="p-16 text-center text-slate-500 text-xs">Loading Manifests & Truck Challans...</div>
+          <div className="p-16 text-center text-[#94A3B8] text-xs">Loading Manifests & Truck Challans...</div>
         ) : trips.length === 0 ? (
           <div className="p-16 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
+            <div className="w-12 h-12 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800 flex items-center justify-center mx-auto text-[#94A3B8]">
               <Truck className="w-6 h-6" />
             </div>
-            <p className="text-sm font-bold text-slate-800 dark:text-white">No Manifests or Truck Challans Found</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            <p className="text-sm font-bold text-[#111827] dark:text-white">No Manifests or Truck Challans Found</p>
+            <p className="text-xs text-[#64748B] dark:text-slate-400 max-w-sm mx-auto">
               Create your first Manifest / Truck Challan to assign a truck, driver, and load booked Bilties from Point A to Point B.
             </p>
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
+              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Create First Manifest & Challan</span>
@@ -238,7 +238,7 @@ export default function TripsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <tr className="bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-700 text-[11px] font-bold text-[#64748B] dark:text-slate-300 uppercase tracking-wider">
                   <th className="py-3 px-4">Manifest / Challan No</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Assigned Lorry / Truck</th>
@@ -250,16 +250,16 @@ export default function TripsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
                 {trips.map((t) => {
                   const statusBadge = getStatusBadge(t.status);
                   const isDraft = t.status === TripStatus.Loading || t.status === TripStatus.Draft;
                   const isInTransit = t.status === TripStatus.Dispatched || t.status === TripStatus.InTransit;
 
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                    <tr key={t.id} className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition">
                       {/* Challan / Manifest No */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-blue-600 dark:text-blue-400">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#47868C] dark:text-teal-400">
                         <button
                           onClick={() => setSelectedTripId(t.id)}
                           className="hover:underline cursor-pointer flex items-center gap-1.5"
@@ -269,42 +269,42 @@ export default function TripsPage() {
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      <td className="py-3.5 px-4 font-medium text-[#64748B] dark:text-slate-300">
                         {t.tripDate ? t.tripDate.split("T")[0] : "—"}
                       </td>
 
                       {/* Vehicle */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#111827] dark:text-white">
+                        <span className="px-2 py-0.5 bg-[#F7F8F8] dark:bg-slate-800 rounded border border-[#D9E2E3] dark:border-slate-700">
                           {t.vehicleNo}
                         </span>
                       </td>
 
                       {/* Driver */}
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{t.driverName || "—"}</div>
-                        {t.driverMobile && <div className="text-[10px] text-slate-400 font-mono">{t.driverMobile}</div>}
+                        <div className="font-semibold text-[#111827] dark:text-slate-200">{t.driverName || "—"}</div>
+                        {t.driverMobile && <div className="text-[10px] text-[#94A3B8] font-mono">{t.driverMobile}</div>}
                       </td>
 
                       {/* Route */}
                       <td className="py-3.5 px-4">
-                        <div className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                          <span className="text-slate-900 dark:text-white font-bold">{t.originLocationName || "Origin"}</span>
-                          <span className="text-slate-400">→</span>
-                          <span className="text-slate-900 dark:text-white font-bold">{t.destinationLocationName || "Dest"}</span>
+                        <div className="font-medium text-[#111827] dark:text-slate-200 flex items-center gap-1">
+                          <span className="text-[#111827] dark:text-white font-bold">{t.originLocationName || "Origin"}</span>
+                          <span className="text-[#4A90E2]">→</span>
+                          <span className="text-[#111827] dark:text-white font-bold">{t.destinationLocationName || "Dest"}</span>
                         </div>
                       </td>
 
                       {/* Loaded Cargo */}
                       <td className="py-3.5 px-4 text-center">
-                        <span className="font-bold text-slate-900 dark:text-white px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
+                        <span className="font-bold text-[#111827] dark:text-white px-2 py-0.5 bg-[#F7F8F8] dark:bg-slate-800 rounded">
                           {t.shipments?.length || 0} Bilties
                         </span>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{t.totalPackages || 0} PKGS</div>
+                        <div className="text-[10px] text-[#94A3B8] mt-0.5">{t.totalPackages || 0} PKGS</div>
                       </td>
 
                       {/* Revenue */}
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-[#111827] dark:text-white">
                         ₹{(Number(t.totalFreightRevenue) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </td>
 
@@ -322,7 +322,7 @@ export default function TripsPage() {
                           {isDraft && (
                             <button
                               onClick={() => handleRowDispatch(t.id, t.tripNo)}
-                              className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                              className="px-2.5 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1 shadow-2xs"
                               title="Dispatch Vehicle & Consignments"
                             >
                               <Send className="w-3 h-3" />
@@ -334,7 +334,7 @@ export default function TripsPage() {
                           {isInTransit && (
                             <button
                               onClick={() => handleRowArrival(t.id, t.startOdometer)}
-                              className="px-2.5 py-1 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800 font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
+                              className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
                               title="Record Hub Arrival"
                             >
                               <Flag className="w-3 h-3" />
@@ -345,10 +345,10 @@ export default function TripsPage() {
                           {/* Inspect & Print */}
                           <button
                             onClick={() => setSelectedTripId(t.id)}
-                            className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
+                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
                             title="Inspect Manifest, Add Fuel/Expenses & Print Pink Challan"
                           >
-                            <FileText className="w-3 h-3 text-slate-500" />
+                            <FileText className="w-3 h-3 text-[#47868C]" />
                             <span>Details</span>
                           </button>
                         </div>

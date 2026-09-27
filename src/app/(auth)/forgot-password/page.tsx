@@ -155,16 +155,16 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 font-sans text-slate-900 dark:text-slate-100 transition-colors">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md p-6 sm:p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#F7F8F8] dark:bg-slate-950 p-4 sm:p-6 font-sans text-[#111827] dark:text-slate-100 transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-[#E5EAEB] dark:border-slate-800 w-full max-w-md p-6 sm:p-8 space-y-6">
         {/* Header with Brand Logo */}
         <div className="flex flex-col items-center text-center space-y-3">
           <BrandLogo size="md" variant="auto" name="FleetPulse" tagline="Enterprise Cloud TMS" />
           <div className="pt-2">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
               {step === 1 ? "Reset Account Password" : "Enter Verification Code"}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
+            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-1 max-w-xs mx-auto">
               {step === 1
                 ? "Verify your registered username and mobile number to receive a secure reset code."
                 : `We've sent a 6-digit verification code for user ${username}. Enter it below to set your new password.`}
@@ -175,10 +175,10 @@ export default function ForgotPasswordPage() {
         {/* Step Indicator Progress Bar */}
         <div className="flex items-center justify-center gap-2 pt-1 pb-1">
           <div
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
               step === 1
-                ? "bg-sky-500 text-white shadow-xs shadow-sky-500/30"
-                : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                ? "bg-[#47868C] text-white shadow-xs"
+                : "bg-[#E7F1F2] text-[#3F7C82]"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
@@ -186,12 +186,12 @@ export default function ForgotPasswordPage() {
             </span>
             <span>Verify Identity</span>
           </div>
-          <div className="w-6 h-0.5 bg-slate-200 dark:bg-slate-700" />
+          <div className="w-6 h-0.5 bg-[#D9E2E3] dark:bg-slate-700" />
           <div
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
               step === 2
-                ? "bg-sky-500 text-white shadow-xs shadow-sky-500/30"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                ? "bg-[#47868C] text-white shadow-xs"
+                : "bg-slate-100 dark:bg-slate-800 text-[#94A3B8]"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
@@ -203,27 +203,27 @@ export default function ForgotPasswordPage() {
 
         {/* Alert Notifications */}
         {error && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-semibold flex items-start gap-2.5 animate-fadeIn">
-            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-[#D95C5C]/30 text-[#D95C5C] rounded-xl text-xs font-semibold flex items-start gap-2.5 animate-fadeIn">
+            <AlertCircle className="w-4 h-4 text-[#D95C5C] shrink-0 mt-0.5" />
             <span className="leading-snug">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold flex items-start gap-2.5 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-[#2F9E8F]/30 text-[#2F9E8F] rounded-xl text-xs font-semibold flex items-start gap-2.5 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-[#2F9E8F] shrink-0 mt-0.5" />
             <span className="leading-snug">{success}</span>
           </div>
         )}
 
         {/* Dev / SMS Simulation OTP Hint Banner */}
         {generatedOtpHint && (
-          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 rounded-xl text-xs font-medium flex items-center justify-between shadow-2xs">
+          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-[#F4A261]/30 text-amber-900 dark:text-amber-200 rounded-xl text-xs font-medium flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+              <Sparkles className="w-4 h-4 text-[#F4A261] shrink-0" />
               <div>
                 <span className="font-bold">Security OTP: </span>
-                <span className="font-mono font-bold tracking-widest text-sm bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700">
+                <span className="font-mono font-bold tracking-widest text-sm bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-[#F4A261]/40">
                   {generatedOtpHint}
                 </span>
               </div>
@@ -231,7 +231,7 @@ export default function ForgotPasswordPage() {
             <button
               type="button"
               onClick={() => setVerificationCode(generatedOtpHint)}
-              className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline hover:text-amber-900 cursor-pointer ml-2"
+              className="text-[11px] font-bold text-[#47868C] underline hover:text-[#3F7C82] cursor-pointer ml-2"
             >
               Auto-fill
             </button>
@@ -242,11 +242,11 @@ export default function ForgotPasswordPage() {
         {step === 1 && (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-1.5">
                 Username / User ID *
               </label>
               <div className="relative rounded-xl">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
                   <User className="h-4 w-4" />
                 </div>
                 <input
@@ -255,17 +255,17 @@ export default function ForgotPasswordPage() {
                   placeholder="e.g. admin or dispatch_lead"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-1.5">
                 Registered Mobile Number *
               </label>
               <div className="relative rounded-xl">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
                   <Phone className="h-4 w-4" />
                 </div>
                 <input
@@ -275,7 +275,7 @@ export default function ForgotPasswordPage() {
                   placeholder="e.g. 9876543210"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-mono font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
                 />
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 active:from-sky-700 text-white font-bold rounded-xl text-sm shadow-md shadow-sky-600/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-xl text-sm shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -306,21 +306,21 @@ export default function ForgotPasswordPage() {
             {/* OTP Code */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#111827] dark:text-slate-300">
                   6-Digit Verification Code *
                 </label>
                 <button
                   type="button"
                   disabled={resendCooldown > 0 || loading}
                   onClick={() => handleRequestCode()}
-                  className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer flex items-center gap-1"
+                  className="text-xs font-semibold text-[#47868C] hover:text-[#3F7C82] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer flex items-center gap-1"
                 >
                   <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
                   {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend Code"}
                 </button>
               </div>
               <div className="relative rounded-xl">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
                   <KeyRound className="h-4 w-4" />
                 </div>
                 <input
@@ -330,18 +330,18 @@ export default function ForgotPasswordPage() {
                   placeholder="123456"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                  className="w-full pl-10 pr-3.5 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-base font-mono font-bold tracking-widest text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition text-center"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-base font-mono font-bold tracking-widest text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition text-center"
                 />
               </div>
             </div>
 
             {/* New Password */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-1.5">
                 New Password *
               </label>
               <div className="relative rounded-xl">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -350,12 +350,12 @@ export default function ForgotPasswordPage() {
                   placeholder="At least 6 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                  className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#94A3B8] hover:text-[#111827] cursor-pointer"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -365,11 +365,11 @@ export default function ForgotPasswordPage() {
 
             {/* Confirm New Password */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-1.5">
                 Confirm New Password *
               </label>
               <div className="relative rounded-xl">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94A3B8]">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -378,7 +378,7 @@ export default function ForgotPasswordPage() {
                   placeholder="Repeat new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
                 />
               </div>
             </div>
@@ -391,14 +391,14 @@ export default function ForgotPasswordPage() {
                   setError("");
                   setSuccess("");
                 }}
-                className="py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs transition border border-slate-200 dark:border-slate-700 cursor-pointer"
+                className="py-3 px-4 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] font-semibold rounded-xl text-xs transition border border-[#D9E2E3] cursor-pointer"
               >
                 Back
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 active:from-sky-700 text-white font-bold rounded-xl text-xs shadow-md shadow-sky-600/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="flex-1 py-3 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -416,11 +416,11 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        <div className="pt-2 text-center text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 text-center text-xs text-[#64748B] dark:text-slate-400 border-t border-[#E5EAEB] dark:border-slate-800">
           Remember your password?{" "}
           <Link
             href="/login"
-            className="text-sky-600 dark:text-sky-400 font-bold hover:underline inline-flex items-center gap-1"
+            className="text-[#47868C] hover:text-[#3F7C82] font-semibold hover:underline inline-flex items-center gap-1"
           >
             <ArrowLeft className="w-3 h-3 inline" /> Back to Sign In
           </Link>

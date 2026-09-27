@@ -102,4 +102,33 @@ export const userService = {
       return { success: false, message: e?.response?.data?.message || e?.message || "Failed to delete user." };
     }
   },
+
+  // --- Email-based team invites ---
+  inviteUser: async (payload: { email: string; role: string; assignedFeatures: string[] }): Promise<{ success: boolean; message?: string; invite?: InviteItem }> => {
+    return await baseService.post("/users/invite", payload);
+  },
+
+  getInvites: async (): Promise<InviteItem[]> => {
+    try {
+      return await baseService.get<InviteItem[]>("/users/invites");
+    } catch {
+      return [];
+    }
+  },
+
+  revokeInvite: async (id: number): Promise<{ success: boolean; message?: string }> => {
+    return await baseService.post(`/users/invites/${id}/revoke`, {});
+  },
 };
+
+export interface InviteItem {
+  id: number;
+  email: string;
+  role: string;
+  assignedFeatures: string[];
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+  emailSent: boolean;
+  acceptUrl?: string | null;
+}

@@ -129,8 +129,8 @@ export default function ChallanListPage() {
       <div className="p-6 min-h-screen">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-slate-500 font-medium text-xs">Loading challans...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#47868C] mx-auto mb-4"></div>
+            <p className="text-[#64748B] font-medium text-xs">Loading challans...</p>
           </div>
         </div>
       </div>
@@ -141,9 +141,9 @@ export default function ChallanListPage() {
     return (
       <div className="p-6 min-h-screen">
         <div className="flex justify-center items-center h-64">
-          <div className="text-center bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 max-w-md">
-            <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <p className="text-rose-600 mb-4 font-medium text-sm">{error}</p>
+          <div className="text-center bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xs border border-[#E5EAEB] dark:border-slate-800 max-w-md">
+            <AlertTriangle className="w-12 h-12 text-[#D95C5C] mx-auto mb-4" />
+            <p className="text-[#D95C5C] mb-4 font-medium text-sm">{error}</p>
             <Button onClick={fetchChallans}>Retry</Button>
           </div>
         </div>
@@ -154,21 +154,21 @@ export default function ChallanListPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* HEADER */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
               Challan Registry & Dispatch Manifests
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#47868C] dark:border-slate-700">
               Trip Loading Sheets
             </span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Manage and track all your vehicle dispatch challans</p>
+          <p className="text-[#64748B] dark:text-slate-400 text-xs mt-1">Manage and track all your vehicle dispatch challans</p>
         </div>
         <button
           onClick={() => router.push("/dashboard/challan-entry")}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-xs transition font-bold text-xs flex items-center gap-2 cursor-pointer shrink-0"
+          className="btn-primary"
         >
           <Plus className="w-4 h-4" />
           <span>New Challan</span>
@@ -176,16 +176,16 @@ export default function ChallanListPage() {
       </div>
 
       {/* CHALLANS TABLE */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs overflow-hidden border border-slate-200 dark:border-slate-800">
-        <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-3 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-slate-800 dark:text-slate-200 font-semibold text-xs uppercase tracking-wider">
-            Total Challans: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{totalCount}</span>
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs overflow-hidden border border-[#E5EAEB] dark:border-slate-800">
+        <div className="bg-[#F7F8F8] dark:bg-slate-800/60 px-6 py-3 border-b border-[#E5EAEB] dark:border-slate-700">
+          <h2 className="text-[#111827] dark:text-slate-200 font-semibold text-xs uppercase tracking-wider">
+            Total Challans: <span className="font-mono font-bold text-[#47868C]">{totalCount}</span>
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+              <tr className="bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-700 text-[11px] font-bold text-[#64748B] dark:text-slate-300 uppercase tracking-wider">
                 <th className="px-6 py-3">Challan No</th>
                 <th className="px-6 py-3">Date</th>
                 <th className="px-6 py-3">Lorry No</th>
@@ -198,7 +198,7 @@ export default function ChallanListPage() {
                 <th className="px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
               {challans.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center">
@@ -215,46 +215,46 @@ export default function ChallanListPage() {
                   return (
                     <tr
                       key={challan.id}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition"
+                      className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition"
                     >
-                      <td className="px-6 py-3.5 whitespace-nowrap font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <td className="px-6 py-3.5 whitespace-nowrap font-mono font-bold text-[#47868C]">
                         {challan.challanNo}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-600 dark:text-slate-300">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-[#64748B] dark:text-slate-300">
                         {new Date(challan.challanDate).toLocaleDateString('en-IN')}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-800 dark:text-slate-200 font-mono font-semibold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-[#111827] dark:text-slate-200 font-mono font-semibold">
                         {challan.lorryNo}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-800 dark:text-slate-200">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-[#111827] dark:text-slate-200">
                         {challan.driverName}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-700 dark:text-slate-300">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-[#111827] dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
                           <span>{challan.fromLocation}</span>
-                          <ArrowRight className="w-3 h-3 text-indigo-500 inline" />
+                          <ArrowRight className="w-3 h-3 text-[#47868C] inline" />
                           <span>{challan.toLocation}</span>
                         </div>
                       </td>
                       <td className="px-6 py-3.5 whitespace-nowrap text-center">
-                        <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-full text-xs font-semibold border border-indigo-200 dark:border-indigo-800">
+                        <span className="bg-[#E7F1F2] text-[#3F7C82] dark:bg-slate-800 dark:text-[#47868C] px-2 py-0.5 rounded-full text-xs font-semibold border border-[#D9E2E3] dark:border-slate-700">
                           {challan.challanDetails.length}
                         </span>
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-center text-slate-900 dark:text-white font-semibold">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center text-[#111827] dark:text-white font-semibold">
                         {totals.totalQuantity}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-right text-slate-900 dark:text-white font-bold font-mono">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-right text-[#111827] dark:text-white font-bold font-mono">
                         ₹{totals.totalFreight.toFixed(2)}
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-slate-500">
+                      <td className="px-6 py-3.5 whitespace-nowrap text-[#64748B]">
                         {challan.createdByName}
                       </td>
                       <td className="px-6 py-3.5 whitespace-nowrap text-center">
                         <div className="flex gap-1.5 justify-center">
                           <button
                             onClick={() => handleEdit(challan.id)}
-                            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
+                            className="bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-[#47868C] px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Edit Challan"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -262,7 +262,7 @@ export default function ChallanListPage() {
                           </button>
                           <button
                             onClick={() => handlePrint(challan.id)}
-                            className="bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-purple-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
+                            className="bg-blue-50 hover:bg-blue-100 text-[#4A90E2] dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Print Challan"
                           >
                             <Printer className="w-3 h-3" />
@@ -270,7 +270,7 @@ export default function ChallanListPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(challan.id, challan.challanNo)}
-                            className="bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-rose-300 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
+                            className="bg-red-50 hover:bg-red-100 text-[#D95C5C] dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Delete Challan"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -288,24 +288,24 @@ export default function ChallanListPage() {
 
         {/* PAGINATION */}
         {totalCount > pageSize && (
-          <div className="bg-slate-50/80 dark:bg-slate-800/60 px-6 py-3 flex items-center justify-between border-t border-slate-200 dark:border-slate-700 text-xs">
-            <div className="text-slate-600 dark:text-slate-400">
-              Showing <span className="font-semibold text-slate-900 dark:text-white">{(page - 1) * pageSize + 1}</span> to{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">{Math.min(page * pageSize, totalCount)}</span> of{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">{totalCount}</span> results
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/60 px-6 py-3 flex items-center justify-between border-t border-[#E5EAEB] dark:border-slate-700 text-xs">
+            <div className="text-[#64748B] dark:text-slate-400">
+              Showing <span className="font-semibold text-[#111827] dark:text-white">{(page - 1) * pageSize + 1}</span> to{" "}
+              <span className="font-semibold text-[#111827] dark:text-white">{Math.min(page * pageSize, totalCount)}</span> of{" "}
+              <span className="font-semibold text-[#111827] dark:text-white">{totalCount}</span> results
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#64748B] dark:text-slate-200 hover:bg-[#F5FAFA] dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Previous
               </button>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page * pageSize >= totalCount}
-                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#64748B] dark:text-slate-200 hover:bg-[#F5FAFA] dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Next
               </button>

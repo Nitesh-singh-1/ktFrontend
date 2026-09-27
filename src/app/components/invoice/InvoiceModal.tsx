@@ -200,20 +200,20 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl border border-[#E5EAEB] w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Receipt className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Generate Freight & Commercial Invoice
+            <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-[#47868C]" /> Generate Freight & Commercial Invoice
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[#64748B]">
               Create an auto-numbered invoice, link consignments, and balance ledger receivables.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition"
+            className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -222,7 +222,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[#D95C5C] text-xs font-semibold">
               {error}
             </div>
           )}
@@ -230,7 +230,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           {/* Customer / Party Selection & Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Billed To / Master Customer (Party) *
               </label>
               <SearchableSelect<PartyLookupItem>
@@ -243,27 +243,27 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 renderItem={(p) => (
                   <div className="flex items-center justify-between w-full">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                      <div className="font-bold text-[#111827]">{p.name}</div>
+                      <div className="text-[10px] text-[#64748B]">
                         {p.gstNo ? `GST: ${p.gstNo}` : "Unregistered"} {p.city ? `• ${p.city}` : ""}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#F7F8F8] text-[#64748B] rounded">
                       #{p.id}
                     </span>
                   </div>
                 )}
               />
               {selectedParty && (
-                <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  GST: <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{selectedParty.gstNo || "N/A"}</span> •{" "}
+                <div className="mt-1 text-[11px] text-[#64748B] font-medium">
+                  GST: <span className="font-mono font-bold text-[#111827]">{selectedParty.gstNo || "N/A"}</span> •{" "}
                   Address: {selectedParty.address || "N/A"}
                 </div>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Invoice Date *
               </label>
               <input
@@ -271,19 +271,19 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 required
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
               />
             </div>
           </div>
 
           {/* Quick Consignment Linker */}
           {availableShipments.length > 0 && (
-            <div className="bg-slate-50/80 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#F7F8F8] p-3.5 rounded-xl border border-[#E5EAEB]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Quick Link Available Consignments (Waybills):
+                <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
+                  <Package className="w-4 h-4 text-[#47868C]" /> Quick Link Available Consignments (Waybills):
                 </span>
-                <span className="text-[10px] text-slate-400">Click to import freight line</span>
+                <span className="text-[10px] text-[#94A3B8]">Click to import freight line</span>
               </div>
               <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
                 {availableShipments.slice(0, 8).map((shp) => (
@@ -291,10 +291,10 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     key={shp.id}
                     type="button"
                     onClick={() => handleLinkShipment(shp)}
-                    className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:border-blue-400 rounded-md text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] border border-[#D9E2E3] hover:border-[#47868C] rounded-md text-[11px] font-semibold text-[#111827] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">{shp.shipmentNo}</span>
-                    <span className="text-slate-400">→ ₹{shp.totalFreight || shp.grandTotal}</span>
+                    <span className="font-mono text-[#47868C] font-bold">{shp.shipmentNo}</span>
+                    <span className="text-[#64748B]">→ ₹{shp.totalFreight || shp.grandTotal}</span>
                   </button>
                 ))}
               </div>
@@ -302,15 +302,15 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           )}
 
           {/* Line Items Table */}
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
-            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <div className="border border-[#E5EAEB] rounded-xl overflow-hidden shadow-2xs">
+            <div className="px-4 py-2.5 bg-[#F7F8F8] border-b border-[#E5EAEB] flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
                 Invoice Line Items
               </span>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-md border border-blue-200 dark:border-blue-800 transition cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] font-bold text-xs rounded-md border border-[#D9E2E3] transition cursor-pointer flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
@@ -319,7 +319,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
                     <th className="py-2 px-3 w-8">#</th>
                     <th className="py-2 px-3">Description / Service</th>
                     <th className="py-2 px-3 w-20">Qty</th>
@@ -328,10 +328,10 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     <th className="py-2 px-3 w-10 text-center"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-[#E5EAEB]">
                   {items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40">
-                      <td className="py-2 px-3 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
+                    <tr key={idx} className="hover:bg-[#F5FAFA]">
+                      <td className="py-2 px-3 text-[#94A3B8] font-mono text-[11px]">{idx + 1}</td>
                       <td className="py-2 px-3">
                         <input
                           type="text"
@@ -339,7 +339,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           placeholder="e.g. Freight charges Patna to Ranchi"
                           value={item.description}
                           onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -348,7 +348,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 1)}
-                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -358,10 +358,10 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="0"
                           value={item.rate}
                           onChange={(e) => handleItemChange(idx, "rate", parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                         />
                       </td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="py-2 px-3 text-right font-mono font-bold text-[#111827]">
                         ₹{(item.totalAmount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -369,7 +369,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(idx)}
-                            className="text-slate-400 hover:text-red-500 p-1 rounded transition"
+                            className="text-[#94A3B8] hover:text-[#D95C5C] p-1 rounded transition cursor-pointer"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -387,36 +387,36 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
             {/* Left: Remarks, Due Date & Payment Collection */}
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#64748B] mb-1">
                   Payment Due Date
                 </label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
 
               {/* Payment Intake Box */}
-              <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl space-y-2.5">
+              <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <Receipt className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
+                    <Receipt className="w-3.5 h-3.5 text-[#47868C]" />
                     <span>Received Payment / Initial Settlement</span>
                   </span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => setPaidAmount(0)}
-                      className="px-2 py-0.5 text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-50 cursor-pointer"
+                      className="px-2 py-0.5 text-[10px] font-bold bg-white border border-[#D9E2E3] text-[#64748B] rounded hover:bg-[#E7F1F2] cursor-pointer"
                     >
                       Unpaid (₹0)
                     </button>
                     <button
                       type="button"
                       onClick={() => setPaidAmount(grandTotal)}
-                      className="px-2 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded hover:bg-emerald-700 cursor-pointer shadow-2xs"
+                      className="px-2 py-0.5 text-[10px] font-bold bg-[#2F9E8F] text-white rounded hover:bg-[#27867a] cursor-pointer shadow-2xs"
                     >
                       Full (₹{grandTotal.toFixed(2)})
                     </button>
@@ -425,7 +425,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-[11px] font-bold text-[#64748B] mb-1">
                       Amount Received Now (₹)
                     </label>
                     <input
@@ -436,19 +436,19 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                       value={paidAmount === 0 ? "" : paidAmount}
                       onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
                       placeholder="0.00"
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-[11px] font-bold text-[#64748B] mb-1">
                       Payment Mode
                     </label>
                     <select
                       value={paymentMode}
                       onChange={(e) => setPaymentMode(e.target.value)}
                       disabled={paidAmount <= 0}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] disabled:opacity-50 cursor-pointer"
                     >
                       <option value="Cash">Cash (Counter)</option>
                       <option value="UPI / QR">UPI / QR</option>
@@ -459,14 +459,14 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 </div>
 
                 {paidAmount > 0 && grandTotal - paidAmount <= 0 && (
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                  <p className="text-[11px] text-[#2F9E8F] font-bold bg-[#E7F1F2] p-2 rounded-lg border border-[#2F9E8F]/30">
                     ✓ Full payment recorded. This invoice will immediately settle to Outstanding = ₹0.00.
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#64748B] mb-1">
                   Invoice Remarks / Terms
                 </label>
                 <textarea
@@ -474,27 +474,27 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   placeholder="e.g. Payment due within 15 days of invoice date"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
                 />
               </div>
             </div>
 
             {/* Right: Balance Ledger */}
-            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5 text-xs">
-              <div className="flex justify-between text-slate-600 dark:text-slate-400 font-medium">
+            <div className="bg-[#F7F8F8] p-4 rounded-xl border border-[#E5EAEB] space-y-2.5 text-xs">
+              <div className="flex justify-between text-[#64748B] font-medium">
                 <span>Subtotal (Line Items):</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                <span className="font-mono font-bold text-[#111827]">
                   ₹{subTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between text-[#64748B] font-medium">
                 <div className="flex items-center gap-2">
                   <span>GST Tax Rate (%):</span>
                   <select
                     value={globalTaxRate}
                     onChange={(e) => setGlobalTaxRate(Number(e.target.value))}
-                    className="px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-xs font-bold cursor-pointer"
+                    className="px-2 py-0.5 border border-[#D9E2E3] rounded bg-white text-[#111827] text-xs font-bold cursor-pointer"
                   >
                     <option value={0}>0% (Exempt)</option>
                     <option value={5}>5% (GTA RCM/ITC)</option>
@@ -502,12 +502,12 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     <option value={18}>18% (Standard)</option>
                   </select>
                 </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                <span className="font-mono font-bold text-[#111827]">
                   + ₹{taxAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between text-[#64748B] font-medium">
                 <div className="flex items-center gap-1.5">
                   <span>Other Ancillary Charges (₹):</span>
                 </div>
@@ -518,11 +518,11 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   value={otherCharges === 0 ? "" : otherCharges}
                   onChange={(e) => setOtherCharges(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-24 px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded text-right font-mono font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  className="w-24 px-2 py-0.5 border border-[#D9E2E3] rounded text-right font-mono font-bold bg-white text-[#111827]"
                 />
               </div>
 
-              <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 font-medium">
+              <div className="flex items-center justify-between text-[#64748B] font-medium">
                 <div className="flex items-center gap-1.5">
                   <span>Discount / Rebate (₹):</span>
                 </div>
@@ -533,27 +533,27 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   value={discount === 0 ? "" : discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-24 px-2 py-0.5 border border-slate-300 dark:border-slate-700 rounded text-right font-mono font-bold bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400"
+                  className="w-24 px-2 py-0.5 border border-[#D9E2E3] rounded text-right font-mono font-bold bg-white text-[#2F9E8F]"
                 />
               </div>
 
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <span className="text-sm font-black text-slate-900 dark:text-white">Grand Total:</span>
-                <span className="text-base font-mono font-black text-blue-600 dark:text-blue-400">
+              <div className="pt-2 border-t border-[#E5EAEB] flex justify-between items-center">
+                <span className="text-sm font-black text-[#111827]">Grand Total:</span>
+                <span className="text-base font-mono font-black text-[#47868C]">
                   ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+              <div className="flex justify-between items-center text-[#64748B]">
                 <span className="font-semibold">Paid / Received:</span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono font-bold text-[#2F9E8F]">
                   - ₹{(Number(paidAmount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
-              <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Balance Due (Outstanding):</span>
-                <span className={`text-sm font-mono font-bold ${grandTotal - paidAmount <= 0 && grandTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400"}`}>
+              <div className="pt-2 border-t border-dashed border-[#E5EAEB] flex justify-between items-center">
+                <span className="text-xs font-bold text-[#64748B]">Balance Due (Outstanding):</span>
+                <span className={`text-sm font-mono font-bold ${grandTotal - paidAmount <= 0 && grandTotal > 0 ? "text-[#2F9E8F]" : "text-[#4A90E2]"}`}>
                   ₹{Math.max(0, grandTotal - paidAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -561,18 +561,18 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[#E5EAEB] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Generating Invoice..." : "Create Freight Invoice"}
             </button>

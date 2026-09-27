@@ -91,24 +91,24 @@ export default function CustomerInvoicesTable({
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-4">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E5EAEB] dark:border-slate-800 pb-3">
         <div>
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <span className="p-1.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm">
+          <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100 flex items-center gap-2">
+            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg text-sm">
               <Receipt className="w-4 h-4" />
             </span>
             Customer Commercial Bill / Paper Intake
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
             Record customer given tax invoices, declared value (₹), e-way bills, and upload digital photo copies of customer bills.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-xs px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">Total Declared Value: </span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+          <div className="text-xs px-3 py-1.5 bg-[#F7F8F8] dark:bg-slate-800 rounded-lg border border-[#E5EAEB] dark:border-slate-700">
+            <span className="text-[#64748B] dark:text-slate-400 font-medium">Total Declared Value: </span>
+            <span className="font-bold text-[#47868C] font-mono">
               ₹{totalDeclaredValue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
           </div>
@@ -116,7 +116,7 @@ export default function CustomerInvoicesTable({
             <button
               type="button"
               onClick={handleAddRow}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#47868C] hover:bg-[#3F7C82] rounded-lg transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Another Bill</span>
@@ -129,7 +129,7 @@ export default function CustomerInvoicesTable({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold border-y border-slate-200 dark:border-slate-700">
+            <tr className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-300 font-semibold border-y border-[#E5EAEB] dark:border-slate-700">
               <th className="py-2.5 px-2 w-8 text-center">#</th>
               <th className="py-2.5 px-3 min-w-[150px]">Customer Bill No *</th>
               <th className="py-2.5 px-2.5 min-w-[125px]">Bill Date</th>
@@ -141,13 +141,13 @@ export default function CustomerInvoicesTable({
               {!disabled && <th className="py-2.5 px-2 w-10 text-center">Action</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
             {invoices.map((inv, idx) => (
               <tr
                 key={idx}
-                className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/30 transition-colors"
               >
-                <td className="py-2.5 px-2 text-center text-slate-500 font-bold">
+                <td className="py-2.5 px-2 text-center text-[#64748B] font-bold">
                   {idx + 1}
                 </td>
                 <td className="py-2 px-3">
@@ -160,7 +160,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "customerInvoiceNo", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
                 <td className="py-2 px-2.5">
@@ -171,7 +171,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "customerInvoiceDate", e.target.value)
                     }
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-slate-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-semibold text-[#111827] dark:text-white"
                   />
                 </td>
                 <td className="py-2 px-3">
@@ -189,7 +189,7 @@ export default function CustomerInvoicesTable({
                         parseFloat(e.target.value) || 0
                       )
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-bold font-mono text-slate-900 dark:text-white placeholder:text-slate-400"
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-bold font-mono text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
                 <td className="py-2 px-3">
@@ -201,7 +201,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "ewayBillNo", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
+                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
                 <td className="py-2 px-2.5">
@@ -211,7 +211,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "documentType", e.target.value)
                     }
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-slate-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-semibold text-[#111827] dark:text-white"
                   >
                     <option value="TaxInvoice">Tax Invoice</option>
                     <option value="DeliveryChallan">Delivery Challan</option>
@@ -228,7 +228,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "commodityDescription", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
 
@@ -254,7 +254,7 @@ export default function CustomerInvoicesTable({
                             title: `Customer Bill ${inv.customerInvoiceNo || `#${idx + 1}`}`,
                           })
                         }
-                        className="group relative flex items-center gap-1 px-2 py-1 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 rounded-md text-emerald-800 dark:text-emerald-300 text-[11px] font-bold transition cursor-pointer"
+                        className="group relative flex items-center gap-1 px-2 py-1 bg-[#E7F1F2] dark:bg-slate-800 hover:bg-[#D9E2E3] dark:hover:bg-slate-700 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-[#3F7C82] dark:text-[#47868C] text-[11px] font-bold transition cursor-pointer"
                         title="Click to zoom bill photo"
                       >
                         {inv.documentUrl.startsWith("data:image") ? (
@@ -273,7 +273,7 @@ export default function CustomerInvoicesTable({
                         <button
                           type="button"
                           onClick={() => handleFieldChange(idx, "documentUrl", "")}
-                          className="p-1 text-slate-400 hover:text-red-600 transition cursor-pointer"
+                          className="p-1 text-[#94A3B8] hover:text-[#D95C5C] transition cursor-pointer"
                           title="Remove photo"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -285,7 +285,7 @@ export default function CustomerInvoicesTable({
                       <button
                         type="button"
                         onClick={() => fileInputRefs.current[idx]?.click()}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 rounded-md text-slate-700 dark:text-slate-300 text-[11px] font-medium transition cursor-pointer shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#3F7C82] border border-[#D9E2E3] dark:border-slate-700 rounded-md text-[#64748B] dark:text-slate-300 text-[11px] font-medium transition cursor-pointer shadow-2xs"
                       >
                         <Camera className="w-3.5 h-3.5" />
                         <span>Upload Photo</span>
@@ -300,7 +300,7 @@ export default function CustomerInvoicesTable({
                     <button
                       type="button"
                       onClick={() => handleRemoveRow(idx)}
-                      className="p-1 text-slate-400 hover:text-red-600 transition-colors rounded hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                      className="p-1 text-[#94A3B8] hover:text-[#D95C5C] transition-colors rounded hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                       title="Remove Bill"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -314,14 +314,14 @@ export default function CustomerInvoicesTable({
       </div>
 
       {invoices.length > 1 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-700">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-[#64748B] dark:text-slate-400 bg-[#F7F8F8] dark:bg-slate-800/40 p-2.5 rounded-lg border border-[#E5EAEB] dark:border-slate-700">
           <span className="flex items-center gap-1.5">
-            <Receipt className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <Receipt className="w-3.5 h-3.5 text-[#47868C]" />
             <span><strong>{invoices.length} Customer Commercial Bills</strong> recorded for this Bilty.</span>
           </span>
           <span>
             Total Declared Goods Value:{" "}
-            <strong className="font-mono text-indigo-700 dark:text-indigo-400">
+            <strong className="font-mono text-[#47868C]">
               ₹{totalDeclaredValue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </strong>
           </span>

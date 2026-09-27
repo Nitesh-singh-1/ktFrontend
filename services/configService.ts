@@ -115,6 +115,11 @@ export const configService = {
   getConfiguration: () =>
     baseService.get<TenantConfiguration>("/configuration"),
 
+  // Branding subset readable by ANY authenticated tenant user (not just super users),
+  // so regular users' printed reports show the organization's logo/company details.
+  getBranding: () =>
+    baseService.get<{ tenantId: string; general: GeneralSettings; billingAndTax: Pick<BillingAndTaxSettings, "gstin" | "panNumber"> }>("/branding"),
+
   updateConfiguration: (data: Partial<TenantConfiguration>) =>
     baseService.put<TenantConfiguration>("/configuration", data),
 

@@ -21,19 +21,19 @@ export default function Card({
   children,
 }: CardProps) {
   return (
-    <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs transition-shadow duration-200 ${className}`}>
+    <div className={`bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-xl shadow-xs transition-shadow duration-200 ${className}`}>
       {(title || action) && (
-        <div className={`px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${headerClassName}`}>
+        <div className={`px-5 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${headerClassName}`}>
           <div>
             {typeof title === "string" ? (
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-[#111827] dark:text-slate-100">
                 {title}
               </h3>
             ) : (
               title
             )}
             {subtitle && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
                 {subtitle}
               </p>
             )}
