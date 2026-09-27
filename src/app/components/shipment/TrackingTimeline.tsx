@@ -30,8 +30,8 @@ export default function TrackingTimeline({ currentStatus, statusHistory = [] }: 
       <div className="flex items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800 pb-4">
         <div>
           <h3 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
-            <span className="p-1 bg-[#E7F1F2] text-[#47868C] rounded-md">
-              <MapPin className="w-4 h-4 text-[#47868C]" />
+            <span className="p-1 bg-[#E7F1F2] text-[#2F8E86] rounded-md">
+              <MapPin className="w-4 h-4 text-[#2F8E86]" />
             </span>
             <span>Consignment Tracking & Lifecycle</span>
           </h3>
@@ -48,7 +48,7 @@ export default function TrackingTimeline({ currentStatus, statusHistory = [] }: 
             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#E5EAEB] dark:bg-slate-700 w-full z-0" />
             {/* Active Progress Line */}
             <div
-              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#47868C] transition-all duration-500 z-0"
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#2F8E86] transition-all duration-500 z-0"
               style={{
                 width: `${
                   currentStageIndex >= 0
@@ -69,9 +69,9 @@ export default function TrackingTimeline({ currentStatus, statusHistory = [] }: 
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-2xs ${
                       isCurrent
-                        ? "bg-[#47868C] text-white ring-4 ring-[#E7F1F2] dark:ring-slate-800 scale-110"
+                        ? "bg-[#2F8E86] text-white ring-4 ring-[#E7F1F2] dark:ring-slate-800 scale-110"
                         : isPast
-                        ? "bg-[#47868C] text-white"
+                        ? "bg-[#2F8E86] text-white"
                         : "bg-white dark:bg-slate-800 text-[#94A3B8] border-2 border-[#D9E2E3] dark:border-slate-700"
                     }`}
                   >
@@ -79,7 +79,7 @@ export default function TrackingTimeline({ currentStatus, statusHistory = [] }: 
                   </div>
                   <span
                     className={`text-[11px] font-bold mt-2 text-center whitespace-nowrap ${
-                      isCurrent ? "text-[#3F7C82] dark:text-[#47868C]" : isPast ? "text-[#111827] dark:text-slate-300" : "text-[#94A3B8]"
+                      isCurrent ? "text-[#25776F] dark:text-[#2F8E86]" : isPast ? "text-[#111827] dark:text-slate-300" : "text-[#94A3B8]"
                     }`}
                   >
                     {meta.label}
@@ -122,7 +122,7 @@ export default function TrackingTimeline({ currentStatus, statusHistory = [] }: 
                 return (
                   <div key={event.id || idx} className="relative">
                     {/* Node Dot */}
-                    <div className="absolute -left-[19px] top-1 w-3 h-3 rounded-full bg-[#47868C] ring-4 ring-white dark:ring-slate-900 shadow-2xs" />
+                    <div className="absolute -left-[19px] top-1 w-3 h-3 rounded-full bg-[#2F8E86] ring-4 ring-white dark:ring-slate-900 shadow-2xs" />
 
                     <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-3.5 rounded-xl border border-[#E5EAEB] dark:border-slate-700 hover:border-[#D9E2E3] transition">
                       <div className="flex flex-wrap items-center justify-between gap-2">

@@ -158,7 +158,7 @@ export default function DynamicChargesTable({
       {/* Header */}
       <div className="px-5 py-3.5 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 text-[#111827] dark:text-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <IndianRupee className="w-4 h-4 text-[#47868C]" />
+          <IndianRupee className="w-4 h-4 text-[#2F8E86]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
             5. Freight, Ancillary Charges & Settlement Ledger
           </h3>
@@ -188,7 +188,7 @@ export default function DynamicChargesTable({
                 placeholder="0.00"
                 value={baseFreightInput}
                 onChange={(e) => handleBaseFreightTextChange(e.target.value)}
-                className="w-full h-10 pl-8 pr-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold text-[#111827] dark:text-white focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] focus:outline-none"
+                className="w-full h-10 pl-8 pr-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] focus:outline-none"
               />
             </div>
             <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-1.5">
@@ -215,7 +215,7 @@ export default function DynamicChargesTable({
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1 ${
                         isAdded
                           ? "bg-slate-100 dark:bg-slate-700 text-[#94A3B8] border-[#E5EAEB] dark:border-slate-600 cursor-not-allowed"
-                          : "bg-white dark:bg-slate-900 hover:bg-[#E7F1F2] dark:hover:bg-slate-800 text-[#3F7C82] dark:text-[#47868C] border-[#D9E2E3] dark:border-slate-700 shadow-2xs cursor-pointer"
+                          : "bg-white dark:bg-slate-900 hover:bg-[#E7F1F2] dark:hover:bg-slate-800 text-[#25776F] dark:text-[#2F8E86] border-[#D9E2E3] dark:border-slate-700 shadow-2xs cursor-pointer"
                       }`}
                     >
                       {isAdded && <CheckCircle2 className="w-3 h-3 text-[#94A3B8]" />}
@@ -231,7 +231,7 @@ export default function DynamicChargesTable({
                 <button
                   type="button"
                   onClick={() => handleAddCharge("", 0, false)}
-                  className="text-xs font-bold text-[#47868C] hover:text-[#3F7C82] flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-[#2F8E86] hover:text-[#25776F] flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Custom Other Fee</span>
@@ -269,7 +269,7 @@ export default function DynamicChargesTable({
                         placeholder="e.g. Loading / Hamali, Delivery Surcharge"
                         value={charge.chargeName}
                         onChange={(e) => handleFieldChange(idx, "chargeName", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                        className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
                       />
                     </td>
                     <td className="px-4 py-2 text-right">
@@ -283,7 +283,7 @@ export default function DynamicChargesTable({
                           const clean = e.target.value.replace(/[^0-9.]/g, "");
                           handleFieldChange(idx, "amount", parseFloat(clean) || 0);
                         }}
-                        className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                        className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
                       />
                     </td>
                     <td className="px-4 py-2 text-center">
@@ -292,7 +292,7 @@ export default function DynamicChargesTable({
                         disabled={disabled}
                         checked={charge.isTaxable || false}
                         onChange={(e) => handleFieldChange(idx, "isTaxable", e.target.checked)}
-                        className="w-4 h-4 rounded text-[#47868C] focus:ring-[#47868C] border-[#D9E2E3]"
+                        className="w-4 h-4 rounded text-[#2F8E86] focus:ring-[#2F8E86] border-[#D9E2E3]"
                       />
                     </td>
                     {!disabled && (
@@ -319,7 +319,7 @@ export default function DynamicChargesTable({
           <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#47868C]" />
+                <Building2 className="w-4 h-4 text-[#2F8E86]" />
                 <span className="text-xs font-bold text-[#111827] dark:text-white uppercase tracking-wide">
                   GST Rate & Tax Split Matrix (GTA Regime)
                 </span>
@@ -339,7 +339,7 @@ export default function DynamicChargesTable({
                     onClick={() => handleGstRateSelect(g.rate)}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                       isSelected
-                        ? "bg-[#47868C] text-white border-[#47868C] shadow-xs"
+                        ? "bg-[#2F8E86] text-white border-[#2F8E86] shadow-xs"
                         : "bg-white dark:bg-slate-900 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA]"
                     }`}
                   >
@@ -393,7 +393,7 @@ export default function DynamicChargesTable({
                     onClick={() => handlePaymentTermSelect(term)}
                     className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       paymentTerm === term
-                        ? "bg-[#47868C] text-white border-[#47868C] font-bold shadow-xs"
+                        ? "bg-[#2F8E86] text-white border-[#2F8E86] font-bold shadow-xs"
                         : "bg-white dark:bg-slate-900 hover:bg-[#F5FAFA] dark:hover:bg-slate-800 text-[#64748B] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 font-medium"
                     }`}
                   >
@@ -426,7 +426,7 @@ export default function DynamicChargesTable({
                   onPaidAmountChange(parseFloat(clean) || 0);
                 }}
                 placeholder="0.00"
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>
           </div>
@@ -474,14 +474,14 @@ export default function DynamicChargesTable({
                         onTotalTaxAmountChange(parseFloat(clean) || 0);
                       }}
                       placeholder="0.00"
-                      className="w-24 px-2 py-0.5 text-right bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F9E8F] focus:outline-none focus:border-[#47868C]"
+                      className="w-24 px-2 py-0.5 text-right bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F9E8F] focus:outline-none focus:border-[#2F8E86]"
                     />
                   </div>
                 </div>
               )}
 
               <div className="pt-2 border-t border-[#E5EAEB] dark:border-slate-800 flex justify-between items-center text-sm font-black">
-                <span className="text-[#47868C]">Grand Total (Total Freight):</span>
+                <span className="text-[#2F8E86]">Grand Total (Total Freight):</span>
                 <span className="font-mono text-lg text-[#111827] dark:text-white">
                   ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>

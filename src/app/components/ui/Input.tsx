@@ -31,7 +31,7 @@ export default function Input({
         className={`w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border ${
           error
             ? "border-[#D95C5C] focus:ring-[#D95C5C]/20 focus:border-[#D95C5C]"
-            : "border-[#D9E2E3] dark:border-slate-700 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+            : "border-[#D9E2E3] dark:border-slate-700 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
         } rounded-xl text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] font-medium shadow-2xs focus:outline-none focus:ring-1 transition-colors disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8] disabled:cursor-not-allowed ${className}`}
         {...props}
       />

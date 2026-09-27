@@ -119,13 +119,13 @@ export default function OnboardPage() {
         {/* Middle: Onboarding Highlights */}
         <div className="relative z-10 my-auto py-8">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#47868C]"></span>
+            <span className="w-2 h-2 rounded-full bg-[#2F8E86]"></span>
             Tenant Provisioning Engine
           </div>
 
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">
             Onboard Your Transport &{" "}
-            <span className="text-[#47868C]">
+            <span className="text-[#2F8E86]">
               Logistics Fleet
             </span>
           </h1>
@@ -138,7 +138,7 @@ export default function OnboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8 max-w-lg">
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
               <div className="text-sm font-bold text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#47868C]" />
+                <Building2 className="w-4 h-4 text-[#2F8E86]" />
                 <span>Isolated Workspace</span>
               </div>
               <p className="text-xs text-slate-400 mt-1 font-medium">Dedicated tenant scope & secure data segregation</p>
@@ -178,7 +178,7 @@ export default function OnboardPage() {
             {/* Organization Info Box */}
             <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] space-y-3">
               <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-[#47868C]" />
+                <Building2 className="w-4 h-4 text-[#2F8E86]" />
                 Organization Details
               </div>
 
@@ -194,7 +194,7 @@ export default function OnboardPage() {
                     placeholder="e.g. Acme Express Cargo"
                     value={formData.organizationName}
                     onChange={handleOrgNameChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                   />
                 </div>
 
@@ -210,7 +210,7 @@ export default function OnboardPage() {
                     placeholder="ACME"
                     value={formData.organizationCode}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-mono font-bold tracking-wider"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-mono font-bold tracking-wider"
                   />
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function OnboardPage() {
             {/* Admin Info Box */}
             <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#E5EAEB] space-y-3">
               <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
-                <User className="w-4 h-4 text-[#47868C]" />
+                <User className="w-4 h-4 text-[#2F8E86]" />
                 Primary Administrator
               </div>
 
@@ -235,7 +235,7 @@ export default function OnboardPage() {
                     placeholder="e.g. Ramesh Kumar"
                     value={formData.adminFullName}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                   />
                 </div>
 
@@ -250,7 +250,7 @@ export default function OnboardPage() {
                     maxLength={10}
                     value={formData.adminMobile || ""}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                   />
                 </div>
 
@@ -265,7 +265,7 @@ export default function OnboardPage() {
                     placeholder="admin_acme"
                     value={formData.adminUsername}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                   />
                 </div>
 
@@ -281,7 +281,7 @@ export default function OnboardPage() {
                       placeholder="••••••••••••"
                       value={formData.adminPassword}
                       onChange={handleChange}
-                      className="w-full px-3.5 py-2.5 pr-10 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium"
+                      className="w-full px-3.5 py-2.5 pr-10 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                     />
                     <button
                       type="button"
@@ -315,7 +315,7 @@ export default function OnboardPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-3.5 px-4 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <>
@@ -335,7 +335,7 @@ export default function OnboardPage() {
           <div className="mt-6 pt-5 border-t border-[#E5EAEB] text-center">
             <p className="text-xs text-[#64748B]">
               Already have an organization workspace?{" "}
-              <Link href="/login" className="font-bold text-[#47868C] hover:text-[#3F7C82] hover:underline">
+              <Link href="/login" className="font-bold text-[#2F8E86] hover:text-[#25776F] hover:underline">
                 Sign in to existing account
               </Link>
             </p>

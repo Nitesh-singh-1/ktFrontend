@@ -69,12 +69,12 @@ export default function InvoiceDetailsModal({
         {/* Top Modal Bar */}
         <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#E7F1F2] flex items-center justify-center text-[#47868C]">
+            <div className="w-9 h-9 rounded-lg bg-[#E7F1F2] flex items-center justify-center text-[#2F8E86]">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-bold text-[#111827]">
-                Invoice Breakdown: <span className="font-mono text-[#47868C]">{invoice?.invoiceNo || "Loading..."}</span>
+                Invoice Breakdown: <span className="font-mono text-[#2F8E86]">{invoice?.invoiceNo || "Loading..."}</span>
               </h2>
               <p className="text-xs text-[#64748B]">Official Freight Bill & Accounts Receivable Breakdown</p>
             </div>
@@ -82,7 +82,7 @@ export default function InvoiceDetailsModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer flex items-center gap-1.5"
             >
               <Printer className="w-4 h-4" />
               <span>Print</span>
@@ -100,7 +100,7 @@ export default function InvoiceDetailsModal({
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {loading ? (
             <div className="p-16 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F8E86] mx-auto mb-3" />
               <p className="text-xs text-[#64748B] font-medium">Loading invoice details...</p>
             </div>
           ) : error ? (
@@ -164,7 +164,7 @@ export default function InvoiceDetailsModal({
                         invoice.items.map((it, idx) => (
                           <tr key={idx} className="hover:bg-[#F5FAFA]">
                             <td className="py-2.5 px-3 font-semibold text-[#111827]">{it.description}</td>
-                            <td className="py-2.5 px-3 font-mono text-[#47868C]">{it.shipmentNo || "—"}</td>
+                            <td className="py-2.5 px-3 font-mono text-[#2F8E86]">{it.shipmentNo || "—"}</td>
                             <td className="py-2.5 px-3 text-center font-bold text-[#111827]">{it.quantity}</td>
                             <td className="py-2.5 px-3 text-right font-mono text-[#111827]">₹{it.rate}</td>
                             <td className="py-2.5 px-3 text-right font-mono text-[#64748B]">{it.taxRate ? `${it.taxRate}%` : "—"}</td>
@@ -210,7 +210,7 @@ export default function InvoiceDetailsModal({
                   )}
                   <div className="pt-2 border-t border-[#E5EAEB] flex justify-between font-black text-[#111827] text-sm">
                     <span>Grand Total:</span>
-                    <span className="font-mono text-[#47868C]">₹{invoice.grandTotal}</span>
+                    <span className="font-mono text-[#2F8E86]">₹{invoice.grandTotal}</span>
                   </div>
                   <div className="flex justify-between text-[#64748B] pt-1">
                     <span>Paid Amount:</span>
@@ -259,7 +259,7 @@ export default function InvoiceDetailsModal({
                 onClose();
                 onRecordPayment(invoice);
               }}
-              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             >
               <CreditCard className="w-4 h-4" />
               <span>Record Payment (₹{invoice.balanceAmount} due)</span>
@@ -270,7 +270,7 @@ export default function InvoiceDetailsModal({
 
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
+            className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer"
           >
             Close
           </button>

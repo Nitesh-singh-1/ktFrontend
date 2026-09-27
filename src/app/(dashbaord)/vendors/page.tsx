@@ -95,7 +95,7 @@ export default function VendorsPage() {
             <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Market Trucks & Lorry Hire Management
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
               Third-Party Fleet
             </span>
           </div>
@@ -107,7 +107,7 @@ export default function VendorsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setLorryHireModalOpen(true)}
-            className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Issue Lorry Hire Memo</span>
@@ -118,7 +118,7 @@ export default function VendorsPage() {
               setEditingVendor(null);
               setVendorModalOpen(true);
             }}
-            className="px-3.5 py-2 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Vendor</span>
@@ -177,15 +177,15 @@ export default function VendorsPage() {
                 }}
                 className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                   isSelected
-                    ? "bg-[#47868C] text-white shadow-xs"
-                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#3F7C82] border border-[#E5EAEB]"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#25776F] border border-[#E5EAEB]"
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                    isSelected ? "bg-[#3F7C82] text-white" : "bg-[#E5EAEB] text-[#64748B]"
+                    isSelected ? "bg-[#25776F] text-white" : "bg-[#E5EAEB] text-[#64748B]"
                   }`}
                 >
                   {tab.count}
@@ -201,7 +201,7 @@ export default function VendorsPage() {
             placeholder={`Search ${activeTab === "lorryHire" ? "slips, truck, broker..." : "vendor name, PAN..."}`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+            className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
           />
           <Search className="w-4 h-4 absolute left-3 top-2 text-[#94A3B8]" />
         </div>
@@ -235,7 +235,7 @@ export default function VendorsPage() {
                     </p>
                     <button
                       onClick={() => setLorryHireModalOpen(true)}
-                      className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
+                      className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Issue Lorry Hire Memo</span>
@@ -260,7 +260,7 @@ export default function VendorsPage() {
                       <tbody className="divide-y divide-[#E5EAEB]">
                         {filteredContracts.map((c) => (
                           <tr key={c.id} className="hover:bg-[#F5FAFA] transition">
-                            <td className="py-3.5 px-4 font-mono font-bold text-[#47868C]">
+                            <td className="py-3.5 px-4 font-mono font-bold text-[#2F8E86]">
                               {c.contractNo}
                             </td>
                             <td className="py-3.5 px-4 font-medium text-[#111827]">
@@ -282,7 +282,7 @@ export default function VendorsPage() {
                             <td className="py-3.5 px-4 text-right font-mono text-[#64748B]">
                               ₹{c.tdsAmount}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-[#47868C]">
+                            <td className="py-3.5 px-4 text-right font-mono font-bold text-[#2F8E86]">
                               ₹{c.balancePayable}
                             </td>
                             <td className="py-3.5 px-4 text-right">
@@ -325,7 +325,7 @@ export default function VendorsPage() {
                         setEditingVendor(null);
                         setVendorModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
+                      className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Register First Vendor</span>
@@ -358,7 +358,7 @@ export default function VendorsPage() {
                             </td>
 
                             <td className="py-3.5 px-4">
-                              <span className="text-[11px] font-bold px-2 py-0.5 bg-[#E7F1F2] text-[#3F7C82] rounded border border-[#D9E2E3]">
+                              <span className="text-[11px] font-bold px-2 py-0.5 bg-[#E7F1F2] text-[#25776F] rounded border border-[#D9E2E3]">
                                 {v.tdsPercentage}% TDS
                               </span>
                             </td>
@@ -381,7 +381,7 @@ export default function VendorsPage() {
                                   setEditingVendor(v);
                                   setVendorModalOpen(true);
                                 }}
-                                className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
+                                className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
                               >
                                 <Edit2 className="w-3 h-3" />
                                 <span>Edit</span>

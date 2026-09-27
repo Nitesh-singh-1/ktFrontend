@@ -205,7 +205,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
         <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div>
             <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
-              <Receipt className="w-5 h-5 text-[#47868C]" /> Generate Freight & Commercial Invoice
+              <Receipt className="w-5 h-5 text-[#2F8E86]" /> Generate Freight & Commercial Invoice
             </h2>
             <p className="text-xs text-[#64748B]">
               Create an auto-numbered invoice, link consignments, and balance ledger receivables.
@@ -271,7 +271,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                 required
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
             <div className="bg-[#F7F8F8] p-3.5 rounded-xl border border-[#E5EAEB]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-[#47868C]" /> Quick Link Available Consignments (Waybills):
+                  <Package className="w-4 h-4 text-[#2F8E86]" /> Quick Link Available Consignments (Waybills):
                 </span>
                 <span className="text-[10px] text-[#94A3B8]">Click to import freight line</span>
               </div>
@@ -291,9 +291,9 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                     key={shp.id}
                     type="button"
                     onClick={() => handleLinkShipment(shp)}
-                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] border border-[#D9E2E3] hover:border-[#47868C] rounded-md text-[11px] font-semibold text-[#111827] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] border border-[#D9E2E3] hover:border-[#2F8E86] rounded-md text-[11px] font-semibold text-[#111827] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <span className="font-mono text-[#47868C] font-bold">{shp.shipmentNo}</span>
+                    <span className="font-mono text-[#2F8E86] font-bold">{shp.shipmentNo}</span>
                     <span className="text-[#64748B]">→ ₹{shp.totalFreight || shp.grandTotal}</span>
                   </button>
                 ))}
@@ -310,7 +310,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] font-bold text-xs rounded-md border border-[#D9E2E3] transition cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] font-bold text-xs rounded-md border border-[#D9E2E3] transition cursor-pointer flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
@@ -339,7 +339,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           placeholder="e.g. Freight charges Patna to Ranchi"
                           value={item.description}
                           onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -348,7 +348,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 1)}
-                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                         />
                       </td>
                       <td className="py-2 px-3">
@@ -358,7 +358,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                           min="0"
                           value={item.rate}
                           onChange={(e) => handleItemChange(idx, "rate", parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                          className="w-full px-2 py-1.5 bg-white border border-[#D9E2E3] rounded text-xs font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                         />
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-bold text-[#111827]">
@@ -394,7 +394,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
               <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
-                    <Receipt className="w-3.5 h-3.5 text-[#47868C]" />
+                    <Receipt className="w-3.5 h-3.5 text-[#2F8E86]" />
                     <span>Received Payment / Initial Settlement</span>
                   </span>
                   <div className="flex items-center gap-1">
@@ -436,7 +436,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                       value={paidAmount === 0 ? "" : paidAmount}
                       onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
                       placeholder="0.00"
-                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                     />
                   </div>
 
@@ -448,7 +448,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                       value={paymentMode}
                       onChange={(e) => setPaymentMode(e.target.value)}
                       disabled={paidAmount <= 0}
-                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] disabled:opacity-50 cursor-pointer"
+                      className="w-full px-2.5 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] disabled:opacity-50 cursor-pointer"
                     >
                       <option value="Cash">Cash (Counter)</option>
                       <option value="UPI / QR">UPI / QR</option>
@@ -474,7 +474,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
                   placeholder="e.g. Payment due within 15 days of invoice date"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
             </div>
@@ -539,7 +539,7 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
 
               <div className="pt-2 border-t border-[#E5EAEB] flex justify-between items-center">
                 <span className="text-sm font-black text-[#111827]">Grand Total:</span>
-                <span className="text-base font-mono font-black text-[#47868C]">
+                <span className="text-base font-mono font-black text-[#2F8E86]">
                   ₹{grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -565,14 +565,14 @@ export default function InvoiceModal({ isOpen, onClose, onSaved }: InvoiceModalP
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Generating Invoice..." : "Create Freight Invoice"}
             </button>

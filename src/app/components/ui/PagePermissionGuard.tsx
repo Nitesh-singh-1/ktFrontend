@@ -47,7 +47,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
   if (isLoading || (platformOnly && isPlatformAdmin === null)) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
-        <div className="w-8 h-8 border-3 border-[#47868C] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-3 border-[#2F8E86] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
   if (!isAllowed) {
     return (
       <div className="max-w-2xl mx-auto my-12 p-8 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs text-center space-y-5">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#47868C]">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#2F8E86]">
           <Lock className="w-8 h-8" />
         </div>
 
@@ -71,7 +71,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400 max-w-md mx-auto">
             Your current client subscription plan tier or user dedicated page permissions do not grant access to this page (
-            <code className="text-[#3F7C82] font-mono text-xs bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{permission}</code>).
+            <code className="text-[#25776F] font-mono text-xs bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{permission}</code>).
           </p>
         </div>
 

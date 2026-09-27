@@ -133,8 +133,8 @@ export default function VendorModal({
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
-              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
-                <Users className="w-4 h-4 text-[#47868C]" />
+              <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
+                <Users className="w-4 h-4 text-[#2F8E86]" />
               </span>
               {initialVendor ? "Edit Market Vendor / Broker" : "Register Market Truck Vendor / Broker"}
             </h2>
@@ -167,7 +167,7 @@ export default function VendorModal({
                 placeholder="e.g. Star Transport Logistics"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -180,7 +180,7 @@ export default function VendorModal({
                 placeholder="e.g. VND-01"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-200 bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-200 bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function VendorModal({
                 placeholder="AAACB1234F"
                 value={panNo}
                 onChange={(e) => setPanNo(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -211,7 +211,7 @@ export default function VendorModal({
                 placeholder="27AAACB1234F1Z1"
                 value={gstNo}
                 onChange={(e) => setGstNo(e.target.value.toUpperCase())}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -222,7 +222,7 @@ export default function VendorModal({
               <select
                 value={tdsPercentage}
                 onChange={(e) => setTdsPercentage(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               >
                 <option value={0}>0% (Exempt)</option>
                 <option value={1}>1% (Individual / Sole Prop 194C)</option>
@@ -242,7 +242,7 @@ export default function VendorModal({
                 placeholder="e.g. Anil Verma"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -256,7 +256,7 @@ export default function VendorModal({
                 placeholder="9876543210"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -269,7 +269,7 @@ export default function VendorModal({
                 placeholder="accounts@startransport.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function VendorModal({
           {/* Bank Details Payout Section */}
           <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 flex items-center gap-1.5">
-              <Landmark className="w-4 h-4 text-[#47868C]" />
+              <Landmark className="w-4 h-4 text-[#2F8E86]" />
               Bank Payout Details (for Advance & Hire Settlement)
             </span>
 
@@ -291,7 +291,7 @@ export default function VendorModal({
                   placeholder="e.g. State Bank of India"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -304,7 +304,7 @@ export default function VendorModal({
                   placeholder="e.g. 308948201948"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export default function VendorModal({
                   placeholder="SBIN0001234"
                   value={ifscCode}
                   onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -331,7 +331,7 @@ export default function VendorModal({
                   placeholder="e.g. Star Transport Logistics Pvt Ltd"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
             </div>
@@ -344,7 +344,7 @@ export default function VendorModal({
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-[#47868C] focus:ring-[#47868C]"
+                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
               />
               <span>Active Supplier in Vendor Directory</span>
             </label>

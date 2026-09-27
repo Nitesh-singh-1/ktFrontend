@@ -62,12 +62,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const taglineColor = {
     light: "text-white/80",
-    dark: "text-[#3F7C82]",
-    teal: "text-[#3F7C82]",
-    auto: "text-[#3F7C82]",
+    dark: "text-[#25776F]",
+    teal: "text-[#25776F]",
+    auto: "text-[#25776F]",
   }[variant];
 
-  const iconBg = "bg-[#47868C]";
+  const iconBg = "bg-[#2F8E86]";
 
   return (
     <div className={`flex items-center ${sizeConfig.gap} select-none ${className}`}>
@@ -82,7 +82,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <span className={`font-bold tracking-tight ${sizeConfig.titleText} ${textColor}`}>
             {name}
           </span>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3]">
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3]">
             TMS
           </span>
         </div>

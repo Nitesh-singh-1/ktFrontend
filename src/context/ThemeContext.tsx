@@ -19,7 +19,7 @@ export const availableThemes: ThemeOption[] = [
     id: "fleetpulse-teal",
     name: "FleetPulse Teal (Default)",
     description: "Muted teal, pure white surfaces and light gray canvas",
-    primaryColor: "#47868C",
+    primaryColor: "#2F8E86",
     accentColor: "#4A90E2",
     bgPreview: "bg-[#E7F1F2] border-[#D9E2E3]",
     isDark: false,

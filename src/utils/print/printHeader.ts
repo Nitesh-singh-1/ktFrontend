@@ -1,4 +1,5 @@
 import { getTenantPrintProfile, TenantPrintProfile } from "./tenantProfile";
+import { toast } from "@/context/ToastContext";
 
 /**
  * Generic, logo-agnostic print letterhead shared by Bilty/GR, Challan, and Money Receipt.
@@ -79,7 +80,7 @@ export const PRINT_HEADER_CSS = `
 export function openPrintWindow(html: string, autoPrint = false): void {
   const win = window.open("", "_blank");
   if (!win) {
-    alert("Please allow popups to print");
+    toast.error("Please allow pop-ups for this site to print.");
     return;
   }
 

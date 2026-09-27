@@ -98,7 +98,7 @@ export default function ProfilePage() {
   };
 
   const inputCls =
-    "w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium";
+    "w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium";
   const labelCls = "block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1";
 
   const Banner = ({ msg }: { msg: { type: "ok" | "err"; text: string } | null }) =>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-[#47868C] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+        <div className="w-12 h-12 rounded-2xl bg-[#2F8E86] text-white flex items-center justify-center font-bold text-lg shadow-xs">
           {(profile?.fullName || profile?.username || "U").charAt(0).toUpperCase()}
         </div>
         <div>
@@ -141,7 +141,7 @@ export default function ProfilePage() {
       {/* Profile details */}
       <form onSubmit={handleSaveProfile} className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-2 text-sm font-bold text-[#111827] dark:text-white">
-          <UserCircle className="w-4 h-4 text-[#47868C]" /> Personal Information
+          <UserCircle className="w-4 h-4 text-[#2F8E86]" /> Personal Information
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,7 +169,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={savingProfile}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-sm transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-sm transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {savingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span>Save Changes</span>
@@ -180,7 +180,7 @@ export default function ProfilePage() {
       {/* Change password */}
       <form onSubmit={handleChangePassword} className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-2 text-sm font-bold text-[#111827] dark:text-white">
-          <Lock className="w-4 h-4 text-[#47868C]" /> Change Password
+          <Lock className="w-4 h-4 text-[#2F8E86]" /> Change Password
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

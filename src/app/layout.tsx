@@ -4,6 +4,7 @@ import "./globals.css";
 import UpdateNotification from "./components/layout/UpdateNotification";
 import BuildExpiryGuard from "./components/layout/BuildExpiryGuard";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,12 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased`}>
         <ThemeProvider>
-          <BuildExpiryGuard>
-            {children}
-          </BuildExpiryGuard>
-          <UpdateNotification />
+          <ToastProvider>
+            <BuildExpiryGuard>
+              {children}
+            </BuildExpiryGuard>
+            <UpdateNotification />
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

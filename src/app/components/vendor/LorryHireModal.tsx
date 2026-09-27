@@ -154,8 +154,8 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
-              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
-                <FileText className="w-4 h-4 text-[#47868C]" />
+              <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
+                <FileText className="w-4 h-4 text-[#2F8E86]" />
               </span>
               <span>Issue Lorry Hire Memo (Market Truck Contract)</span>
             </h2>
@@ -185,7 +185,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
               <select
                 value={vendorId || ""}
                 onChange={handleVendorSelect}
-                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               >
                 <option value="">-- Direct Truck Owner / Ad-hoc --</option>
                 {vendors.map((v) => (
@@ -205,7 +205,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 required
                 value={contractDate}
                 onChange={(e) => setContractDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -240,7 +240,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 placeholder="e.g. Balwinder Singh"
                 value={driverName}
                 onChange={(e) => setDriverName(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -254,7 +254,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 placeholder="9876543210"
                 value={driverMobile}
                 onChange={(e) => setDriverMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={totalHireAmount === 0 ? "" : totalHireAmount}
                   onChange={(e) => setTotalHireAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-black text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-black text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -326,7 +326,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={advanceCashPaid === 0 ? "" : advanceCashPaid}
                   onChange={(e) => setAdvanceCashPaid(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -341,7 +341,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={dieselAdvanceAmount === 0 ? "" : dieselAdvanceAmount}
                   onChange={(e) => setDieselAdvanceAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -352,7 +352,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                 <select
                   value={tdsPercentage}
                   onChange={(e) => setTdsPercentage(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 >
                   <option value={0}>0% (Exempt)</option>
                   <option value={1}>1% (Individual / Prop)</option>
@@ -372,13 +372,13 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
                   placeholder="0.00"
                   value={otherDeductions === 0 ? "" : otherDeductions}
                   onChange={(e) => setOtherDeductions(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-[#E5EAEB] dark:border-slate-700 flex flex-col justify-center">
                 <span className="text-[10px] font-bold uppercase text-[#94A3B8]">Net Balance Due</span>
-                <span className="text-sm font-mono font-black text-[#47868C]">
+                <span className="text-sm font-mono font-black text-[#2F8E86]">
                   ₹{balancePayable.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -395,7 +395,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
               placeholder="e.g. Balance payable upon submission of signed POD copy"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 

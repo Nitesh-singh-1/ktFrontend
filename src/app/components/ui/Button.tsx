@@ -34,13 +34,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<Variant, string> = {
       primary:
-        "bg-[#47868C] hover:bg-[#3F7C82] active:bg-[#356B70] text-white focus:ring-[#47868C]/30 shadow-xs hover:shadow min-w-[120px]",
+        "bg-[#2F8E86] hover:bg-[#25776F] active:bg-[#1E645C] text-white focus:ring-[#2F8E86]/30 shadow-xs hover:shadow min-w-[120px]",
       secondary:
-        "bg-white dark:bg-slate-900 text-[#3F7C82] dark:text-slate-200 hover:bg-[#E7F1F2] dark:hover:bg-slate-800 active:bg-[#D8EAEC] border border-[#D9E2E3] dark:border-slate-700 focus:ring-[#47868C]/20 shadow-2xs min-w-[100px]",
+        "bg-white dark:bg-slate-900 text-[#25776F] dark:text-slate-200 hover:bg-[#E7F1F2] dark:hover:bg-slate-800 active:bg-[#D8EAEC] border border-[#D9E2E3] dark:border-slate-700 focus:ring-[#2F8E86]/20 shadow-2xs min-w-[100px]",
       outline:
-        "bg-transparent text-[#47868C] hover:bg-[#E7F1F2] dark:hover:bg-slate-800 border border-[#47868C] focus:ring-[#47868C]/30 min-w-[100px]",
+        "bg-transparent text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-800 border border-[#2F8E86] focus:ring-[#2F8E86]/30 min-w-[100px]",
       ghost:
-        "text-[#64748B] hover:text-[#111827] dark:hover:text-white hover:bg-[#E7F1F2] dark:hover:bg-slate-800 focus:ring-[#47868C]/20",
+        "text-[#64748B] hover:text-[#111827] dark:hover:text-white hover:bg-[#E7F1F2] dark:hover:bg-slate-800 focus:ring-[#2F8E86]/20",
       danger:
         "bg-[#D95C5C] hover:bg-[#C54A4A] active:bg-[#B23C3C] text-white focus:ring-[#D95C5C]/30 shadow-xs min-w-[100px]",
     };

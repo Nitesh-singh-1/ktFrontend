@@ -77,7 +77,7 @@ function AcceptInviteInner() {
   };
 
   const inputCls =
-    "w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] font-medium";
+    "w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium";
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F7F8F8] p-6">
@@ -93,12 +93,12 @@ function AcceptInviteInner() {
             </div>
             <h1 className="text-lg font-bold text-[#111827]">Invitation unavailable</h1>
             <p className="text-sm text-[#64748B]">{invite?.message || "This invitation link is invalid."}</p>
-            <Link href="/login" className="inline-block text-sm font-bold text-[#47868C] hover:underline">Go to sign in</Link>
+            <Link href="/login" className="inline-block text-sm font-bold text-[#2F8E86] hover:underline">Go to sign in</Link>
           </div>
         ) : (
           <>
             <div className="mb-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E7F1F2] border border-[#D9E2E3] text-[#3F7C82] text-xs font-bold mb-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E7F1F2] border border-[#D9E2E3] text-[#25776F] text-xs font-bold mb-3">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>{invite.organizationName}</span>
               </div>
@@ -153,7 +153,7 @@ function AcceptInviteInner() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 px-4 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Create Account & Sign In</span><ArrowRight className="w-4 h-4" /></>}
               </button>

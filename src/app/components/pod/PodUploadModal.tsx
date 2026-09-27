@@ -157,7 +157,7 @@ export default function PodUploadModal({
         <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div>
             <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-[#47868C]" /> Electronic Proof of Delivery (e-POD)
+              <FileCheck className="w-5 h-5 text-[#2F8E86]" /> Electronic Proof of Delivery (e-POD)
             </h2>
             <p className="text-xs text-[#64748B]">
               Record consignee delivery acknowledgement, recipient ID, and digital signature.
@@ -186,7 +186,7 @@ export default function PodUploadModal({
                 required
                 value={shipmentId || ""}
                 onChange={(e) => setShipmentId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               >
                 <option value="">-- Choose Shipment / LR --</option>
                 {shipments.map((s) => (
@@ -206,7 +206,7 @@ export default function PodUploadModal({
                 required
                 value={deliveryDate}
                 onChange={(e) => setDeliveryDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function PodUploadModal({
                 placeholder="e.g. Mukesh Kumar (Godown Mgr)"
                 value={receiverName}
                 onChange={(e) => setReceiverName(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -237,7 +237,7 @@ export default function PodUploadModal({
                 placeholder="9876543210"
                 value={receiverMobile}
                 onChange={(e) => setReceiverMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -251,7 +251,7 @@ export default function PodUploadModal({
               placeholder="e.g. Aadhar ending in 4920 or Company Stamp ID"
               value={receiverAadharOrId}
               onChange={(e) => setReceiverAadharOrId(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 
@@ -259,7 +259,7 @@ export default function PodUploadModal({
           <div className="bg-[#F7F8F8] p-4 rounded-xl border border-[#E5EAEB] space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-[#111827] flex items-center gap-1.5">
-                <PenTool className="w-4 h-4 text-[#47868C]" /> Digital Receiver Signature (Draw on screen)
+                <PenTool className="w-4 h-4 text-[#2F8E86]" /> Digital Receiver Signature (Draw on screen)
               </span>
               {hasSignature && (
                 <button
@@ -300,7 +300,7 @@ export default function PodUploadModal({
               placeholder="e.g. Delivered 10 pkgs in sound condition with seal intact"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 
@@ -309,14 +309,14 @@ export default function PodUploadModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Uploading POD..." : "Upload & Save Proof of Delivery"}
             </button>

@@ -253,13 +253,13 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
-                <Truck className="w-4 h-4 text-[#47868C]" />
+              <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
+                <Truck className="w-4 h-4 text-[#2F8E86]" />
               </span>
               <h2 className="text-base font-bold text-[#111827] dark:text-white uppercase tracking-tight">
                 Create LR / Truck Challan (Vehicle Movement)
               </h2>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
                 Step 3: Point A → Point B
               </span>
             </div>
@@ -288,7 +288,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
           {/* Section 1: Challan Meta & Route (Point A to Point B) */}
           <div className="bg-[#F7F8F8] dark:bg-slate-800/40 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-4">
             <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 flex items-center gap-1.5 border-b border-[#E5EAEB] dark:border-slate-700 pb-2">
-              <MapPin className="w-4 h-4 text-[#47868C]" /> 1. Challan Details & Route (Point A → Point B)
+              <MapPin className="w-4 h-4 text-[#2F8E86]" /> 1. Challan Details & Route (Point A → Point B)
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -302,7 +302,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="Auto (e.g. 195 or CHN-2026-01)"
                   value={tripNo}
                   onChange={(e) => setTripNo(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#47868C] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F8E86] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   required
                   value={tripDate}
                   onChange={(e) => setTripDate(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] cursor-pointer"
                 />
               </div>
 
@@ -363,7 +363,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
           {/* Section 2: Truck & Driver Crew Assignment */}
           <div className="bg-[#F7F8F8] dark:bg-slate-800/40 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-4">
             <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 flex items-center gap-1.5 border-b border-[#E5EAEB] dark:border-slate-700 pb-2">
-              <Truck className="w-4 h-4 text-[#47868C]" /> 2. Truck & Crew Details
+              <Truck className="w-4 h-4 text-[#2F8E86]" /> 2. Truck & Crew Details
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -426,7 +426,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="e.g. Pappu Kumar"
                   value={voiceDriverName}
                   onChange={(e) => setVoiceDriverName(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -441,7 +441,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="9876543210"
                   value={driverMobile}
                   onChange={(e) => setDriverMobile(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
             </div>
@@ -457,7 +457,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="0.00"
                   value={driverAdvanceCash === 0 ? "" : driverAdvanceCash}
                   onChange={(e) => setDriverAdvanceCash(parseFloat(e.target.value) || 0)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -470,7 +470,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="0.00"
                   value={driverAdvanceFuel === 0 ? "" : driverAdvanceFuel}
                   onChange={(e) => setDriverAdvanceFuel(parseFloat(e.target.value) || 0)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -483,7 +483,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="0"
                   value={startOdometer === 0 ? "" : startOdometer}
                   onChange={(e) => setStartOdometer(parseFloat(e.target.value) || 0)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -496,7 +496,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   placeholder="e.g. SEAL-9821"
                   value={sealNo}
                   onChange={(e) => setSealNo(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
             </div>
@@ -508,11 +508,11 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
             <div className="p-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-[#47868C]" />
+                  <Package className="w-4 h-4 text-[#2F8E86]" />
                   <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200">
                     3. Load Bilties / GRs to this Truck
                   </span>
-                  <span className="text-xs font-bold px-2.5 py-0.5 bg-[#47868C] text-white rounded-full">
+                  <span className="text-xs font-bold px-2.5 py-0.5 bg-[#2F8E86] text-white rounded-full">
                     {selectedShipmentIds.length} Bilties Attached
                   </span>
                 </div>
@@ -529,7 +529,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                     placeholder="Search Bilty No, Party, Destination..."
                     value={biltySearchQuery}
                     onChange={(e) => setBiltySearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                    className="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                   />
                   <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-2.5 top-2.5" />
                 </div>
@@ -558,7 +558,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                         className="p-2.5 bg-white dark:bg-slate-850 hover:bg-[#E7F1F2]/50 dark:hover:bg-slate-800 border border-[#E5EAEB] dark:border-slate-700 rounded-lg text-left flex items-center justify-between transition cursor-pointer"
                       >
                         <div>
-                          <div className="font-mono font-bold text-xs text-[#47868C]">
+                          <div className="font-mono font-bold text-xs text-[#2F8E86]">
                             + Bill #{bilty.shipmentNo}
                           </div>
                           <div className="text-[10px] text-[#64748B] dark:text-slate-300 truncate max-w-[200px]">
@@ -566,7 +566,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-mono font-bold text-[11px] text-[#3F7C82]">
+                          <div className="font-mono font-bold text-[11px] text-[#25776F]">
                             Value: ₹{goodsVal.toLocaleString("en-IN")}
                           </div>
                           <div className="text-[10px] text-[#64748B] font-semibold">
@@ -591,7 +591,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   <button
                     type="button"
                     onClick={selectAllShipments}
-                    className="text-xs font-bold text-[#47868C] hover:text-[#3F7C82] hover:underline cursor-pointer"
+                    className="text-xs font-bold text-[#2F8E86] hover:text-[#25776F] hover:underline cursor-pointer"
                   >
                     {selectedShipmentIds.length === availableShipments.length
                       ? "Deselect All"
@@ -602,7 +602,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
 
               {selectedShipments.length === 0 ? (
                 <div className="p-8 text-center space-y-2 bg-white dark:bg-slate-900">
-                  <div className="w-12 h-12 rounded-2xl bg-[#E7F1F2] dark:bg-slate-800 text-[#47868C] flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 rounded-2xl bg-[#E7F1F2] dark:bg-slate-800 text-[#2F8E86] flex items-center justify-center mx-auto mb-2">
                     <ClipboardList className="w-6 h-6" />
                   </div>
                   <p className="text-xs font-bold text-[#111827] dark:text-slate-300">
@@ -641,7 +641,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                             className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition"
                           >
                             <td className="py-2.5 px-3 text-center text-[#94A3B8] font-bold">{idx + 1}</td>
-                            <td className="py-2.5 px-3 font-mono font-bold text-[#47868C]">
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#2F8E86]">
                               {s.shipmentNo}
                               {s.invoiceNo && (
                                 <span className="block text-[10px] text-[#94A3B8] font-normal">
@@ -698,7 +698,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   <div className="flex flex-wrap items-center justify-between gap-3 text-xs border-b border-[#E5EAEB] dark:border-slate-700 pb-2.5">
                     <div className="flex flex-wrap items-center gap-4">
                       <span className="font-bold flex items-center gap-1.5 text-[#111827] dark:text-white">
-                        <ClipboardList className="w-3.5 h-3.5 text-[#47868C]" />
+                        <ClipboardList className="w-3.5 h-3.5 text-[#2F8E86]" />
                         <span>Total Bilties: {selectedShipments.length}</span>
                       </span>
                       <span className="font-bold flex items-center gap-1.5 text-[#111827] dark:text-white">
@@ -721,7 +721,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                     <div className="bg-white dark:bg-slate-900 rounded-lg p-2.5 border border-[#E5EAEB] dark:border-slate-700 shadow-2xs">
                       <div className="text-[10px] text-[#64748B] font-medium flex items-center justify-between">
                         <span>Total Freight Revenue</span>
-                        <span className="text-[#47868C] font-bold">100%</span>
+                        <span className="text-[#2F8E86] font-bold">100%</span>
                       </div>
                       <div className="text-sm font-black font-mono text-[#111827] dark:text-white mt-1">
                         ₹{totalLoadedFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
@@ -789,7 +789,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                             type="checkbox"
                             checked={false}
                             onChange={() => {}}
-                            className="rounded text-[#47868C] focus:ring-[#47868C]"
+                            className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
                           />
                           <div>
                             <span className="font-mono font-bold text-xs text-[#111827] dark:text-white">
@@ -824,7 +824,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
               placeholder="e.g. Driver to stop at Jehanabad and Makhdumpur unloading points before reaching destination"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 

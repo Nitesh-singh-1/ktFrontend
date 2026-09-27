@@ -124,14 +124,14 @@ export default function SearchableSelect<T>({
           placeholder={placeholder}
           disabled={disabled}
           required={required && !searchTerm}
-          className={`w-full rounded-lg border border-[#D9E2E3] bg-white py-2 text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]/30 transition disabled:bg-[#F7F8F8] disabled:text-[#94A3B8]
+          className={`w-full rounded-lg border border-[#D9E2E3] bg-white py-2 text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 transition disabled:bg-[#F7F8F8] disabled:text-[#94A3B8]
           ${icon ? "pl-9" : "pl-3"}
           ${searchTerm && !disabled ? "pr-14" : "pr-8"}`}
         />
 
         <div className="absolute right-2.5 flex items-center gap-1">
           {loading && (
-            <div className="animate-spin h-3.5 w-3.5 border-2 border-[#47868C] border-t-transparent rounded-full" />
+            <div className="animate-spin h-3.5 w-3.5 border-2 border-[#2F8E86] border-t-transparent rounded-full" />
           )}
 
           {searchTerm && !disabled && (
@@ -170,7 +170,7 @@ export default function SearchableSelect<T>({
               <div
                 key={getItemKey(item)}
                 onClick={() => handleSelect(item)}
-                className="px-3 py-2 text-xs text-[#111827] hover:bg-[#E7F1F2] hover:text-[#3F7C82] cursor-pointer transition flex items-center justify-between gap-2"
+                className="px-3 py-2 text-xs text-[#111827] hover:bg-[#E7F1F2] hover:text-[#25776F] cursor-pointer transition flex items-center justify-between gap-2"
               >
                 {renderItem ? (
                   renderItem(item)
@@ -186,7 +186,7 @@ export default function SearchableSelect<T>({
               ) : allowCustom && searchTerm ? (
                 <div className="space-y-1">
                   <p className="text-[#64748B]">No exact match for <span className="font-bold">"{searchTerm}"</span></p>
-                  <p className="text-[10px] text-[#47868C] font-medium">Using custom entered value</p>
+                  <p className="text-[10px] text-[#2F8E86] font-medium">Using custom entered value</p>
                 </div>
               ) : (
                 <span>No records found</span>

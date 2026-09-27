@@ -1,6 +1,7 @@
 import { apiService } from "../../../services/apiservice";
 import { generateGRPrintTemplate } from "./grPrintTemplate";
 import { openPrintWindow } from "./printHeader";
+import { toast } from "@/context/ToastContext";
 
 export async function printGREntry(id: number): Promise<void> {
   try {
@@ -8,7 +9,7 @@ export async function printGREntry(id: number): Promise<void> {
     const response: any = await apiService.getGstBillById(id);
     
     if (!response.success || !response.data) {
-      alert("Failed to fetch GR details for printing");
+      toast.error("Failed to fetch GR details for printing.");
       return;
     }
 
@@ -18,7 +19,7 @@ export async function printGREntry(id: number): Promise<void> {
     const htmlContent = generateGRPrintTemplate(entry);
     openPrintWindow(htmlContent);
   } catch (err: any) {
-    alert(err.message || "Failed to generate print document");
+    toast.error(err.message || "Failed to generate the print document.");
     console.error("Error printing GR entry:", err);
   }
 }

@@ -104,7 +104,7 @@ function ReportsContent() {
       <div className="bg-white rounded-2xl p-6 border border-[#E5EAEB] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] flex items-center justify-center text-[#47868C] font-bold text-lg shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
@@ -121,14 +121,14 @@ function ReportsContent() {
         <div className="flex items-center gap-3">
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-xl text-xs border border-[#D9E2E3] transition flex items-center gap-2 shrink-0 cursor-pointer"
+            className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-xl text-xs border border-[#D9E2E3] transition flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Print Report</span>
           </button>
           <button
             onClick={() => alert("Exporting report data...")}
-            className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Export CSV</span>
@@ -148,8 +148,8 @@ function ReportsContent() {
                 onClick={() => setActiveTab(tab.id as ReportTab)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-[#47868C] text-white shadow-xs"
-                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#3F7C82] border border-[#E5EAEB]"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#25776F] border border-[#E5EAEB]"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -167,14 +167,14 @@ function ReportsContent() {
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs font-medium text-[#111827] focus:border-[#47868C] focus:outline-none"
+                className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs font-medium text-[#111827] focus:border-[#2F8E86] focus:outline-none"
               />
               <span className="text-[#94A3B8]">to</span>
               <input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs font-medium text-[#111827] focus:border-[#47868C] focus:outline-none"
+                className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs font-medium text-[#111827] focus:border-[#2F8E86] focus:outline-none"
               />
             </div>
           )}
@@ -183,7 +183,7 @@ function ReportsContent() {
             placeholder="Search records..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3.5 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#47868C]"
+            className="px-3.5 py-1.5 bg-white border border-[#D9E2E3] rounded-xl text-xs text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2F8E86]"
           />
         </div>
       </div>
@@ -220,7 +220,7 @@ function ReportsContent() {
             </div>
             <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
               <p className="text-xs font-semibold text-[#64748B]">Average Profit Margin</p>
-              <p className="text-2xl font-bold text-[#47868C] mt-1">
+              <p className="text-2xl font-bold text-[#2F8E86] mt-1">
                 {profitability?.profitMarginPercentage?.toFixed(1) || "0.0"}%
               </p>
             </div>
@@ -248,14 +248,14 @@ function ReportsContent() {
                   {profitability?.tripDetails && profitability.tripDetails.length > 0 ? (
                     profitability.tripDetails.map((td) => (
                       <tr key={td.tripId} className="hover:bg-[#F5FAFA]">
-                        <td className="py-3 px-4 font-mono font-bold text-[#47868C]">{td.tripNo}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-[#2F8E86]">{td.tripNo}</td>
                         <td className="py-3 px-4 text-[#64748B]">{formatDate(td.tripDate)}</td>
                         <td className="py-3 px-4 font-medium text-[#111827]">{td.vehicleNo} ({td.driverName || "Driver"})</td>
                         <td className="py-3 px-4 text-[#64748B]">{td.originLocation} → {td.destinationLocation}</td>
                         <td className="py-3 px-4 text-right font-mono font-bold text-[#111827]">{formatCurrency(td.revenue)}</td>
                         <td className="py-3 px-4 text-right font-mono text-[#D95C5C]">{formatCurrency(td.totalCost)}</td>
                         <td className="py-3 px-4 text-right font-mono font-bold text-[#2F9E8F]">{formatCurrency(td.netProfit)}</td>
-                        <td className="py-3 px-4 text-right font-bold text-[#47868C]">{td.profitMarginPct?.toFixed(1)}%</td>
+                        <td className="py-3 px-4 text-right font-bold text-[#2F8E86]">{td.profitMarginPct?.toFixed(1)}%</td>
                       </tr>
                     ))
                   ) : (
@@ -282,7 +282,7 @@ function ReportsContent() {
             </div>
             <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
               <p className="text-xs font-semibold text-[#64748B]">GST RCM Freight (Reverse)</p>
-              <p className="text-xl font-bold text-[#47868C] font-mono mt-1">
+              <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
                 {formatCurrency(gstSummary?.totalGstRcmFreight || 0)}
               </p>
             </div>
@@ -294,7 +294,7 @@ function ReportsContent() {
             </div>
             <div className="bg-white rounded-2xl p-5 border border-[#E5EAEB] shadow-xs">
               <p className="text-xs font-semibold text-[#64748B]">Total GST Tax Collected</p>
-              <p className="text-xl font-bold text-[#47868C] font-mono mt-1">
+              <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
                 {formatCurrency(gstSummary?.totalTaxCollected || 0)}
               </p>
             </div>
@@ -409,7 +409,7 @@ function ReportsContent() {
               <tbody className="divide-y divide-[#E5EAEB]">
                 {sampleBookingData.map((item) => (
                   <tr key={item.lrNo} className="hover:bg-[#F5FAFA]">
-                    <td className="py-3 px-4 font-mono font-bold text-[#47868C]">{item.lrNo}</td>
+                    <td className="py-3 px-4 font-mono font-bold text-[#2F8E86]">{item.lrNo}</td>
                     <td className="py-3 px-4 text-[#64748B]">{formatDate(item.date)}</td>
                     <td className="py-3 px-4 font-semibold text-[#111827]">{item.consignor}</td>
                     <td className="py-3 px-4 text-[#64748B]">{item.consignee}</td>
@@ -422,7 +422,7 @@ function ReportsContent() {
                           ? "bg-[#E8F6F4] text-[#2F9E8F] border-[#C2E9E3]"
                           : item.status === "In Transit"
                           ? "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]"
-                          : "bg-[#E7F1F2] text-[#3F7C82] border-[#D9E2E3]"
+                          : "bg-[#E7F1F2] text-[#25776F] border-[#D9E2E3]"
                       }`}>
                         {item.status}
                       </span>

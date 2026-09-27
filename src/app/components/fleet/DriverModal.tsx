@@ -133,7 +133,7 @@ export default function DriverModal({
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
-              <User className="w-4 h-4 text-[#47868C]" />
+              <User className="w-4 h-4 text-[#2F8E86]" />
               <span>{initialDriver ? "Edit Fleet Driver" : "Register New Fleet Driver"}</span>
             </h2>
             <p className="text-xs text-[#64748B] dark:text-slate-400">
@@ -167,7 +167,7 @@ export default function DriverModal({
               placeholder="e.g. Surendra Yadav"
               value={name}
               onChange={(e) => setName(toTitleCase(e.target.value))}
-              className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white capitalize focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+              className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white capitalize focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
             />
             <span className="text-[10px] text-[#94A3B8] mt-0.5 block">First letters will automatically be capitalized</span>
           </div>
@@ -182,7 +182,7 @@ export default function DriverModal({
                 placeholder="e.g. BR0120190012345"
                 value={licenseNo}
                 onChange={(e) => setLicenseNo(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] uppercase"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] uppercase"
               />
             </div>
 
@@ -194,7 +194,7 @@ export default function DriverModal({
                 type="date"
                 value={licenseValidUntil}
                 onChange={(e) => setLicenseValidUntil(e.target.value)}
-                className="w-full h-10 px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function DriverModal({
                 placeholder="9876543210"
                 value={mobile}
                 onChange={(e) => handleMobileChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
 
@@ -229,7 +229,7 @@ export default function DriverModal({
                 placeholder="1234 5678 9012"
                 value={aadharNo}
                 onChange={(e) => handleAadharChange(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function DriverModal({
               placeholder="Village/City, District, State"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+              className="w-full px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
             />
           </div>
 
@@ -254,7 +254,7 @@ export default function DriverModal({
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-[#47868C] focus:ring-[#47868C]"
+                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
               />
               <span>Active in Driver Directory</span>
             </label>

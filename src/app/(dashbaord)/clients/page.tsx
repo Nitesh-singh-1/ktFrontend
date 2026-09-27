@@ -368,7 +368,7 @@ export default function ClientsManagementPage() {
         {/* Page Header */}
         <div className="bg-white rounded-2xl p-6 border border-[#E5EAEB] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] flex items-center justify-center text-[#47868C] font-bold text-lg shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs">
               <PackageIcon className="w-5 h-5" />
             </div>
             <div>
@@ -386,7 +386,7 @@ export default function ClientsManagementPage() {
               setOnboardStep(1);
               setShowOnboardModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
             <span>Onboard New Client</span>
@@ -411,7 +411,7 @@ export default function ClientsManagementPage() {
             <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider">
               Active Subscriptions MRR
             </span>
-            <div className="text-2xl font-bold text-[#47868C] font-mono mt-1">
+            <div className="text-2xl font-bold text-[#2F8E86] font-mono mt-1">
               ₹{totalMRR.toLocaleString("en-IN")}
               <span className="text-xs text-[#64748B] font-normal"> / mo</span>
             </div>
@@ -460,7 +460,7 @@ export default function ClientsManagementPage() {
               placeholder="Search by company, code, or user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
           </div>
 
@@ -469,7 +469,7 @@ export default function ClientsManagementPage() {
             <select
               value={tierFilter}
               onChange={(e) => setTierFilter(e.target.value)}
-              className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:border-[#47868C]"
+              className="px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:border-[#2F8E86]"
             >
               <option value="all">All Tiers</option>
               <option value="starter">Starter</option>
@@ -519,7 +519,7 @@ export default function ClientsManagementPage() {
                           <div className="font-bold text-[#111827]">
                             {client.name}
                           </div>
-                          <div className="text-[10px] text-[#47868C] font-mono">
+                          <div className="text-[10px] text-[#2F8E86] font-mono">
                             {client.code}
                           </div>
                         </td>
@@ -541,7 +541,7 @@ export default function ClientsManagementPage() {
                                 ? "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]"
                                 : client.subscriptionPlanTier.toLowerCase() ===
                                   "professional"
-                                ? "bg-[#E7F1F2] text-[#3F7C82] border-[#D9E2E3]"
+                                ? "bg-[#E7F1F2] text-[#25776F] border-[#D9E2E3]"
                                 : "bg-[#FEF6EE] text-[#F4A261] border-[#FBD38D]"
                             }`}
                           >
@@ -593,13 +593,13 @@ export default function ClientsManagementPage() {
                           <div className="inline-flex items-center gap-2">
                             <button
                               onClick={() => handleOpenUsers(client)}
-                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
                             >
                               Manage Users
                             </button>
                             <button
                               onClick={() => handleOpenEntitlements(client)}
-                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
                             >
                               Provision Modules
                             </button>
@@ -622,7 +622,7 @@ export default function ClientsManagementPage() {
               <div className="p-5 border-b border-[#E5EAEB] flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-0.5 rounded bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-mono font-bold">
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-mono font-bold">
                       {selectedClient.code}
                     </span>
                     <h2 className="text-lg font-bold text-[#111827]">
@@ -686,7 +686,7 @@ export default function ClientsManagementPage() {
                         <button
                           type="button"
                           onClick={() => applyPresetToClient("enterprise")}
-                          className="px-3 py-2 bg-white hover:bg-[#E7F1F2] border border-[#E5EAEB] hover:border-[#D9E2E3] rounded-lg text-xs font-medium text-[#47868C] text-left transition-colors cursor-pointer"
+                          className="px-3 py-2 bg-white hover:bg-[#E7F1F2] border border-[#E5EAEB] hover:border-[#D9E2E3] rounded-lg text-xs font-medium text-[#2F8E86] text-left transition-colors cursor-pointer"
                         >
                           <div className="font-bold text-[#111827]">Enterprise Suite</div>
                           <div className="text-[11px] text-[#64748B]">
@@ -716,7 +716,7 @@ export default function ClientsManagementPage() {
                             type="checkbox"
                             checked={clientEntitlements.enabledMenuKeys.includes("gr")}
                             onChange={() => toggleClientMenuKey("gr")}
-                            className="w-5 h-5 accent-[#47868C] rounded cursor-pointer"
+                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
                           />
                         </div>
 
@@ -736,7 +736,7 @@ export default function ClientsManagementPage() {
                               "challan"
                             )}
                             onChange={() => toggleClientMenuKey("challan")}
-                            className="w-5 h-5 accent-[#47868C] rounded cursor-pointer"
+                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
                           />
                         </div>
                       </div>
@@ -748,7 +748,7 @@ export default function ClientsManagementPage() {
                         <h3 className="text-sm font-semibold text-[#111827]">
                           Reporting & Analytics Module (Granular Sub-Reports)
                         </h3>
-                        <span className="text-xs text-[#47868C] font-mono font-bold">
+                        <span className="text-xs text-[#2F8E86] font-mono font-bold">
                           {
                             clientEntitlements.reports.filter((r) => r.isEnabled)
                               .length
@@ -779,7 +779,7 @@ export default function ClientsManagementPage() {
                               type="checkbox"
                               checked={rep.isEnabled}
                               onChange={() => toggleClientReport(rep.reportKey)}
-                              className="w-5 h-5 accent-[#47868C] rounded cursor-pointer"
+                              className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
                             />
                           </div>
                         ))}
@@ -805,7 +805,7 @@ export default function ClientsManagementPage() {
                   type="button"
                   onClick={handleSaveEntitlements}
                   disabled={savingEntitlements || loadingEntitlements}
-                  className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {savingEntitlements ? "Saving Changes..." : "Save Entitlements"}
                 </button>
@@ -861,7 +861,7 @@ export default function ClientsManagementPage() {
                               organizationName: e.target.value,
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
 
@@ -880,7 +880,7 @@ export default function ClientsManagementPage() {
                               organizationCode: e.target.value.toUpperCase(),
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono uppercase text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono uppercase text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
 
@@ -898,7 +898,7 @@ export default function ClientsManagementPage() {
                               adminMobile: e.target.value,
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -921,7 +921,7 @@ export default function ClientsManagementPage() {
                               adminFullName: e.target.value,
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
 
@@ -940,7 +940,7 @@ export default function ClientsManagementPage() {
                               adminUsername: e.target.value,
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
 
@@ -959,7 +959,7 @@ export default function ClientsManagementPage() {
                               adminPassword: e.target.value,
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -995,12 +995,12 @@ export default function ClientsManagementPage() {
                               }
                               className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
                                 onboardForm.planTier === tier
-                                  ? "bg-[#E7F1F2] border-[#47868C] text-[#3F7C82] font-bold"
+                                  ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] font-bold"
                                   : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3]"
                               }`}
                             >
                               <div className="text-sm font-bold">{tier}</div>
-                              <div className="text-xs text-[#47868C] mt-1 font-semibold">
+                              <div className="text-xs text-[#2F8E86] mt-1 font-semibold">
                                 {tier === "Starter"
                                   ? "₹999/mo"
                                   : tier === "Professional"
@@ -1032,7 +1032,7 @@ export default function ClientsManagementPage() {
                                 key={rep.key}
                                 className={`p-2.5 rounded-lg border flex items-center justify-between cursor-pointer text-xs ${
                                   isChecked
-                                    ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#3F7C82] font-semibold"
+                                    ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#25776F] font-semibold"
                                     : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B]"
                                 }`}
                               >
@@ -1054,7 +1054,7 @@ export default function ClientsManagementPage() {
                                       enabledReportKeys: Array.from(current),
                                     });
                                   }}
-                                  className="w-4 h-4 accent-[#47868C] rounded"
+                                  className="w-4 h-4 accent-[#2F8E86] rounded"
                                 />
                               </label>
                             );
@@ -1111,7 +1111,7 @@ export default function ClientsManagementPage() {
                         }
                         setOnboardStep((prev) => (prev + 1) as 1 | 2 | 3);
                       }}
-                      className="px-5 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                      className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                     >
                       Next Step →
                     </button>
@@ -1119,7 +1119,7 @@ export default function ClientsManagementPage() {
                     <button
                       type="submit"
                       disabled={submittingOnboard}
-                      className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                      className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {submittingOnboard
                         ? "Onboarding Client..."
@@ -1188,7 +1188,7 @@ export default function ClientsManagementPage() {
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
                             u.isAdmin
                               ? "bg-white hover:bg-red-50 text-[#D95C5C] border border-[#F8B4B4]"
-                              : "bg-[#47868C] hover:bg-[#3F7C82] text-white"
+                              : "bg-[#2F8E86] hover:bg-[#25776F] text-white"
                           }`}
                         >
                           {updatingUserId === u.id ? "Saving…" : u.isAdmin ? "Demote to User" : "Make Admin"}

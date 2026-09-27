@@ -347,7 +347,7 @@ function ChallanEntryContent() {
 
           <div className="bg-[#F7F8F8] dark:bg-slate-800/60 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-700">
             <p className="text-xs text-[#64748B] uppercase font-semibold mb-1">Avg Freight/Bill</p>
-            <p className="text-2xl font-bold text-[#47868C] font-mono">
+            <p className="text-2xl font-bold text-[#2F8E86] font-mono">
               ₹{totals.totalBills > 0 ? (totals.totalFreight / totals.totalBills).toFixed(2) : "0.00"}
             </p>
           </div>

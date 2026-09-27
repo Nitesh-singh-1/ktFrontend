@@ -92,7 +92,7 @@ export default function DashboardPage() {
     return (
       <div className="p-8 bg-[#F7F8F8] dark:bg-slate-950 min-h-[70vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-[#47868C] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-3 border-[#2F8E86] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-[#64748B] dark:text-slate-400 font-medium text-sm">Loading logistics dispatch metrics...</p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#3F7C82] bg-[#E7F1F2] px-2.5 py-1 rounded-md border border-[#D9E2E3]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#25776F] bg-[#E7F1F2] px-2.5 py-1 rounded-md border border-[#D9E2E3]">
               Operations Control
             </span>
             <span className="text-xs text-[#94A3B8]">Real-time TMS Overview</span>
@@ -121,16 +121,16 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/shipments/create"
-            className="px-4 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white text-xs font-semibold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Bilty (GR)</span>
           </Link>
           <Link
             href="/trips"
-            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
           >
-            <Truck className="w-3.5 h-3.5 text-[#47868C]" />
+            <Truck className="w-3.5 h-3.5 text-[#2F8E86]" />
             <span>Truck Challans</span>
           </Link>
         </div>
@@ -143,8 +143,8 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
               Total Bilties (GR)
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#47868C] flex items-center justify-center font-bold text-sm">
-              <ClipboardList className="w-4 h-4 text-[#47868C]" />
+            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm">
+              <ClipboardList className="w-4 h-4 text-[#2F8E86]" />
             </div>
           </div>
           <div className="mt-3">
@@ -200,8 +200,8 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
               Total Freight Billed
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#47868C] flex items-center justify-center font-bold text-sm">
-              <IndianRupee className="w-4 h-4 text-[#47868C]" />
+            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm">
+              <IndianRupee className="w-4 h-4 text-[#2F8E86]" />
             </div>
           </div>
           <div className="mt-3">
@@ -275,7 +275,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/shipments"
-              className="text-xs font-semibold text-[#47868C] hover:text-[#3F7C82] hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-[#2F8E86] hover:text-[#25776F] hover:underline flex items-center gap-1"
             >
               <span>View Full Registry</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                     className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/50 transition cursor-pointer"
                     onClick={() => router.push(`/shipments/${bill.id}`)}
                   >
-                    <td className="px-6 py-3.5 font-mono font-bold text-[#47868C]">
+                    <td className="px-6 py-3.5 font-mono font-bold text-[#2F8E86]">
                       {bill.grNo}
                     </td>
                     <td className="px-6 py-3.5 font-semibold text-[#111827] dark:text-white">
@@ -350,10 +350,10 @@ export default function DashboardPage() {
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
             <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
-              <Package className="w-5 h-5 text-[#47868C]" />
+              <Package className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3F7C82]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
                 New Bilty Booking
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Issue fresh consignment GR</p>
@@ -365,10 +365,10 @@ export default function DashboardPage() {
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
             <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
-              <Truck className="w-5 h-5 text-[#47868C]" />
+              <Truck className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3F7C82]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
                 Truck Challans
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Dispatch vehicle loading memo</p>
@@ -380,10 +380,10 @@ export default function DashboardPage() {
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
             <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
-              <FileCheck className="w-5 h-5 text-[#47868C]" />
+              <FileCheck className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3F7C82]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
                 POD Upload & Delivery
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Update proof of delivery</p>
@@ -395,10 +395,10 @@ export default function DashboardPage() {
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
             <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
-              <BarChart3 className="w-5 h-5 text-[#47868C]" />
+              <BarChart3 className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3F7C82]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
                 Reports & Ledger
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Tax, P&L, outstanding balance</p>

@@ -62,7 +62,7 @@ export default function PublicTrackingPage() {
 
         <Link
           href="/login"
-          className="px-3.5 py-1.5 bg-[#F7F8F8] hover:bg-[#E7F1F2] text-[#3F7C82] font-semibold border border-[#D9E2E3] rounded-lg text-xs transition flex items-center gap-1.5"
+          className="px-3.5 py-1.5 bg-[#F7F8F8] hover:bg-[#E7F1F2] text-[#25776F] font-semibold border border-[#D9E2E3] rounded-lg text-xs transition flex items-center gap-1.5"
         >
           <span>Staff Login</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -72,8 +72,8 @@ export default function PublicTrackingPage() {
       {/* Hero Search Section */}
       <div className="bg-white border-b border-[#E5EAEB] py-10 px-6 text-center">
         <div className="max-w-2xl mx-auto space-y-4">
-          <span className="text-xs uppercase font-bold tracking-widest px-3 py-1 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full inline-flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5 text-[#47868C]" />
+          <span className="text-xs uppercase font-bold tracking-widest px-3 py-1 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full inline-flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5 text-[#2F8E86]" />
             Universal Consignment Tracker
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827]">
@@ -89,12 +89,12 @@ export default function PublicTrackingPage() {
               placeholder="e.g. GR-2026-0001 or LR Number..."
               value={lrNo}
               onChange={(e) => setLrNo(e.target.value)}
-              className="flex-1 px-4 py-3 bg-white text-[#111827] rounded-xl text-xs sm:text-sm font-mono font-bold placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] shadow-2xs border border-[#D9E2E3]"
+              className="flex-1 px-4 py-3 bg-white text-[#111827] rounded-xl text-xs sm:text-sm font-mono font-bold placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] shadow-2xs border border-[#D9E2E3]"
             />
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Search className="w-4 h-4" />
               <span>{loading ? "Tracking..." : "Track Now"}</span>
@@ -116,7 +116,7 @@ export default function PublicTrackingPage() {
         {/* Loading Indicator */}
         {loading && (
           <div className="p-16 text-center">
-            <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-[#47868C] mx-auto mb-3" />
+            <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-[#2F8E86] mx-auto mb-3" />
             <p className="text-xs text-[#64748B] font-medium">Querying consignment satellite timeline...</p>
           </div>
         )}
@@ -129,7 +129,7 @@ export default function PublicTrackingPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E5EAEB] gap-3">
                 <div>
                   <div className="text-[10px] font-bold uppercase text-[#64748B]">Waybill / LR Number</div>
-                  <div className="text-xl font-mono font-black text-[#47868C]">{trackingData.trackingNumber}</div>
+                  <div className="text-xl font-mono font-black text-[#2F8E86]">{trackingData.trackingNumber}</div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function PublicTrackingPage() {
                     <CheckCircle2 className="w-4 h-4 text-[#2F9E8F] shrink-0" />
                     <div>
                       <span className="font-bold text-[#2F9E8F]">Delivered Successfully</span>
-                      <p className="text-[11px] text-[#3F7C82] mt-0.5">
+                      <p className="text-[11px] text-[#25776F] mt-0.5">
                         Received by: <span className="font-bold">{trackingData.deliveredToPerson}</span>
                       </p>
                     </div>

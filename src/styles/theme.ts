@@ -7,9 +7,9 @@ export const themeConfig = {
   // Brand Palette: FleetPulse
   colors: {
     primary: {
-      DEFAULT: "#47868C",
-      hover: "#3F7C82",
-      dark: "#356B70",
+      DEFAULT: "#2F8E86",
+      hover: "#25776F",
+      dark: "#1E645C",
       light: "#E7F1F2",
       border: "#D9E2E3",
       text: "#FFFFFF",
@@ -58,11 +58,11 @@ export const themeConfig = {
   // Standard Button Classes (Flat, Crisp & Clean)
   buttons: {
     primary:
-      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-[#47868C] hover:bg-[#3F7C82] active:bg-[#356B70] rounded-xl shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/30 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]",
+      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-[#2F8E86] hover:bg-[#25776F] active:bg-[#1E645C] rounded-xl shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/30 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]",
     secondary:
-      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#3F7C82] bg-white hover:bg-[#E7F1F2] active:bg-[#D8EAEC] border border-[#D9E2E3] rounded-xl shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]",
+      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#25776F] bg-white hover:bg-[#E7F1F2] active:bg-[#D8EAEC] border border-[#D9E2E3] rounded-xl shadow-2xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]",
     outline:
-      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#47868C] bg-transparent hover:bg-[#E7F1F2] border border-[#47868C] rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#47868C]/30 cursor-pointer min-w-[100px]",
+      "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-[#2F8E86] bg-transparent hover:bg-[#E7F1F2] border border-[#2F8E86] rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/30 cursor-pointer min-w-[100px]",
     danger:
       "inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-[#D95C5C] hover:bg-[#C54A4A] active:bg-[#B23C3C] rounded-xl shadow-xs transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#D95C5C]/30 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]",
     ghost:
@@ -75,11 +75,11 @@ export const themeConfig = {
   // Standard Form Controls (Inputs, Selects, Calendars, Labels)
   forms: {
     input:
-      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8] disabled:cursor-not-allowed",
+      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition-colors disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8] disabled:cursor-not-allowed",
     select:
-      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8]",
+      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60 disabled:text-[#94A3B8]",
     date:
-      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60",
+      "w-full h-10 px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-slate-100 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition-colors cursor-pointer disabled:bg-[#F7F8F8] dark:disabled:bg-slate-800/60",
     label:
       "block text-xs font-semibold text-[#111827] dark:text-slate-300 mb-1.5 tracking-wide",
     requiredStar: "text-red-500 font-bold ml-0.5",
@@ -117,7 +117,7 @@ export const themeConfig = {
 
   // Badges & Status Chips
   badges: {
-    primary: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3]",
+    primary: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3]",
     info: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EBF3FC] text-[#4A90E2] border border-[#CFE1F7]",
     success: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E7F5F3] text-[#2F9E8F] border border-[#C6E8E3]",
     warning: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FEF5EE] text-[#B76E32] border border-[#FADCC4]",

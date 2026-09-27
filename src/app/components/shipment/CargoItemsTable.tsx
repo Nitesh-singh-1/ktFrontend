@@ -56,9 +56,9 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
       {/* Header */}
       <div className="px-5 py-3.5 bg-[#F7F8F8] dark:bg-slate-800/80 border-b border-[#E5EAEB] dark:border-slate-800 text-[#111827] dark:text-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-[#47868C]" />
+          <Package className="w-4 h-4 text-[#2F8E86]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">Cargo / Goods Line Items</h3>
-          <span className="text-xs bg-[#E7F1F2] text-[#3F7C82] px-2 py-0.5 rounded-md font-semibold">
+          <span className="text-xs bg-[#E7F1F2] text-[#25776F] px-2 py-0.5 rounded-md font-semibold">
             {items.length} {items.length === 1 ? "Item" : "Items"}
           </span>
         </div>
@@ -67,7 +67,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
           <button
             type="button"
             onClick={handleAddItem}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#47868C] hover:bg-[#3F7C82] text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Item</span>
@@ -104,7 +104,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     placeholder="e.g. 10 Bags, Boxes"
                     value={item.article || ""}
                     onChange={(e) => handleFieldChange(index, "article", e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 
@@ -115,7 +115,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     placeholder="e.g. Industrial Fasteners"
                     value={item.description || ""}
                     onChange={(e) => handleFieldChange(index, "description", e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 
@@ -128,7 +128,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     placeholder="0.00"
                     value={item.weight === 0 ? "" : item.weight}
                     onChange={(e) => handleFieldChange(index, "weight", parseFloat(e.target.value) || 0)}
-                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 
@@ -141,7 +141,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     placeholder="0.00"
                     value={item.rate === 0 ? "" : item.rate}
                     onChange={(e) => handleFieldChange(index, "rate", parseFloat(e.target.value) || 0)}
-                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 
@@ -153,7 +153,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     placeholder="1"
                     value={item.quantity === 0 ? "" : item.quantity}
                     onChange={(e) => handleFieldChange(index, "quantity", parseInt(e.target.value, 10) || 0)}
-                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 
@@ -165,7 +165,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     value={item.totalAmount === 0 ? "" : item.totalAmount}
                     onChange={(e) => handleFieldChange(index, "totalAmount", parseFloat(e.target.value) || 0)}
                     placeholder="0.00"
-                    className="w-full px-2.5 py-1.5 text-right bg-[#F7F8F8] dark:bg-slate-800/80 font-bold text-[#111827] dark:text-white border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                    className="w-full px-2.5 py-1.5 text-right bg-[#F7F8F8] dark:bg-slate-800/80 font-bold text-[#111827] dark:text-white border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 

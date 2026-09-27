@@ -177,8 +177,8 @@ export default function ForgotPasswordPage() {
           <div
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
               step === 1
-                ? "bg-[#47868C] text-white shadow-xs"
-                : "bg-[#E7F1F2] text-[#3F7C82]"
+                ? "bg-[#2F8E86] text-white shadow-xs"
+                : "bg-[#E7F1F2] text-[#25776F]"
             }`}
           >
             <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
@@ -190,7 +190,7 @@ export default function ForgotPasswordPage() {
           <div
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
               step === 2
-                ? "bg-[#47868C] text-white shadow-xs"
+                ? "bg-[#2F8E86] text-white shadow-xs"
                 : "bg-slate-100 dark:bg-slate-800 text-[#94A3B8]"
             }`}
           >
@@ -231,7 +231,7 @@ export default function ForgotPasswordPage() {
             <button
               type="button"
               onClick={() => setVerificationCode(generatedOtpHint)}
-              className="text-[11px] font-bold text-[#47868C] underline hover:text-[#3F7C82] cursor-pointer ml-2"
+              className="text-[11px] font-bold text-[#2F8E86] underline hover:text-[#25776F] cursor-pointer ml-2"
             >
               Auto-fill
             </button>
@@ -255,7 +255,7 @@ export default function ForgotPasswordPage() {
                   placeholder="e.g. admin or dispatch_lead"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition"
                 />
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function ForgotPasswordPage() {
                   placeholder="e.g. 9876543210"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition"
                 />
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-xl text-sm shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-4 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-xl text-sm shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -313,7 +313,7 @@ export default function ForgotPasswordPage() {
                   type="button"
                   disabled={resendCooldown > 0 || loading}
                   onClick={() => handleRequestCode()}
-                  className="text-xs font-semibold text-[#47868C] hover:text-[#3F7C82] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer flex items-center gap-1"
+                  className="text-xs font-semibold text-[#2F8E86] hover:text-[#25776F] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer flex items-center gap-1"
                 >
                   <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
                   {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend Code"}
@@ -330,7 +330,7 @@ export default function ForgotPasswordPage() {
                   placeholder="123456"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-base font-mono font-bold tracking-widest text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition text-center"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-base font-mono font-bold tracking-widest text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition text-center"
                 />
               </div>
             </div>
@@ -350,7 +350,7 @@ export default function ForgotPasswordPage() {
                   placeholder="At least 6 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
+                  className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition"
                 />
                 <button
                   type="button"
@@ -378,7 +378,7 @@ export default function ForgotPasswordPage() {
                   placeholder="Repeat new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] transition"
+                  className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition"
                 />
               </div>
             </div>
@@ -391,14 +391,14 @@ export default function ForgotPasswordPage() {
                   setError("");
                   setSuccess("");
                 }}
-                className="py-3 px-4 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] font-semibold rounded-xl text-xs transition border border-[#D9E2E3] cursor-pointer"
+                className="py-3 px-4 bg-white hover:bg-[#E7F1F2] text-[#25776F] font-semibold rounded-xl text-xs transition border border-[#D9E2E3] cursor-pointer"
               >
                 Back
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 px-4 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="flex-1 py-3 px-4 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -420,7 +420,7 @@ export default function ForgotPasswordPage() {
           Remember your password?{" "}
           <Link
             href="/login"
-            className="text-[#47868C] hover:text-[#3F7C82] font-semibold hover:underline inline-flex items-center gap-1"
+            className="text-[#2F8E86] hover:text-[#25776F] font-semibold hover:underline inline-flex items-center gap-1"
           >
             <ArrowLeft className="w-3 h-3 inline" /> Back to Sign In
           </Link>

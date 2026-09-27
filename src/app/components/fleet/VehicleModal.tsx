@@ -190,7 +190,7 @@ export default function VehicleModal({
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
-              <Truck className="w-4 h-4 text-[#47868C]" />
+              <Truck className="w-4 h-4 text-[#2F8E86]" />
               <span>{initialVehicle ? "Edit Fleet Vehicle" : "Add New Fleet Vehicle (Truck)"}</span>
             </h2>
             <p className="text-xs text-[#64748B] dark:text-slate-400">
@@ -226,7 +226,7 @@ export default function VehicleModal({
                 placeholder="e.g. BR-01-GB-4589"
                 value={vehicleNo}
                 onChange={(e) => setVehicleNo(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] uppercase"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] uppercase"
               />
             </div>
 
@@ -237,7 +237,7 @@ export default function VehicleModal({
               <select
                 value={vehicleType}
                 onChange={(e) => setVehicleType(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] cursor-pointer"
+                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
               >
                 {VEHICLE_BODY_TYPES.map((b) => (
                   <option key={b.value} value={b.value}>
@@ -257,7 +257,7 @@ export default function VehicleModal({
               <select
                 value={ownerType}
                 onChange={(e) => setOwnerType(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] cursor-pointer"
+                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
               >
                 {OWNER_TYPES.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -278,7 +278,7 @@ export default function VehicleModal({
                 placeholder="e.g. 16.5"
                 value={capacityTons}
                 onChange={(e) => setCapacityTons(e.target.value)}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -294,7 +294,7 @@ export default function VehicleModal({
                 placeholder="e.g. 6DTI987654"
                 value={engineNo}
                 onChange={(e) => setEngineNo(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white uppercase focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white uppercase focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
 
@@ -307,7 +307,7 @@ export default function VehicleModal({
                 placeholder="e.g. MAT45892300189"
                 value={chassisNo}
                 onChange={(e) => setChassisNo(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white uppercase focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white uppercase focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
           </div>
@@ -326,7 +326,7 @@ export default function VehicleModal({
                   type="date"
                   value={fitnessValidUntil}
                   onChange={(e) => setFitnessValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -338,7 +338,7 @@ export default function VehicleModal({
                   type="date"
                   value={insuranceValidUntil}
                   onChange={(e) => setInsuranceValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -350,7 +350,7 @@ export default function VehicleModal({
                   type="date"
                   value={permitValidUntil}
                   onChange={(e) => setPermitValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                 />
               </div>
             </div>
@@ -365,7 +365,7 @@ export default function VehicleModal({
               <select
                 value={driverId || ""}
                 onChange={handleDriverSelect}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] cursor-pointer"
+                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
               >
                 <option value="">-- No Driver Assigned --</option>
                 {availableDrivers.map((d) => (
@@ -385,7 +385,7 @@ export default function VehicleModal({
                 placeholder="e.g. Ramesh Singh Fleet"
                 value={ownerName}
                 onChange={(e) => setOwnerName(toTitleCase(e.target.value))}
-                className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C] capitalize"
+                className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] capitalize"
               />
             </div>
           </div>
@@ -400,7 +400,7 @@ export default function VehicleModal({
               placeholder="9876543210"
               value={ownerMobile}
               onChange={(e) => handleMobileChange(e.target.value)}
-              className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+              className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
             />
           </div>
 
@@ -411,7 +411,7 @@ export default function VehicleModal({
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-[#47868C] focus:ring-[#47868C]"
+                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
               />
               <span>Active in Fleet Directory</span>
             </label>

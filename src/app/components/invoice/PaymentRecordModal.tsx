@@ -77,10 +77,10 @@ export default function PaymentRecordModal({
         <div className="px-6 py-4 border-b border-[#E5EAEB] flex items-center justify-between bg-[#F7F8F8]">
           <div>
             <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-[#47868C]" /> Record Payment Receipt
+              <CreditCard className="w-5 h-5 text-[#2F8E86]" /> Record Payment Receipt
             </h2>
             <p className="text-xs text-[#64748B]">
-              Invoice <span className="font-mono font-bold text-[#47868C]">{invoice.invoiceNo}</span> • {invoice.partyName}
+              Invoice <span className="font-mono font-bold text-[#2F8E86]">{invoice.invoiceNo}</span> • {invoice.partyName}
             </p>
           </div>
           <button
@@ -128,7 +128,7 @@ export default function PaymentRecordModal({
               required
               value={amount === 0 ? "" : amount}
               onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-sm font-mono font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-sm font-mono font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function PaymentRecordModal({
                 required
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function PaymentRecordModal({
               <select
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
-                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               >
                 <option value="Bank Transfer / NEFT">Bank Transfer / NEFT</option>
                 <option value="UPI / Online">UPI / Online</option>
@@ -175,7 +175,7 @@ export default function PaymentRecordModal({
               placeholder="e.g. UTR1948205820"
               value={referenceNo}
               onChange={(e) => setReferenceNo(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 
@@ -189,7 +189,7 @@ export default function PaymentRecordModal({
               placeholder="e.g. Received full settlement against bill"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+              className="w-full px-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
             />
           </div>
 
@@ -198,14 +198,14 @@ export default function PaymentRecordModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-lg text-xs transition cursor-pointer"
+              className="px-4 py-2 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Recording..." : "Record Payment Receipt"}
             </button>

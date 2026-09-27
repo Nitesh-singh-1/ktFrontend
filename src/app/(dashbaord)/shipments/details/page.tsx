@@ -156,7 +156,7 @@ function ShipmentDetailsContent() {
           <button
             type="button"
             onClick={() => setIsStatusModalOpen(true)}
-            className="px-4 py-2.5 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Update Status Stage</span>
@@ -165,7 +165,7 @@ function ShipmentDetailsContent() {
           <button
             type="button"
             onClick={() => printShipment(shipment)}
-            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-xl text-xs border border-[#D9E2E3] transition flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-xl text-xs border border-[#D9E2E3] transition flex items-center gap-1.5 cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Print Consignment Note</span>
@@ -173,7 +173,7 @@ function ShipmentDetailsContent() {
 
           <Link
             href={`/shipments/create?id=${shipment.id}`}
-            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] font-bold rounded-xl text-xs transition border border-[#D9E2E3] flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-xl text-xs transition border border-[#D9E2E3] flex items-center gap-1.5"
           >
             <Edit className="w-3.5 h-3.5" />
             <span>Edit</span>
@@ -231,7 +231,7 @@ function ShipmentDetailsContent() {
         <div className="bg-white rounded-xl border border-[#E5EAEB] p-5 shadow-xs space-y-2">
           <div className="text-xs font-bold uppercase tracking-wider text-[#64748B] border-b border-[#E5EAEB] pb-2 flex justify-between">
             <span>Consignor (Sender)</span>
-            <span className="text-[#47868C] font-semibold flex items-center gap-1">
+            <span className="text-[#2F8E86] font-semibold flex items-center gap-1">
               <Upload className="w-3 h-3" /> Origin
             </span>
           </div>
@@ -323,7 +323,7 @@ function ShipmentDetailsContent() {
         <div className="bg-white rounded-xl border border-[#E5EAEB] p-5 shadow-xs space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-[#111827] border-b border-[#E5EAEB] pb-2 flex justify-between">
             <span>Ancillary Charges & Line Items</span>
-            <span className="text-[#47868C] font-semibold">{shipment.chargeItems?.length || 0} Added</span>
+            <span className="text-[#2F8E86] font-semibold">{shipment.chargeItems?.length || 0} Added</span>
           </div>
 
           {shipment.chargeItems && shipment.chargeItems.length > 0 ? (
@@ -333,7 +333,7 @@ function ShipmentDetailsContent() {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#111827]">{c.chargeName}</span>
                     {c.isTaxable && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#E7F1F2] text-[#3F7C82] font-bold border border-[#D9E2E3]">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#E7F1F2] text-[#25776F] font-bold border border-[#D9E2E3]">
                         Taxable
                       </span>
                     )}
@@ -380,7 +380,7 @@ function ShipmentDetailsContent() {
 
             <div className="pt-2 border-t border-[#D9E2E3] flex justify-between items-center text-sm font-bold">
               <span className="text-[#111827]">Grand Total:</span>
-              <span className="font-mono text-xl text-[#47868C]">
+              <span className="font-mono text-xl text-[#2F8E86]">
                 ₹{(shipment.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -425,7 +425,7 @@ export default function ShipmentDetailsPage() {
       fallback={
         <div className="flex items-center justify-center p-20">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F8E86] mx-auto mb-3" />
             <p className="text-[#64748B] font-medium text-xs">Loading consignment...</p>
           </div>
         </div>

@@ -129,7 +129,7 @@ export default function ChallanListPage() {
       <div className="p-6 min-h-screen">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#47868C] mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#2F8E86] mx-auto mb-4"></div>
             <p className="text-[#64748B] font-medium text-xs">Loading challans...</p>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function ChallanListPage() {
             <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
               Challan Registry & Dispatch Manifests
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#47868C] dark:border-slate-700">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#2F8E86] dark:border-slate-700">
               Trip Loading Sheets
             </span>
           </div>
@@ -179,7 +179,7 @@ export default function ChallanListPage() {
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs overflow-hidden border border-[#E5EAEB] dark:border-slate-800">
         <div className="bg-[#F7F8F8] dark:bg-slate-800/60 px-6 py-3 border-b border-[#E5EAEB] dark:border-slate-700">
           <h2 className="text-[#111827] dark:text-slate-200 font-semibold text-xs uppercase tracking-wider">
-            Total Challans: <span className="font-mono font-bold text-[#47868C]">{totalCount}</span>
+            Total Challans: <span className="font-mono font-bold text-[#2F8E86]">{totalCount}</span>
           </h2>
         </div>
         <div className="overflow-x-auto">
@@ -217,7 +217,7 @@ export default function ChallanListPage() {
                       key={challan.id}
                       className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40 transition"
                     >
-                      <td className="px-6 py-3.5 whitespace-nowrap font-mono font-bold text-[#47868C]">
+                      <td className="px-6 py-3.5 whitespace-nowrap font-mono font-bold text-[#2F8E86]">
                         {challan.challanNo}
                       </td>
                       <td className="px-6 py-3.5 whitespace-nowrap text-[#64748B] dark:text-slate-300">
@@ -232,12 +232,12 @@ export default function ChallanListPage() {
                       <td className="px-6 py-3.5 whitespace-nowrap text-[#111827] dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
                           <span>{challan.fromLocation}</span>
-                          <ArrowRight className="w-3 h-3 text-[#47868C] inline" />
+                          <ArrowRight className="w-3 h-3 text-[#2F8E86] inline" />
                           <span>{challan.toLocation}</span>
                         </div>
                       </td>
                       <td className="px-6 py-3.5 whitespace-nowrap text-center">
-                        <span className="bg-[#E7F1F2] text-[#3F7C82] dark:bg-slate-800 dark:text-[#47868C] px-2 py-0.5 rounded-full text-xs font-semibold border border-[#D9E2E3] dark:border-slate-700">
+                        <span className="bg-[#E7F1F2] text-[#25776F] dark:bg-slate-800 dark:text-[#2F8E86] px-2 py-0.5 rounded-full text-xs font-semibold border border-[#D9E2E3] dark:border-slate-700">
                           {challan.challanDetails.length}
                         </span>
                       </td>
@@ -254,7 +254,7 @@ export default function ChallanListPage() {
                         <div className="flex gap-1.5 justify-center">
                           <button
                             onClick={() => handleEdit(challan.id)}
-                            className="bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#3F7C82] dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-[#47868C] px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
+                            className="bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-[#2F8E86] px-2.5 py-1 rounded-lg font-medium transition text-xs flex items-center gap-1 cursor-pointer"
                             title="Edit Challan"
                           >
                             <Edit2 className="w-3 h-3" />

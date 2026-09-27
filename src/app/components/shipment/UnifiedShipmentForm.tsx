@@ -443,7 +443,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     return (
       <div className="flex items-center justify-center p-16">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F8E86] mx-auto mb-3" />
           <p className="text-[#64748B] font-medium text-xs">Loading consignment data...</p>
         </div>
       </div>
@@ -456,13 +456,13 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg text-sm font-bold shadow-2xs">
+            <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm font-bold shadow-2xs">
               <Package className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold text-[#111827] dark:text-slate-100 tracking-tight">
               {initialId ? `Edit Bilty / Consignment #${shipmentNo || initialId}` : "New Bilty / Consignment Booking (GR)"}
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#47868C] dark:border-slate-700">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#2F8E86] dark:border-slate-700">
               Step 2: Transporter Bilty
             </span>
           </div>
@@ -516,7 +516,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       {/* SECTION 1: Booking & Movement Details (Point A → Point B) */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 p-5 shadow-xs space-y-4">
         <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 flex items-center gap-1.5 border-b border-[#E5EAEB] dark:border-slate-800 pb-2.5">
-          <MapPin className="w-4 h-4 text-[#47868C]" />
+          <MapPin className="w-4 h-4 text-[#2F8E86]" />
           <span>1. Bilty Booking & Route Details (Point A → Point B)</span>
         </div>
 
@@ -531,7 +531,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               placeholder="Auto-generated (e.g. 14911)"
               value={shipmentNo}
               onChange={(e) => setShipmentNo(e.target.value)}
-              className="w-full px-3 py-2 bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#47868C] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F8E86] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
             <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Leave blank for auto-sequencing</span>
           </div>
@@ -546,7 +546,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               required
               value={shipmentDate}
               onChange={(e) => setShipmentDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
           </div>
 
@@ -602,7 +602,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
             <select
               value={paymentTerm}
               onChange={(e) => setPaymentTerm(Number(e.target.value) as PaymentTerm)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold text-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold text-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             >
               <option value={PaymentTerm.ToPay}>To-Pay (Pay at Destination)</option>
               <option value={PaymentTerm.Paid}>Paid (Prepaid at Origin)</option>
@@ -636,7 +636,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <div>
             <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1 flex items-center justify-between">
               <span>Total Declared Value (₹)</span>
-              <span className="text-[10px] text-[#47868C] font-semibold flex items-center gap-1">
+              <span className="text-[10px] text-[#2F8E86] font-semibold flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Auto from Bills
               </span>
             </label>
@@ -665,7 +665,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               placeholder="e.g. Counter 01"
               value={bookingClerk}
               onChange={(e) => setBookingClerk(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
           </div>
         </div>
@@ -677,10 +677,10 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 p-5 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800 pb-2">
             <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 flex items-center gap-1.5">
-              <Upload className="w-3.5 h-3.5 text-[#47868C]" /> 2.1 Consignor (Sender) *
+              <Upload className="w-3.5 h-3.5 text-[#2F8E86]" /> 2.1 Consignor (Sender) *
             </div>
             {consignorPartyId && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#3F7C82] dark:text-[#47868C] border border-[#D9E2E3] dark:border-slate-700 rounded">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-[#2F8E86] border border-[#D9E2E3] dark:border-slate-700 rounded">
                 Linked Master Party #{consignorPartyId}
               </span>
             )}
@@ -718,12 +718,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           </div>
 
           {!consignorPartyId && consignorName.trim().length > 2 && (
-            <label className="flex items-center gap-2 text-[11px] font-medium text-[#3F7C82] dark:text-slate-300 bg-[#E7F1F2] dark:bg-slate-800 p-2 rounded-lg border border-[#D9E2E3] dark:border-slate-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-[11px] font-medium text-[#25776F] dark:text-slate-300 bg-[#E7F1F2] dark:bg-slate-800 p-2 rounded-lg border border-[#D9E2E3] dark:border-slate-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={saveConsignorAsParty}
                 onChange={(e) => setSaveConsignorAsParty(e.target.checked)}
-                className="rounded text-[#47868C] focus:ring-[#47868C]"
+                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
               />
               <span>Save &ldquo;{consignorName}&rdquo; as a reusable Master Party</span>
             </label>
@@ -741,7 +741,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                   placeholder="10AAAAA0000A1Z5"
                   value={consignorGstNo}
                   onChange={(e) => setConsignorGstNo(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
                 />
               </div>
             )}
@@ -756,7 +756,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 placeholder="9876543210"
                 value={consignorMobile}
                 onChange={(e) => setConsignorMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>
           </div>
@@ -770,7 +770,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               placeholder="Sender address, warehouse, city, pin"
               value={consignorAddress}
               onChange={(e) => setConsignorAddress(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
           </div>
         </div>
@@ -782,7 +782,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <Download className="w-3.5 h-3.5 text-[#4A90E2]" /> 2.2 Consignee (Receiver) *
             </div>
             {consigneePartyId && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#3F7C82] dark:text-[#47868C] border border-[#D9E2E3] dark:border-slate-700 rounded">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-[#2F8E86] border border-[#D9E2E3] dark:border-slate-700 rounded">
                 Linked Master Party #{consigneePartyId}
               </span>
             )}
@@ -820,12 +820,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           </div>
 
           {!consigneePartyId && consigneeName.trim().length > 2 && (
-            <label className="flex items-center gap-2 text-[11px] font-medium text-[#3F7C82] dark:text-slate-300 bg-[#E7F1F2] dark:bg-slate-800 p-2 rounded-lg border border-[#D9E2E3] dark:border-slate-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-[11px] font-medium text-[#25776F] dark:text-slate-300 bg-[#E7F1F2] dark:bg-slate-800 p-2 rounded-lg border border-[#D9E2E3] dark:border-slate-700 cursor-pointer">
               <input
                 type="checkbox"
                 checked={saveConsigneeAsParty}
                 onChange={(e) => setSaveConsigneeAsParty(e.target.checked)}
-                className="rounded text-[#47868C] focus:ring-[#47868C]"
+                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
               />
               <span>Save &ldquo;{consigneeName}&rdquo; as a reusable Master Party</span>
             </label>
@@ -843,7 +843,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                   placeholder="10BBBBB0000B1Z6"
                   value={consigneeGstNo}
                   onChange={(e) => setConsigneeGstNo(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
                 />
               </div>
             )}
@@ -858,7 +858,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 placeholder="9876543210"
                 value={consigneeMobile}
                 onChange={(e) => setConsigneeMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>
           </div>
@@ -872,7 +872,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               placeholder="Recipient address in destination city, shop/godown number, pin"
               value={consigneeAddress}
               onChange={(e) => setConsigneeAddress(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
             />
           </div>
         </div>
@@ -892,7 +892,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       <div className="bg-[#E7F1F2]/60 dark:bg-slate-800/40 border border-[#D9E2E3] dark:border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-[#47868C]" />
+            <Tag className="w-4 h-4 text-[#2F8E86]" />
             <span className="text-xs font-bold text-[#111827] dark:text-white">Automated Route Tariff & Rate Card Engine</span>
           </div>
           <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-0.5">
@@ -909,7 +909,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           type="button"
           onClick={handleAutoCalculateTariff}
           disabled={calcLoading}
-          className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
+          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
         >
           <Zap className="w-3.5 h-3.5" />
           <span>{calcLoading ? "Calculating..." : "Auto-Calculate Tariff"}</span>
@@ -937,7 +937,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800 pb-2.5">
           <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 flex items-center gap-1.5">
-            <Scale className="w-3.5 h-3.5 text-[#47868C]" /> 6. GST Treatment & Tax Rules
+            <Scale className="w-3.5 h-3.5 text-[#2F8E86]" /> 6. GST Treatment & Tax Rules
           </div>
           <span className="text-[11px] text-[#64748B] font-medium">Controls GST calculation on Transporter Freight</span>
         </div>
@@ -953,14 +953,14 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 onClick={() => setTaxTreatment(opt.value)}
                 className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 cursor-pointer ${
                   isSelected
-                    ? "bg-[#E7F1F2] dark:bg-slate-800 border-[#47868C] ring-1 ring-[#47868C]/30"
+                    ? "bg-[#E7F1F2] dark:bg-slate-800 border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
                     : "bg-white dark:bg-slate-800 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA] dark:hover:bg-slate-750"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Icon className="w-4 h-4 text-[#47868C]" />
+                  <Icon className="w-4 h-4 text-[#2F8E86]" />
                   {isSelected && (
-                    <span className="w-2 h-2 rounded-full bg-[#47868C]" />
+                    <span className="w-2 h-2 rounded-full bg-[#2F8E86]" />
                   )}
                 </div>
                 <div>
@@ -988,7 +988,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                     name="gstPaidBy"
                     checked={gstPaidBy === party}
                     onChange={() => setGstPaidBy(party)}
-                    className="text-[#47868C] focus:ring-[#47868C]"
+                    className="text-[#2F8E86] focus:ring-[#2F8E86]"
                   />
                   <span>{party}</span>
                 </label>
@@ -1010,7 +1010,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               placeholder="e.g. Handle with care, deliver at godown, call receiver before delivery"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#47868C] focus:border-[#47868C]"
+              className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
             />
           </div>
         </div>

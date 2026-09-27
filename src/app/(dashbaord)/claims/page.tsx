@@ -112,7 +112,7 @@ export default function ClaimsPage() {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Report New Claim</span>
@@ -162,7 +162,7 @@ export default function ClaimsPage() {
             placeholder="Search claim no, LR no, claimant..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
           />
           <Search className="absolute left-3 top-2.5 text-[#94A3B8] w-4 h-4" />
         </div>
@@ -184,8 +184,8 @@ export default function ClaimsPage() {
                 onClick={() => setStatusFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? "bg-[#47868C] text-white shadow-xs"
-                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#3F7C82] border border-[#E5EAEB]"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#25776F] border border-[#E5EAEB]"
                 }`}
               >
                 {tab.label}
@@ -218,7 +218,7 @@ export default function ClaimsPage() {
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
+              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Report Incident / Claim</span>
@@ -284,7 +284,7 @@ export default function ClaimsPage() {
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => handleUpdateStatus(c)}
-                          className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                          className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
                         >
                           Resolve
                         </button>

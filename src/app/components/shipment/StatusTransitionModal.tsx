@@ -80,13 +80,13 @@ export default function StatusTransitionModal({
         <div className="px-6 py-4 bg-white dark:bg-slate-900 text-[#111827] dark:text-white flex items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800">
           <div>
             <h3 className="font-extrabold text-base flex items-center gap-2">
-              <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
-                <RefreshCw className="w-4 h-4 text-[#47868C]" />
+              <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
+                <RefreshCw className="w-4 h-4 text-[#2F8E86]" />
               </span>
               <span>Update Consignment Status</span>
             </h3>
             <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
-              Waybill / GR No: <strong className="text-[#47868C] font-mono">{shipment.shipmentNo}</strong>
+              Waybill / GR No: <strong className="text-[#2F8E86] font-mono">{shipment.shipmentNo}</strong>
             </p>
           </div>
           <button
@@ -134,15 +134,15 @@ export default function StatusTransitionModal({
                         onClick={() => setSelectedStatus(stage)}
                         className={`p-3 rounded-xl border text-left flex items-center gap-3 transition cursor-pointer ${
                           isSelected
-                            ? "bg-[#E7F1F2] dark:bg-slate-800 border-[#47868C] ring-2 ring-[#47868C]/20 shadow-2xs"
+                            ? "bg-[#E7F1F2] dark:bg-slate-800 border-[#2F8E86] ring-2 ring-[#2F8E86]/20 shadow-2xs"
                             : "bg-white dark:bg-slate-800/80 border-[#E5EAEB] dark:border-slate-700 hover:bg-[#F5FAFA] dark:hover:bg-slate-800"
                         }`}
                       >
-                        <div className={`p-2 rounded-lg ${isSelected ? "bg-[#47868C] text-white" : "bg-slate-100 dark:bg-slate-700 text-[#64748B] dark:text-slate-300"}`}>
+                        <div className={`p-2 rounded-lg ${isSelected ? "bg-[#2F8E86] text-white" : "bg-slate-100 dark:bg-slate-700 text-[#64748B] dark:text-slate-300"}`}>
                           <IconComp className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className={`text-xs font-bold ${isSelected ? "text-[#3F7C82] dark:text-white" : "text-[#111827] dark:text-slate-200"}`}>
+                          <div className={`text-xs font-bold ${isSelected ? "text-[#25776F] dark:text-white" : "text-[#111827] dark:text-slate-200"}`}>
                             {meta.label}
                           </div>
                           <div className="text-[10px] text-[#64748B] dark:text-slate-400">Stage code #{stage}</div>
@@ -163,7 +163,7 @@ export default function StatusTransitionModal({
                   placeholder="e.g. Warehouse Hub 2, Patna Junction, In-Transit Toll"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
 
@@ -177,7 +177,7 @@ export default function StatusTransitionModal({
                   placeholder="e.g. Dispatched with driver Ramesh, vehicle inspected, loaded onto Lorry NL-01-A-1234"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+                  className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>
             </>

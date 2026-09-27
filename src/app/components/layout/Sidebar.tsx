@@ -55,11 +55,39 @@ export default function Sidebar({
   const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     setUser(authService.getUser());
     setOrgName(authService.getOrganizationName());
+    // Authoritative platform-operator check gates platform-only menu items (client mgmt, onboarding).
+    authService.getMyProfile()
+      .then((p) => setIsPlatformAdmin(!!p.isPlatformAdmin))
+      .catch(() => setIsPlatformAdmin(false));
   }, []);
+
+  // Menu items reserved for the platform operator; hidden from tenant admins/users.
+  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
+  // Items that shouldn't appear in the authenticated nav at all:
+  // - system.forgot_password: a pre-auth flow, meaningless once signed in.
+  // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
+  //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
+  const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
+
+  const filterMenu = (items: any[]): any[] =>
+    (items || [])
+      .filter((it) => !HIDDEN_IDS.has(it.id))
+      .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
+      .map((it) => {
+        const title =
+          it.id === "system.settings"
+            ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
+            : it.title;
+        const children = it.children ? filterMenu(it.children) : it.children;
+        return { ...it, title, children };
+      })
+      // Drop parent groups that became empty after filtering (no children left and no own route).
+      .filter((it) => it.path || !it.children || it.children.length > 0);
 
   // Auto-expand menu containing the active page
   useEffect(() => {
@@ -93,8 +121,8 @@ export default function Sidebar({
     // Context fallback
   }
 
-  // Fallback to static sidebar items if dynamic menu is not populated
-  const displayItems = dynamicMenu.length > 0 ? dynamicMenu : sidebarItems;
+  // Fallback to static sidebar items if dynamic menu is not populated, then apply role-based filtering.
+  const displayItems = filterMenu(dynamicMenu.length > 0 ? dynamicMenu : sidebarItems);
 
   const handleLogout = () => {
     authService.logout();
@@ -110,7 +138,7 @@ export default function Sidebar({
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-3 top-6 bg-white hover:bg-[#E7F1F2] text-[#64748B] hover:text-[#3F7C82] p-1.5 rounded-full shadow-sm transition-transform duration-200 z-50 border border-[#D9E2E3] cursor-pointer"
+        className="absolute -right-3 top-6 bg-white hover:bg-[#E7F1F2] text-[#64748B] hover:text-[#25776F] p-1.5 rounded-full shadow-sm transition-transform duration-200 z-50 border border-[#D9E2E3] cursor-pointer"
         title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
       >
         {isOpen ? (
@@ -122,7 +150,7 @@ export default function Sidebar({
 
       {/* Brand Header */}
       <div className="h-16 px-5 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center gap-3 bg-white dark:bg-slate-900">
-        <div className="w-9 h-9 rounded-xl bg-[#47868C] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
           <TruckIcon className="w-4 h-4 text-white" />
         </div>
         {isOpen && (
@@ -130,7 +158,7 @@ export default function Sidebar({
             <h1 className="font-bold text-sm tracking-tight text-[#111827] dark:text-white truncate" title={companyName || "FleetPulse TMS"}>
               {companyName || "FleetPulse TMS"}
             </h1>
-            <p className="text-[11px] font-medium text-[#47868C] dark:text-teal-400 truncate">
+            <p className="text-[11px] font-medium text-[#2F8E86] dark:text-teal-400 truncate">
               {orgName || "Enterprise Logistics Cloud"}
             </p>
           </div>
@@ -149,19 +177,19 @@ export default function Sidebar({
                 href={item.path || "#"}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all duration-150 group ${
                   isActive
-                    ? "bg-[#E7F1F2] text-[#3F7C82] font-semibold border-l-3 border-[#47868C]"
+                    ? "bg-[#E7F1F2] text-[#25776F] font-semibold border-l-3 border-[#2F8E86]"
                     : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 font-medium"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
-                <div className={`shrink-0 ${isActive ? "text-[#47868C]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
+                <div className={`shrink-0 ${isActive ? "text-[#2F8E86]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                   {getIcon(item.icon)}
                 </div>
                 {isOpen && (
                   <div className="flex items-center justify-between w-full overflow-hidden">
                     <span className="truncate">{item.title}</span>
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#3F7C82]">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#25776F]">
                         {item.badge}
                       </span>
                     )}
@@ -173,7 +201,7 @@ export default function Sidebar({
 
           // Dropdown menu
           const isDropdownOpen = openMenu === (item.id || item.title);
-          const hasActiveChild = item.children.some((c) => pathname === c.path);
+          const hasActiveChild = item.children.some((c: any) => pathname === c.path);
 
           return (
             <div key={item.id || item.title} className="space-y-0.5">
@@ -182,13 +210,13 @@ export default function Sidebar({
                 onClick={() => setOpenMenu(isDropdownOpen ? null : (item.id || item.title))}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all duration-150 group cursor-pointer ${
                   hasActiveChild
-                    ? "text-[#3F7C82] bg-[#E7F1F2]/60 font-semibold"
+                    ? "text-[#25776F] bg-[#E7F1F2]/60 font-semibold"
                     : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/50 font-medium"
                 }`}
                 title={!isOpen ? item.title : undefined}
               >
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`shrink-0 ${hasActiveChild ? "text-[#47868C]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
+                  <div className={`shrink-0 ${hasActiveChild ? "text-[#2F8E86]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                     {getIcon(item.icon)}
                   </div>
                   {isOpen && <span className="truncate">{item.title}</span>}
@@ -196,7 +224,7 @@ export default function Sidebar({
                 {isOpen && (
                   <div className="flex items-center gap-2">
                     {item.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#3F7C82]">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#25776F]">
                         {item.badge}
                       </span>
                     )}
@@ -212,7 +240,7 @@ export default function Sidebar({
               {/* Sub-items */}
               {isOpen && isDropdownOpen && (
                 <div className="ml-5 pl-3 border-l border-[#E5EAEB] dark:border-slate-800 space-y-0.5 py-1">
-                  {item.children.map((child) => {
+                  {item.children.map((child: any) => {
                     const isChildActive = pathname === child.path;
                     return (
                       <Link
@@ -220,11 +248,11 @@ export default function Sidebar({
                         href={child.path || "#"}
                         className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-all duration-150 ${
                           isChildActive
-                            ? "bg-[#E7F1F2] text-[#3F7C82] font-semibold border-l-2 border-[#47868C]"
+                            ? "bg-[#E7F1F2] text-[#25776F] font-semibold border-l-2 border-[#2F8E86]"
                             : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 font-medium"
                         }`}
                       >
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isChildActive ? "bg-[#47868C]" : "bg-[#94A3B8]"}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isChildActive ? "bg-[#2F8E86]" : "bg-[#94A3B8]"}`} />
                         <span className="truncate">{child.title}</span>
                       </Link>
                     );
@@ -240,7 +268,7 @@ export default function Sidebar({
       <div className="p-3 border-t border-[#E5EAEB] dark:border-slate-800 bg-[#F7F8F8] dark:bg-slate-900">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] border border-[#D9E2E3] flex items-center justify-center text-[#3F7C82] font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] border border-[#D9E2E3] flex items-center justify-center text-[#25776F] font-bold text-xs shrink-0">
               {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
             </div>
             {isOpen && (

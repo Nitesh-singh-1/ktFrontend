@@ -86,7 +86,7 @@ export default function PodPage() {
             <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Proof of Delivery (POD) & Verification
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
               Delivery Assurance
             </span>
           </div>
@@ -97,7 +97,7 @@ export default function PodPage() {
 
         <button
           onClick={() => setUploadModalOpen(true)}
-          className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Upload New e-POD</span>
@@ -111,7 +111,7 @@ export default function PodPage() {
             <p className="text-xs font-semibold text-[#64748B]">Total POD Records</p>
             <p className="text-2xl font-black text-[#111827] mt-1">{totalPods}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#47868C] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold">
             <ClipboardList className="w-5 h-5" />
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function PodPage() {
             placeholder="Search consignment no, receiver name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
           />
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#94A3B8]" />
         </div>
@@ -164,7 +164,7 @@ export default function PodPage() {
                 key={tab.value}
                 onClick={() => setStatusFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                  isSelected ? "bg-[#47868C] text-white shadow-xs" : "bg-white text-[#64748B] hover:bg-[#E7F1F2] border border-[#E5EAEB]"
+                  isSelected ? "bg-[#2F8E86] text-white shadow-xs" : "bg-white text-[#64748B] hover:bg-[#E7F1F2] border border-[#E5EAEB]"
                 }`}
               >
                 {tab.label}
@@ -197,7 +197,7 @@ export default function PodPage() {
             </p>
             <button
               onClick={() => setUploadModalOpen(true)}
-              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
+              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Upload First POD</span>
@@ -223,7 +223,7 @@ export default function PodPage() {
                   return (
                     <tr key={p.id} className="hover:bg-[#F5FAFA] transition">
                       {/* LR No */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#47868C]">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#2F8E86]">
                         {p.shipmentNo}
                       </td>
 
@@ -248,7 +248,7 @@ export default function PodPage() {
                         {p.signatureUrl ? (
                           <button
                             onClick={() => setSelectedPodForPreview(p)}
-                            className="text-[11px] font-bold text-[#47868C] hover:underline cursor-pointer"
+                            className="text-[11px] font-bold text-[#2F8E86] hover:underline cursor-pointer"
                           >
                             View Signature
                           </button>
@@ -315,7 +315,7 @@ export default function PodPage() {
             </div>
             <p className="text-xs text-[#64748B]">Signatory: <span className="font-bold text-[#111827]">{selectedPodForPreview.receiverName}</span></p>
             <div className="flex justify-end">
-              <button onClick={() => setSelectedPodForPreview(null)} className="px-4 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#3F7C82] text-xs font-bold rounded-lg cursor-pointer">
+              <button onClick={() => setSelectedPodForPreview(null)} className="px-4 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] text-xs font-bold rounded-lg cursor-pointer">
                 Close
               </button>
             </div>

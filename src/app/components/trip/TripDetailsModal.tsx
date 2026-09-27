@@ -123,7 +123,7 @@ export default function TripDetailsModal({
       case TripStatus.InTransit:
         return { text: "IN TRANSIT", class: "bg-blue-50 text-[#4A90E2] border-[#4A90E2]/30" };
       case TripStatus.Arrived:
-        return { text: "ARRIVED", class: "bg-[#E7F1F2] text-[#3F7C82] border-[#47868C]/30" };
+        return { text: "ARRIVED", class: "bg-[#E7F1F2] text-[#25776F] border-[#2F8E86]/30" };
       case TripStatus.Completed:
         return { text: "COMPLETED", class: "bg-[#E7F1F2] text-[#2F9E8F] border-[#2F9E8F]/30" };
       case TripStatus.Cancelled:
@@ -142,13 +142,13 @@ export default function TripDetailsModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
-            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg">
-              <Truck className="w-5 h-5 text-[#47868C]" />
+            <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
+              <Truck className="w-5 h-5 text-[#2F8E86]" />
             </span>
             <div>
               <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
                 <span>Manifest & Truck Challan:</span>
-                <span className="font-mono text-[#47868C] font-black">
+                <span className="font-mono text-[#2F8E86] font-black">
                   {trip?.tripNo || "Loading..."}
                 </span>
               </h2>
@@ -241,7 +241,7 @@ export default function TripDetailsModal({
                     onClick={() => setShowExpenseForm(!showExpenseForm)}
                     className="btn-secondary"
                   >
-                    <Fuel className="w-4 h-4 text-[#47868C]" />
+                    <Fuel className="w-4 h-4 text-[#2F8E86]" />
                     <span>+ Record Expense</span>
                   </button>
                 </div>
@@ -355,7 +355,7 @@ export default function TripDetailsModal({
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2 flex items-center justify-between">
                   <span>Loaded Bilties on Truck ({trip.shipments?.length || 0})</span>
-                  <span className="font-mono text-[#47868C]">
+                  <span className="font-mono text-[#2F8E86]">
                     Total Packages: {totalLoadedPackages} | Freight: ₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </h3>
@@ -373,7 +373,7 @@ export default function TripDetailsModal({
                       {trip.shipments && trip.shipments.length > 0 ? (
                         trip.shipments.map((shp) => (
                           <tr key={shp.id} className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/40">
-                            <td className="py-2.5 px-3 font-mono font-bold text-[#47868C]">
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#2F8E86]">
                               {shp.shipmentNo}
                             </td>
                             <td className="py-2.5 px-3 font-semibold">{shp.loadedWeight} Kg</td>

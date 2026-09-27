@@ -28,7 +28,7 @@ export default function GoodsTable({
 
         <button
           onClick={addRow}
-          className="bg-[#47868C] hover:bg-[#3F7C82] text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-xs cursor-pointer transition"
+          className="bg-[#2F8E86] hover:bg-[#25776F] text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-xs cursor-pointer transition"
         >
           + Add Row
         </button>

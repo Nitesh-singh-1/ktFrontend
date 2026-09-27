@@ -35,7 +35,7 @@ export const STATUS_META: Record<
   [ShipmentStatus.Booked]: {
     label: "Booked",
     bg: "bg-[#E7F1F2] dark:bg-slate-800",
-    text: "text-[#3F7C82] dark:text-teal-300",
+    text: "text-[#25776F] dark:text-teal-300",
     border: "border-[#D9E2E3] dark:border-slate-700",
     icon: Package,
   },

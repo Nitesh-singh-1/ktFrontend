@@ -5,6 +5,7 @@ import { MoneyReceiptDto } from "@/types/moneyReceipt";
 import { moneyReceiptService } from "services/moneyReceiptService";
 import { numberToWords } from "@/utils/numberToWords";
 import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
+import { DataTable } from "@/app/components/ui/DataTable";
 import {
   Banknote,
   Search,
@@ -76,12 +77,12 @@ export default function MoneyReceiptsPage() {
   const totalOnline = totalAmount - totalCash;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 w-full pb-12">
       {/* Header Banner */}
       <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-1.5 bg-[#E7F1F2] text-[#47868C] rounded-lg text-sm font-bold flex items-center justify-center">
+            <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm font-bold flex items-center justify-center">
               <Banknote className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold text-[#111827] tracking-tight">
@@ -139,12 +140,12 @@ export default function MoneyReceiptsPage() {
             placeholder="Search MR No, Bilty No, Payer..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-24 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C]"
+            className="w-full h-10 pl-9 pr-24 bg-white border border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
           />
           <Search className="absolute left-3 top-3 text-[#94A3B8] w-4 h-4" />
           <button
             type="submit"
-            className="absolute right-1.5 top-1.5 px-3 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-semibold rounded-md text-xs transition cursor-pointer"
+            className="absolute right-1.5 top-1.5 px-3 py-1 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-md text-xs transition cursor-pointer"
           >
             Search
           </button>
@@ -159,7 +160,7 @@ export default function MoneyReceiptsPage() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
+              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] cursor-pointer"
             />
           </div>
 
@@ -169,7 +170,7 @@ export default function MoneyReceiptsPage() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#47868C]/20 focus:border-[#47868C] cursor-pointer"
+              className="h-10 px-3 py-1.5 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] cursor-pointer"
             />
           </div>
 
@@ -194,105 +195,87 @@ export default function MoneyReceiptsPage() {
       )}
 
       {/* Money Receipts Table */}
-      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-2xs overflow-hidden">
-        {loading ? (
-          <div className="p-16 text-center text-[#64748B] text-xs">Loading money receipts...</div>
-        ) : receipts.length === 0 ? (
-          <div className="p-16 text-center space-y-3">
-            <div className="flex justify-center">
-              <Receipt className="w-12 h-12 text-[#94A3B8]" />
-            </div>
-            <p className="text-sm font-bold text-[#111827]">No Money Receipts Found</p>
-            <p className="text-xs text-[#64748B] max-w-sm mx-auto">
-              Money Receipts are automatically generated when Bilties are booked with payment term &ldquo;Paid&rdquo;.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
-                  <th className="py-3 px-4">MR No</th>
-                  <th className="py-3 px-4">Receipt Date</th>
-                  <th className="py-3 px-4">Bilty / GR No</th>
-                  <th className="py-3 px-4">Received From (Payer)</th>
-                  <th className="py-3 px-4">Route</th>
-                  <th className="py-3 px-4 text-center">Packages</th>
-                  <th className="py-3 px-4 text-center">Payment Mode</th>
-                  <th className="py-3 px-4 text-right">Amount Paid (₹)</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5EAEB]">
-                {receipts.map((r) => (
-                  <tr key={r.id} className="hover:bg-[#F5FAFA] transition">
-                    {/* MR No */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#47868C]">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedReceipt(r)}
-                        className="hover:underline cursor-pointer font-black"
-                      >
-                        {r.receiptNo}
-                      </button>
-                    </td>
-
-                    {/* Date */}
-                    <td className="py-3.5 px-4 font-medium text-[#111827]">
-                      {r.receiptDate ? r.receiptDate.split("T")[0] : "—"}
-                    </td>
-
-                    {/* Bilty No */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#4A90E2]">
-                      {r.shipmentNo}
-                    </td>
-
-                    {/* Payer Name */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[#111827]">{r.payerName}</div>
-                      {r.payerGstNo && <div className="text-[10px] text-[#94A3B8] font-mono">GST: {r.payerGstNo}</div>}
-                    </td>
-
-                    {/* Route */}
-                    <td className="py-3.5 px-4 text-[#111827]">
-                      {r.fromLocation || "Origin"} &rarr; {r.toLocation || "—"}
-                    </td>
-
-                    {/* Packages */}
-                    <td className="py-3.5 px-4 text-center font-bold text-[#111827]">
-                      {r.totalPackages} PKG
-                    </td>
-
-                    {/* Payment Mode */}
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] text-[#2F9E8F] border border-[#2F9E8F]/30 rounded-md">
-                        {r.paymentMode || "CASH"}
-                      </span>
-                    </td>
-
-                    {/* Amount */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#2F9E8F] text-sm">
-                      ₹{r.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedReceipt(r)}
-                        className="px-3 py-1 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs transition cursor-pointer shadow-2xs flex items-center gap-1.5 ml-auto"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>Print MR</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <DataTable<MoneyReceiptDto>
+        data={receipts}
+        loading={loading}
+        loadingText="Loading money receipts…"
+        rowKey={(r) => r.id}
+        emptyIcon={<Receipt className="w-12 h-12" />}
+        emptyTitle="No Money Receipts Found"
+        emptyMessage="Money Receipts are automatically generated when Bilties are booked with payment term “Paid”."
+        columns={[
+          {
+            key: "receiptNo",
+            header: "MR No",
+            render: (r) => (
+              <button type="button" onClick={() => setSelectedReceipt(r)} className="font-mono font-black text-[#2F8E86] hover:underline cursor-pointer whitespace-nowrap">
+                {r.receiptNo}
+              </button>
+            ),
+          },
+          {
+            key: "receiptDate",
+            header: "Receipt Date",
+            render: (r) => <span className="font-medium text-[#111827] dark:text-slate-200 whitespace-nowrap">{r.receiptDate ? r.receiptDate.split("T")[0] : "—"}</span>,
+          },
+          {
+            key: "shipmentNo",
+            header: "Bilty / GR No",
+            render: (r) => <span className="font-mono font-bold text-[#4A90E2] whitespace-nowrap">{r.shipmentNo}</span>,
+          },
+          {
+            key: "payer",
+            header: "Received From (Payer)",
+            render: (r) => (
+              <div>
+                <div className="font-semibold text-[#111827] dark:text-white">{r.payerName}</div>
+                {r.payerGstNo && <div className="text-[10px] text-[#94A3B8] font-mono">GST: {r.payerGstNo}</div>}
+              </div>
+            ),
+          },
+          {
+            key: "route",
+            header: "Route",
+            render: (r) => <span className="text-[#111827] dark:text-slate-300">{r.fromLocation || "Origin"} → {r.toLocation || "—"}</span>,
+          },
+          {
+            key: "packages",
+            header: "Packages",
+            align: "center",
+            render: (r) => <span className="font-bold text-[#111827] dark:text-slate-200 whitespace-nowrap">{r.totalPackages} PKG</span>,
+          },
+          {
+            key: "paymentMode",
+            header: "Payment Mode",
+            align: "center",
+            render: (r) => (
+              <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] dark:bg-slate-800 text-[#2F9E8F] border border-[#2F9E8F]/30 rounded-md">
+                {r.paymentMode || "CASH"}
+              </span>
+            ),
+          },
+          {
+            key: "amount",
+            header: "Amount Paid (₹)",
+            align: "right",
+            render: (r) => <span className="font-mono font-bold text-[#2F9E8F] whitespace-nowrap">₹{r.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>,
+          },
+          {
+            key: "actions",
+            header: "Actions",
+            align: "right",
+            render: (r) => (
+              <button
+                type="button"
+                onClick={() => setSelectedReceipt(r)}
+                className="px-3 py-1.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5" /> Print MR
+              </button>
+            ),
+          },
+        ]}
+      />
 
       {/* Printable Money Receipt Modal */}
       {selectedReceipt && (

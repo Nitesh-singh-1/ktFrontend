@@ -91,7 +91,7 @@ export default function CustomersPage() {
             <h1 className="text-xl font-bold text-[#111827] tracking-tight">
               Party Master Directory
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] rounded-full">
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
               Consignors & Consignees
             </span>
           </div>
@@ -102,7 +102,7 @@ export default function CustomersPage() {
 
         <button
           onClick={handleAddNew}
-          className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Add Master Party</span>
@@ -116,7 +116,7 @@ export default function CustomersPage() {
             <p className="text-xs font-semibold text-[#64748B]">Total Master Parties</p>
             <p className="text-2xl font-bold text-[#111827] mt-1">{totalCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#47868C] flex items-center justify-center font-bold text-lg">
+          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-lg">
             <Building2 className="w-5 h-5" />
           </div>
         </div>
@@ -151,12 +151,12 @@ export default function CustomersPage() {
             placeholder="Search party name, GSTIN, mobile, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-20 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#47868C] focus:outline-none focus:ring-1 focus:ring-[#47868C]"
+            className="w-full pl-9 pr-20 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
           />
           <Search className="absolute left-3 top-2.5 text-[#94A3B8] w-4 h-4" />
           <button
             type="submit"
-            className="absolute right-1.5 top-1 px-3 py-1 bg-[#F7F8F8] hover:bg-[#E7F1F2] border border-[#D9E2E3] text-[#3F7C82] font-bold rounded-md text-[11px] transition cursor-pointer"
+            className="absolute right-1.5 top-1 px-3 py-1 bg-[#F7F8F8] hover:bg-[#E7F1F2] border border-[#D9E2E3] text-[#25776F] font-bold rounded-md text-[11px] transition cursor-pointer"
           >
             Search
           </button>
@@ -177,8 +177,8 @@ export default function CustomersPage() {
                 onClick={() => setPartyTypeFilter(tab.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? "bg-[#47868C] text-white shadow-xs"
-                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#3F7C82] border border-[#E5EAEB]"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "bg-[#F7F8F8] text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#25776F] border border-[#E5EAEB]"
                 }`}
               >
                 {tab.label}
@@ -200,7 +200,7 @@ export default function CustomersPage() {
       <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-16 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#47868C] mx-auto mb-3" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F8E86] mx-auto mb-3" />
             <p className="text-xs text-[#64748B] font-medium">Loading party master directory...</p>
           </div>
         ) : parties.length === 0 ? (
@@ -214,7 +214,7 @@ export default function CustomersPage() {
             </p>
             <button
               onClick={handleAddNew}
-              className="px-4 py-2 bg-[#47868C] hover:bg-[#3F7C82] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
+              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Create First Master Party</span>
@@ -240,7 +240,7 @@ export default function CustomersPage() {
                     party.partyType === PartyType.Both
                       ? { text: "Consignor & Consignee", color: "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]" }
                       : party.partyType === PartyType.Consignor
-                      ? { text: "Consignor Only", color: "bg-[#E7F1F2] text-[#3F7C82] border-[#D9E2E3]" }
+                      ? { text: "Consignor Only", color: "bg-[#E7F1F2] text-[#25776F] border-[#D9E2E3]" }
                       : { text: "Consignee Only", color: "bg-[#E8F6F4] text-[#2F9E8F] border-[#C2E9E3]" };
 
                   return (
@@ -290,7 +290,7 @@ export default function CustomersPage() {
 
                       {/* Payment Terms */}
                       <td className="py-3.5 px-4">
-                        <span className="text-[11px] font-semibold text-[#3F7C82] bg-[#E7F1F2] px-2 py-0.5 rounded border border-[#D9E2E3]">
+                        <span className="text-[11px] font-semibold text-[#25776F] bg-[#E7F1F2] px-2 py-0.5 rounded border border-[#D9E2E3]">
                           {party.defaultPaymentTerm === PaymentTerm.ToPay
                             ? "To Pay"
                             : party.defaultPaymentTerm === PaymentTerm.Paid
@@ -304,7 +304,7 @@ export default function CustomersPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleEdit(party)}
-                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#3F7C82] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
                           >
                             Edit
                           </button>
