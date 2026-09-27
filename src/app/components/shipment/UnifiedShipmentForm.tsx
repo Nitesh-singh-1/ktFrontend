@@ -454,12 +454,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Top Action Header */}
       <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm font-bold shadow-2xs">
+        <div className="min-w-0">
+          <div className="flex items-center flex-wrap gap-2">
+            <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm font-bold shadow-2xs shrink-0">
               <Package className="w-5 h-5" />
             </span>
-            <h1 className="text-xl font-bold text-[#111827] dark:text-slate-100 tracking-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-[#111827] dark:text-slate-100 tracking-tight">
               {initialId ? `Edit Bilty / Consignment #${shipmentNo || initialId}` : "New Bilty / Consignment Booking (GR)"}
             </h1>
             <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#2F8E86] dark:border-slate-700">
@@ -493,7 +493,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 <span>Processing...</span>
               </>
             ) : (
-              <span>{initialId ? "Update Bilty" : "Confirm & Issue Bilty (LR/GR)"}</span>
+              <span>{initialId ? "Update Bilty" : "Issue Bilty"}</span>
             )}
           </button>
         </div>
@@ -1037,9 +1037,9 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <span>Submitting...</span>
             </>
           ) : initialId ? (
-            "Save Bilty Changes"
+            "Save Changes"
           ) : (
-            "Confirm & Issue Bilty (LR/GR)"
+            "Issue Bilty"
           )}
         </button>
       </div>

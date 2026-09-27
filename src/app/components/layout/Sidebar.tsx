@@ -47,11 +47,18 @@ const getIcon = (iconName?: string) => {
 export default function Sidebar({
   isOpen,
   setIsOpen,
+  mobileOpen = false,
+  setMobileOpen,
 }: {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
+  mobileOpen?: boolean;
+  setMobileOpen?: (val: boolean) => void;
 }) {
   const pathname = usePathname();
+  // Labels/expanded content show when the desktop rail is expanded OR the mobile drawer is open.
+  const expanded = isOpen || mobileOpen;
+  const closeMobile = () => setMobileOpen?.(false);
   const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
@@ -133,12 +140,13 @@ export default function Sidebar({
     <aside
       className={`fixed top-0 left-0 h-screen bg-white dark:bg-slate-900 text-[#64748B] dark:text-slate-300
       transition-all duration-300 z-40 border-r border-[#E5EAEB] dark:border-slate-800 flex flex-col shadow-xs
-      ${isOpen ? "w-64" : "w-20"}`}
+      w-64 ${isOpen ? "md:w-64" : "md:w-20"}
+      ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
     >
-      {/* Collapse Toggle Button */}
+      {/* Collapse Toggle Button (desktop only) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-3 top-6 bg-white hover:bg-[#E7F1F2] text-[#64748B] hover:text-[#25776F] p-1.5 rounded-full shadow-sm transition-transform duration-200 z-50 border border-[#D9E2E3] cursor-pointer"
+        className="hidden md:block absolute -right-3 top-6 bg-white hover:bg-[#E7F1F2] text-[#64748B] hover:text-[#25776F] p-1.5 rounded-full shadow-sm transition-transform duration-200 z-50 border border-[#D9E2E3] cursor-pointer"
         title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
       >
         {isOpen ? (
@@ -153,7 +161,7 @@ export default function Sidebar({
         <div className="w-9 h-9 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
           <TruckIcon className="w-4 h-4 text-white" />
         </div>
-        {isOpen && (
+        {expanded && (
           <div className="overflow-hidden">
             <h1 className="font-bold text-sm tracking-tight text-[#111827] dark:text-white truncate" title={companyName || "FleetPulse TMS"}>
               {companyName || "FleetPulse TMS"}
@@ -180,12 +188,13 @@ export default function Sidebar({
                     ? "bg-[#E7F1F2] text-[#25776F] font-semibold border-l-3 border-[#2F8E86]"
                     : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 font-medium"
                 }`}
-                title={!isOpen ? item.title : undefined}
+                title={!expanded ? item.title : undefined}
+                onClick={closeMobile}
               >
                 <div className={`shrink-0 ${isActive ? "text-[#2F8E86]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                   {getIcon(item.icon)}
                 </div>
-                {isOpen && (
+                {expanded && (
                   <div className="flex items-center justify-between w-full overflow-hidden">
                     <span className="truncate">{item.title}</span>
                     {item.badge && (
@@ -213,15 +222,15 @@ export default function Sidebar({
                     ? "text-[#25776F] bg-[#E7F1F2]/60 font-semibold"
                     : "text-[#64748B] hover:text-[#111827] hover:bg-[#F5FAFA] dark:hover:bg-slate-800/50 font-medium"
                 }`}
-                title={!isOpen ? item.title : undefined}
+                title={!expanded ? item.title : undefined}
               >
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className={`shrink-0 ${hasActiveChild ? "text-[#2F8E86]" : "text-[#64748B] group-hover:text-[#111827]"}`}>
                     {getIcon(item.icon)}
                   </div>
-                  {isOpen && <span className="truncate">{item.title}</span>}
+                  {expanded && <span className="truncate">{item.title}</span>}
                 </div>
-                {isOpen && (
+                {expanded && (
                   <div className="flex items-center gap-2">
                     {item.badge && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E7F1F2] text-[#25776F]">
@@ -238,7 +247,7 @@ export default function Sidebar({
               </button>
 
               {/* Sub-items */}
-              {isOpen && isDropdownOpen && (
+              {expanded && isDropdownOpen && (
                 <div className="ml-5 pl-3 border-l border-[#E5EAEB] dark:border-slate-800 space-y-0.5 py-1">
                   {item.children.map((child: any) => {
                     const isChildActive = pathname === child.path;
@@ -246,6 +255,7 @@ export default function Sidebar({
                       <Link
                         key={child.id || child.title}
                         href={child.path || "#"}
+                        onClick={closeMobile}
                         className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-all duration-150 ${
                           isChildActive
                             ? "bg-[#E7F1F2] text-[#25776F] font-semibold border-l-2 border-[#2F8E86]"
@@ -271,7 +281,7 @@ export default function Sidebar({
             <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] border border-[#D9E2E3] flex items-center justify-center text-[#25776F] font-bold text-xs shrink-0">
               {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
             </div>
-            {isOpen && (
+            {expanded && (
               <div className="overflow-hidden">
                 <div className="text-xs font-bold text-[#111827] dark:text-white truncate">
                   {user?.fullName || user?.username || "Admin"}

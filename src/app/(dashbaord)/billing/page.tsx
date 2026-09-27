@@ -104,7 +104,7 @@ export default function BillingPage() {
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Generate Freight Invoice</span>
+          <span>New Invoice</span>
         </button>
       </div>
 

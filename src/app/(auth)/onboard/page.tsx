@@ -109,8 +109,8 @@ export default function OnboardPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#F7F8F8] text-[#111827] font-sans">
-      {/* Left Column: Enterprise Value Proposition */}
-      <div className="md:w-5/12 lg:w-1/2 bg-[#111827] text-white relative flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden">
+      {/* Left Column: Enterprise Value Proposition (desktop only) */}
+      <div className="md:w-5/12 lg:w-1/2 bg-[#111827] text-white relative hidden md:flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden">
         {/* Top: Brand Header */}
         <div className="relative z-10">
           <BrandLogo size="lg" variant="light" name="FleetPulse" tagline="Multi-Tenant TMS Platform" />

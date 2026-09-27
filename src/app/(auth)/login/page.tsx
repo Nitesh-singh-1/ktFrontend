@@ -240,7 +240,7 @@ const LoginPage = () => {
       {/* =========================================================================
           RIGHT SECTION: Full-Height Solid Muted Teal (#3a8890) Visual Panel (50%)
           ========================================================================= */}
-      <section className="w-full lg:w-1/2 h-full min-h-[400px] lg:min-h-full bg-[#3a8890] p-6 sm:p-10 lg:p-12 xl:p-16 relative flex flex-col justify-between overflow-hidden text-white box-border">
+      <section className="w-full lg:w-1/2 h-full lg:min-h-full bg-[#3a8890] p-6 sm:p-10 lg:p-12 xl:p-16 relative hidden lg:flex flex-col justify-between overflow-hidden text-white box-border">
         <LogisticsIllustration />
       </section>
     </main>

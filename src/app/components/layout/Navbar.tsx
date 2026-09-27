@@ -12,13 +12,14 @@ import {
   Check,
   UserCircle,
   ChevronDown,
+  Menu,
 } from "lucide-react";
 import { authService } from "../../../../services/authService";
 import { configService, TenantSubscription } from "../../../../services/configService";
 import { useTenantConfig } from "@/context/TenantConfigContext";
 import { useAppTheme, ThemeKey } from "@/context/ThemeContext";
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {}) {
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
@@ -69,6 +70,14 @@ export default function Navbar() {
     <header className="h-16 bg-white dark:bg-slate-900 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
       {/* Left: active organization + plan */}
       <div className="flex items-center gap-2.5 min-w-0">
+        {/* Mobile hamburger — opens the nav drawer */}
+        <button
+          onClick={onMenuClick}
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-white hover:bg-[#E7F1F2] dark:bg-slate-800 dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 transition cursor-pointer shrink-0"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
         <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#2F8E86] shrink-0">
           <Building2 className="w-4 h-4" />
         </div>
