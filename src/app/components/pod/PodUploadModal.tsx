@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { UploadPodRequest, ShipmentDto } from "@/types/tms";
+import { UploadPodRequest, PodPendingShipmentDto } from "@/types/tms";
 import { podService } from "services/podService";
-import { shipmentService } from "services/shipmentService";
-import { FileCheck, PenTool, X } from "lucide-react";
+import { Dropdown } from "@/app/components/ui/Dropdown";
+import { FileCheck, PenTool, X, Upload, FileText } from "lucide-react";
 
 interface PodUploadModalProps {
   isOpen: boolean;
@@ -22,13 +22,14 @@ export default function PodUploadModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [shipments, setShipments] = useState<ShipmentDto[]>([]);
+  const [shipments, setShipments] = useState<PodPendingShipmentDto[]>([]);
   const [shipmentId, setShipmentId] = useState<number | undefined>(defaultShipmentId);
   const [receiverName, setReceiverName] = useState("");
   const [receiverMobile, setReceiverMobile] = useState("");
   const [receiverAadharOrId, setReceiverAadharOrId] = useState("");
   const [deliveryDate, setDeliveryDate] = useState(new Date().toISOString().split("T")[0]);
   const [documentUrl, setDocumentUrl] = useState("");
+  const [documentName, setDocumentName] = useState("");
   const [remarks, setRemarks] = useState("");
 
   // Canvas Signature State
@@ -45,13 +46,29 @@ export default function PodUploadModal({
 
   const fetchShipments = async () => {
     try {
-      const res = await shipmentService.getShipments({ pageSize: 50 });
-      if (res.success && res.data) {
-        setShipments(res.data);
-      }
+      const res = await podService.getPendingShipments();
+      setShipments(res || []);
     } catch (err) {
-      console.error("Fetch shipments error:", err);
+      console.error("Fetch pending shipments error:", err);
     }
+  };
+
+  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setError("POD document must be under 4 MB.");
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setDocumentUrl(typeof reader.result === "string" ? reader.result : "");
+      setDocumentName(file.name);
+      setError("");
+    };
+    reader.onerror = () => setError("Could not read the selected file.");
+    reader.readAsDataURL(file);
   };
 
   if (!isOpen) return null;
@@ -182,19 +199,17 @@ export default function PodUploadModal({
               <label className="block text-xs font-bold text-[#64748B] mb-1">
                 Select Consignment (LR / GR) *
               </label>
-              <select
-                required
-                value={shipmentId || ""}
-                onChange={(e) => setShipmentId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#D9E2E3] rounded-lg text-xs font-semibold bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
-              >
-                <option value="">-- Choose Shipment / LR --</option>
-                {shipments.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.shipmentNo} ({s.consignorName} → {s.consigneeName})
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                options={shipments.map((s) => ({
+                  value: s.id,
+                  label: s.shipmentNo || `Shipment #${s.id}`,
+                  sublabel: `${s.consignorName || "—"} → ${s.consigneeName || "—"}`,
+                }))}
+                value={shipmentId}
+                onChange={(v) => setShipmentId(Number(v))}
+                placeholder="-- Choose Shipment / LR --"
+                emptyText="No consignments awaiting POD"
+              />
             </div>
 
             <div>
@@ -288,6 +303,42 @@ export default function PodUploadModal({
               />
             </div>
             <p className="text-[10px] text-[#94A3B8]">Sign with finger or stylus</p>
+          </div>
+
+          {/* Physical POD document upload */}
+          <div>
+            <label className="block text-xs font-bold text-[#64748B] mb-1">
+              Scanned POD / Delivery Receipt (photo or PDF)
+            </label>
+            {documentUrl ? (
+              <div className="flex items-center justify-between gap-3 p-3 bg-[#F7F8F8] border border-[#D9E2E3] rounded-lg">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="w-4 h-4 text-[#2F8E86] shrink-0" />
+                  <span className="text-xs font-semibold text-[#111827] truncate">{documentName || "POD document attached"}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {documentUrl.startsWith("data:image") && (
+                    <img src={documentUrl} alt="POD" className="h-8 w-8 object-cover rounded border border-[#D9E2E3]" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setDocumentUrl(""); setDocumentName(""); }}
+                    className="text-[11px] font-bold text-[#D95C5C] hover:underline cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center gap-2 p-3 border border-dashed border-[#D9E2E3] rounded-lg text-xs font-semibold text-[#64748B] hover:bg-[#E7F1F2] hover:text-[#25776F] hover:border-[#2F8E86] transition cursor-pointer">
+                <Upload className="w-4 h-4" />
+                <span>Upload signed delivery receipt (max 4 MB)</span>
+                <input type="file" accept="image/*,application/pdf" onChange={handleDocumentUpload} className="hidden" />
+              </label>
+            )}
+            <p className="text-[10px] text-[#94A3B8] mt-1">
+              The physical POD signed by the receiver — typically photographed and uploaded by the driver.
+            </p>
           </div>
 
           {/* Remarks */}

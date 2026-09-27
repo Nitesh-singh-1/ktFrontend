@@ -3,6 +3,7 @@ import {
   PodRecordDto,
   UploadPodRequest,
   PodStatus,
+  PodPendingShipmentDto,
 } from "@/types/tms";
 
 export const podService = {
@@ -19,9 +20,25 @@ export const podService = {
     return [];
   },
 
-  // Upload POD with signature and document proof
-  uploadPod: (data: UploadPodRequest): Promise<{ success: boolean; data?: PodRecordDto; message?: string }> => {
-    return baseService.post<{ success: boolean; data?: PodRecordDto; message?: string }>("/pod/upload", data);
+  // Consignments still awaiting a POD (for the upload dropdown)
+  getPendingShipments: async (): Promise<PodPendingShipmentDto[]> => {
+    const res = await baseService.get<PodPendingShipmentDto[] | { success: boolean; data: PodPendingShipmentDto[] }>("/pod/pending-shipments");
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray((res as any).data)) return (res as any).data;
+    return [];
+  },
+
+  // Upload POD with signature and document proof.
+  // The API returns the bare PodRecordDto on success (200); normalize to a {success,data} envelope
+  // so callers get a reliable success flag (this was causing false "upload failed" messages).
+  uploadPod: async (data: UploadPodRequest): Promise<{ success: boolean; data?: PodRecordDto; message?: string }> => {
+    const res = await baseService.post<any>("/pod/upload", data);
+    if (res && typeof res === "object") {
+      if (typeof res.id !== "undefined") return { success: true, data: res as PodRecordDto };
+      if (res.data && typeof res.data.id !== "undefined") return { success: true, data: res.data as PodRecordDto };
+      if (res.success) return res;
+    }
+    return { success: false, message: res?.message || "Failed to upload Proof of Delivery." };
   },
 
   // Verify POD (Transitions shipment to Delivered)

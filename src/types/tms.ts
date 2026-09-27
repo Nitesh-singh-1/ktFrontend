@@ -608,6 +608,17 @@ export interface UploadPodRequest {
   remarks?: string;
 }
 
+export interface PodPendingShipmentDto {
+  id: number;
+  shipmentNo?: string;
+  consignorName?: string;
+  consigneeName?: string;
+  fromLocation?: string;
+  toLocation?: string;
+  status: number;
+  statusName?: string;
+}
+
 // ==========================================
 // 9. PUBLIC TRACKING CONTRACT
 // ==========================================
