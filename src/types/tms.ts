@@ -109,6 +109,29 @@ export interface TyreDto {
   createdAt?: string;
 }
 
+export interface VehicleLoanDto {
+  id: number;
+  vehicleId?: number;
+  vehicleNo?: string;
+  lender: string;
+  loanAccountNo?: string;
+  principalAmount: number;
+  emiAmount: number;
+  tenureMonths: number;
+  emisPaid: number;
+  remainingEmis?: number;
+  outstandingApprox?: number;
+  progressPct?: number;
+  interestRate: number;
+  loanStartDate?: string;
+  nextDueDate?: string;
+  isClosed: boolean;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface SparePartDto {
   id: number;
   partName: string;
