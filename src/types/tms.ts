@@ -109,6 +109,28 @@ export interface TyreDto {
   createdAt?: string;
 }
 
+export interface DriverLedgerEntryDto {
+  id: number;
+  driverId?: number;
+  driverName: string;
+  entryDate: string;
+  isAdvance: boolean;
+  amount: number;
+  reason?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DriverOutstandingDto {
+  driverName: string;
+  totalAdvance: number;
+  totalRecovered: number;
+  outstanding: number;
+  entryCount: number;
+}
+
 export interface EmptyTripLogDto {
   id: number;
   vehicleId?: number;
