@@ -109,6 +109,35 @@ export interface TyreDto {
   createdAt?: string;
 }
 
+export enum VehicleClaimStatus {
+  Filed = 0,
+  UnderReview = 1,
+  Approved = 2,
+  Settled = 3,
+  Rejected = 4,
+}
+
+export interface VehicleInsuranceClaimDto {
+  id: number;
+  vehicleId?: number;
+  vehicleNo?: string;
+  claimNo?: string;
+  insurerName?: string;
+  policyNo?: string;
+  claimType?: string;
+  incidentDate?: string;
+  claimDate: string;
+  claimAmount: number;
+  approvedAmount: number;
+  status: VehicleClaimStatus;
+  statusName?: string;
+  surveyorName?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface DriverLedgerEntryDto {
   id: number;
   driverId?: number;
