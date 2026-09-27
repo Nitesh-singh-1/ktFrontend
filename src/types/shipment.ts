@@ -93,6 +93,7 @@ export interface VehicleMaster {
   rcNumber?: string;
   insurancePolicyNo?: string;
   pucValidUntil?: string;
+  taxValidUntil?: string;
   fitnessValidUntil?: string;
   insuranceValidUntil?: string;
   permitValidUntil?: string;
@@ -110,6 +111,27 @@ export interface VehicleLookupItem {
   capacityTons?: number;
   driverName?: string;
   driverMobile?: string;
+}
+
+export type ComplianceStatus = "Expired" | "Critical" | "Warning" | "Upcoming";
+
+export interface ComplianceAlert {
+  entityType: "Vehicle" | "Driver";
+  entityId: number;
+  entityName: string;
+  documentType: string;
+  expiryDate: string;
+  daysToExpiry: number;
+  status: ComplianceStatus;
+}
+
+export interface ComplianceOverview {
+  expiredCount: number;
+  criticalCount: number;
+  warningCount: number;
+  upcomingCount: number;
+  trackedDocuments: number;
+  alerts: ComplianceAlert[];
 }
 
 export interface DriverMaster {

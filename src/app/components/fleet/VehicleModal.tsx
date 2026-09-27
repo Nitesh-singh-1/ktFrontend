@@ -50,7 +50,9 @@ export default function VehicleModal({
   const [fitnessValidUntil, setFitnessValidUntil] = useState("");
   const [insuranceValidUntil, setInsuranceValidUntil] = useState("");
   const [permitValidUntil, setPermitValidUntil] = useState("");
-  
+  const [pucValidUntil, setPucValidUntil] = useState("");
+  const [taxValidUntil, setTaxValidUntil] = useState("");
+
   const [ownerName, setOwnerName] = useState("");
   const [ownerMobile, setOwnerMobile] = useState("");
   const [driverId, setDriverId] = useState<number | undefined>(undefined);
@@ -73,6 +75,8 @@ export default function VehicleModal({
         setFitnessValidUntil(initialVehicle.fitnessValidUntil || "");
         setInsuranceValidUntil(initialVehicle.insuranceValidUntil || "");
         setPermitValidUntil(initialVehicle.permitValidUntil || "");
+        setPucValidUntil(initialVehicle.pucValidUntil || "");
+        setTaxValidUntil(initialVehicle.taxValidUntil || "");
         setOwnerName((initialVehicle as any).ownerName || "");
         setOwnerMobile((initialVehicle as any).ownerMobile || "");
         setDriverId((initialVehicle as any).driverId);
@@ -104,6 +108,8 @@ export default function VehicleModal({
     setFitnessValidUntil("");
     setInsuranceValidUntil("");
     setPermitValidUntil("");
+    setPucValidUntil("");
+    setTaxValidUntil("");
     setOwnerName("");
     setOwnerMobile("");
     setDriverId(undefined);
@@ -160,6 +166,8 @@ export default function VehicleModal({
         fitnessValidUntil: fitnessValidUntil || undefined,
         insuranceValidUntil: insuranceValidUntil || undefined,
         permitValidUntil: permitValidUntil || undefined,
+        pucValidUntil: pucValidUntil || undefined,
+        taxValidUntil: taxValidUntil || undefined,
         ownerName: ownerName.trim() ? toTitleCase(ownerName.trim()) : undefined,
         ownerMobile: ownerMobile.trim() || undefined,
         driverId: driverId || undefined,
@@ -350,6 +358,30 @@ export default function VehicleModal({
                   type="date"
                   value={permitValidUntil}
                   onChange={(e) => setPermitValidUntil(e.target.value)}
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
+                  PUC (Pollution) Until
+                </label>
+                <input
+                  type="date"
+                  value={pucValidUntil}
+                  onChange={(e) => setPucValidUntil(e.target.value)}
+                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
+                  Road Tax Until
+                </label>
+                <input
+                  type="date"
+                  value={taxValidUntil}
+                  onChange={(e) => setTaxValidUntil(e.target.value)}
                   className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                 />
               </div>

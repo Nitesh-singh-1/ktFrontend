@@ -6,7 +6,17 @@ import {
   DriverLookupItem,
   LocationMaster,
   LocationLookupItem,
+  ComplianceOverview,
 } from "@/types/shipment";
+
+const EMPTY_COMPLIANCE: ComplianceOverview = {
+  expiredCount: 0,
+  criticalCount: 0,
+  warningCount: 0,
+  upcomingCount: 0,
+  trackedDocuments: 0,
+  alerts: [],
+};
 
 export const fleetService = {
   // --- Vehicles (Trucks) ---
@@ -127,5 +137,20 @@ export const fleetService = {
 
   deleteLocation: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/fleet/locations/${id}`);
+  },
+
+  // --- Compliance (statutory document expiry) ---
+  getComplianceAlerts: async (withinDays: number = 30): Promise<ComplianceOverview> => {
+    try {
+      const res = await baseService.get<ComplianceOverview | { success: boolean; data: ComplianceOverview }>(
+        `/fleet/compliance?withinDays=${withinDays}`
+      );
+      if (res && Array.isArray((res as any).alerts)) return res as ComplianceOverview;
+      if (res && (res as any).data && Array.isArray((res as any).data.alerts)) return (res as any).data;
+      return EMPTY_COMPLIANCE;
+    } catch (err) {
+      console.error("Get compliance alerts error:", err);
+      return EMPTY_COMPLIANCE;
+    }
   },
 };

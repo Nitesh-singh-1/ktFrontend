@@ -51,7 +51,8 @@ import {
   Navigation,
   Sliders,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  IndianRupee
 } from "lucide-react";
 
 type TabKey = "general" | "menu_entitlements" | "billing" | "sequences" | "workflows" | "modules" | "integrations";
@@ -84,6 +85,13 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
       { key: "consignments.create", title: "New Bilty (GR Booking Entry)", desc: "Issue new consignment note with consignor/consignee", iconName: "plus" },
       { key: "consignments.all", title: "All Bilties (GR Registry)", desc: "Search, filter, edit, and print consignment bilties", iconName: "file" },
     ],
+  },
+  {
+    key: "quotations",
+    title: "Quotations & Enquiries",
+    desc: "Freight rate quotes, follow-up tracking, and conversion into bookings",
+    iconName: "quotations",
+    category: "Core Operations",
   },
   {
     key: "trips",
@@ -119,6 +127,10 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     subItems: [
       { key: "master_data.parties", title: "Party Directory", desc: "Consignors, consignees, billing parties ledger", iconName: "users" },
       { key: "master_data.fleet", title: "Fleet & Stations Directory", desc: "Owned & attached vehicles, driver details, branches", iconName: "truck" },
+      { key: "master_data.compliance", title: "Fleet Compliance & Expiry", desc: "Insurance, fitness, permit, PUC, road-tax & licence expiry alerts", iconName: "compliance" },
+      { key: "master_data.tyres", title: "Tyre Management", desc: "Tyre stock, fitment, kilometres run, retreads and disposal", iconName: "truck" },
+      { key: "master_data.rates", title: "Rate Contracts & Tariffs", desc: "Route-wise freight tariffs, hamali & delivery charges applied at booking", iconName: "rates" },
+      { key: "master_data.vendorrates", title: "Vendor Hire Rates", desc: "Negotiated lorry-hire rates paid to market vendors/transporters per route", iconName: "truck" },
     ],
   },
   {
@@ -134,6 +146,13 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     desc: "Shortage, transit damage claims, settlement approval workflow",
     iconName: "claims",
     category: "Core Operations",
+  },
+  {
+    key: "analytics",
+    title: "Business Analytics & KPIs",
+    desc: "Sales-vs-recovery, gross margin, monthly revenue trend, top customers",
+    iconName: "analytics",
+    category: "Analytics & SaaS",
   },
   {
     key: "reports",
@@ -192,7 +211,11 @@ export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
     case "claims":
       return <AlertTriangle className={className} />;
     case "reports":
+    case "analytics":
       return <BarChart3 className={className} />;
+    case "compliance":
+    case "master_data.compliance":
+      return <AlertTriangle className={className} />;
     case "tracking":
       return <Navigation className={className} />;
     case "clients":
@@ -211,10 +234,14 @@ export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
     case "file":
     case "consignments.all":
     case "billing.invoices":
+    case "quotations":
       return <FileText className={className} />;
     case "card":
     case "billing.receipts":
       return <CreditCard className={className} />;
+    case "rates":
+    case "master_data.rates":
+      return <IndianRupee className={className} />;
     default:
       return <Package className={className} />;
   }
@@ -284,9 +311,9 @@ export default function SettingsPage() {
   const [roleOverrides, setRoleOverrides] = useState<Record<string, string[]>>({
     admin: fullMenuCatalog.flatMap((m) => [m.key, ...(m.subItems ? m.subItems.map((s) => s.key) : [])]),
     dispatcher: ["dashboard", "consignments", "consignments.all", "trips", "pod", "master_data", "master_data.fleet", "vendors", "tracking", "system"],
-    billing_operator: ["dashboard", "consignments", "consignments.create", "consignments.all", "billing", "billing.invoices", "billing.receipts", "system"],
-    fleet_manager: ["dashboard", "trips", "pod", "master_data", "master_data.fleet", "vendors", "tracking", "claims", "system"],
-    viewer: ["dashboard", "consignments.all", "reports", "system"],
+    billing_operator: ["dashboard", "consignments", "consignments.create", "consignments.all", "quotations", "billing", "billing.invoices", "billing.receipts", "system"],
+    fleet_manager: ["dashboard", "trips", "pod", "master_data", "master_data.fleet", "master_data.compliance", "vendors", "tracking", "claims", "system"],
+    viewer: ["dashboard", "consignments.all", "analytics", "reports", "system"],
   });
 
   const [menuEntitlements, setMenuEntitlements] = useState<TenantMenuEntitlements>({
@@ -297,6 +324,7 @@ export default function SettingsPage() {
       "consignments",
       "consignments.create",
       "consignments.all",
+      "quotations",
       "trips",
       "pod",
       "billing",
@@ -305,8 +333,13 @@ export default function SettingsPage() {
       "master_data",
       "master_data.parties",
       "master_data.fleet",
+      "master_data.compliance",
+      "master_data.tyres",
+      "master_data.rates",
+      "master_data.vendorrates",
       "vendors",
       "claims",
+      "analytics",
       "reports",
       "tracking",
       "clients",
@@ -529,6 +562,7 @@ export default function SettingsPage() {
       "consignments",
       "consignments.create",
       "consignments.all",
+      "quotations",
       "trips",
       "pod",
       "billing",
@@ -537,6 +571,11 @@ export default function SettingsPage() {
       "master_data",
       "master_data.parties",
       "master_data.fleet",
+      "master_data.compliance",
+      "master_data.tyres",
+      "master_data.rates",
+      "master_data.vendorrates",
+      "analytics",
       "reports",
       "system",
       "system.settings",

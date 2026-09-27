@@ -80,6 +80,35 @@ export enum RateType {
   Fixed = 4
 }
 
+export enum TyreStatus {
+  InStock = 0,
+  Fitted = 1,
+  UnderRetread = 2,
+  Scrapped = 3,
+}
+
+export interface TyreDto {
+  id: number;
+  serialNo: string;
+  brand?: string;
+  size?: string;
+  vehicleId?: number;
+  vehicleNo?: string;
+  position?: string;
+  purchaseDate?: string;
+  purchaseCost: number;
+  purchaseOdometer: number;
+  currentOdometer: number;
+  kmRun?: number;
+  retreadCount: number;
+  status: TyreStatus;
+  statusName?: string;
+  disposalDate?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+}
+
 export enum MaintenanceType {
   RoutineService = 0,
   EngineRepair = 1,
@@ -617,16 +646,38 @@ export interface RateCardDto {
   partyName?: string;
   fromLocation: string;
   toLocation: string;
+  commodityType?: string;
   rateType: RateType;
   rateTypeName?: string;
   baseRate: number;
-  minCharge: number;
-  hamaliPerKgOrUnit: number;
-  doorDeliveryRate: number;
+  minFreightAmount: number;
+  hamaliRatePerKg: number;
+  doorDeliveryCharge: number;
   stationaryCharge: number;
-  effectiveFrom: string;
+  effectiveFrom?: string;
   effectiveTo?: string;
   isActive: boolean;
+  createdAt?: string;
+}
+
+export interface VendorRateContractDto {
+  id: number;
+  vendorId?: number;
+  vendorName?: string;
+  fromLocation: string;
+  toLocation: string;
+  vehicleType?: string;
+  rateType: RateType;
+  rateTypeName?: string;
+  hireRate: number;
+  minGuaranteeAmount: number;
+  loadingCharge: number;
+  unloadingCharge: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
 }
 
 export interface CalculateFreightRequest {
