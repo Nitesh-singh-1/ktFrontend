@@ -109,6 +109,25 @@ export interface TyreDto {
   createdAt?: string;
 }
 
+export interface SparePartDto {
+  id: number;
+  partName: string;
+  partNo?: string;
+  category?: string;
+  unit?: string;
+  stockQuantity: number;
+  reorderLevel: number;
+  unitCost: number;
+  stockValue?: number;
+  isLowStock?: boolean;
+  storeLocation?: string;
+  supplier?: string;
+  remarks?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export enum MaintenanceType {
   RoutineService = 0,
   EngineRepair = 1,

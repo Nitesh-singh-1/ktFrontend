@@ -129,6 +129,7 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
       { key: "master_data.fleet", title: "Fleet & Stations Directory", desc: "Owned & attached vehicles, driver details, branches", iconName: "truck" },
       { key: "master_data.compliance", title: "Fleet Compliance & Expiry", desc: "Insurance, fitness, permit, PUC, road-tax & licence expiry alerts", iconName: "compliance" },
       { key: "master_data.tyres", title: "Tyre Management", desc: "Tyre stock, fitment, kilometres run, retreads and disposal", iconName: "truck" },
+      { key: "master_data.spares", title: "Spare Parts Stock", desc: "Workshop spare-part inventory, reorder levels, issue & receive stock", iconName: "cog" },
       { key: "master_data.rates", title: "Rate Contracts & Tariffs", desc: "Route-wise freight tariffs, hamali & delivery charges applied at booking", iconName: "rates" },
       { key: "master_data.vendorrates", title: "Vendor Hire Rates", desc: "Negotiated lorry-hire rates paid to market vendors/transporters per route", iconName: "truck" },
     ],
@@ -242,6 +243,9 @@ export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
     case "rates":
     case "master_data.rates":
       return <IndianRupee className={className} />;
+    case "cog":
+    case "master_data.spares":
+      return <Settings className={className} />;
     default:
       return <Package className={className} />;
   }
@@ -335,6 +339,7 @@ export default function SettingsPage() {
       "master_data.fleet",
       "master_data.compliance",
       "master_data.tyres",
+      "master_data.spares",
       "master_data.rates",
       "master_data.vendorrates",
       "vendors",
@@ -573,6 +578,7 @@ export default function SettingsPage() {
       "master_data.fleet",
       "master_data.compliance",
       "master_data.tyres",
+      "master_data.spares",
       "master_data.rates",
       "master_data.vendorrates",
       "analytics",
