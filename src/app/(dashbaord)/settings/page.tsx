@@ -392,6 +392,8 @@ export default function SettingsPage() {
       dateFormat: "DD/MM/YYYY",
       timeFormat: "12h",
       address: "123 Logistics Park, Transport Nagar",
+      biltyPreset: "standard",
+      printDisclaimer: "",
     },
     billingAndTax: {
       isGstEnabled: true,
@@ -1854,9 +1856,9 @@ export default function SettingsPage() {
                     Bilty / GR Print Style
                   </label>
                   <select
-                    value={((formData.general as any).biltyPreset as string) || "standard"}
+                    value={formData.general.biltyPreset || "standard"}
                     onChange={(e) =>
-                      setFormData({ ...formData, general: { ...formData.general, biltyPreset: e.target.value } as any })
+                      setFormData({ ...formData, general: { ...formData.general, biltyPreset: e.target.value } })
                     }
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15 cursor-pointer"
                   >
@@ -1872,9 +1874,9 @@ export default function SettingsPage() {
                   </label>
                   <textarea
                     rows={3}
-                    value={(formData.general as any).printDisclaimer || ""}
+                    value={formData.general.printDisclaimer || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, general: { ...formData.general, printDisclaimer: e.target.value } as any })
+                      setFormData({ ...formData, general: { ...formData.general, printDisclaimer: e.target.value } })
                     }
                     placeholder="All disputes subject to local jurisdiction. Goods carried at owner's risk. Not responsible for leakage, breakage or shortage. Freight payable as per terms. Received in good condition unless otherwise stated."
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"

@@ -26,6 +26,10 @@ export interface GeneralSettings {
   dateFormat: string;
   timeFormat: string;
   address: string;
+  /** "standard" (spacious, one copy per page) or "dense" (3 copies per A4). */
+  biltyPreset?: string;
+  /** Legal / T&C text rendered at the bottom of every Bilty copy. */
+  printDisclaimer?: string;
 }
 
 export interface BillingAndTaxSettings {
