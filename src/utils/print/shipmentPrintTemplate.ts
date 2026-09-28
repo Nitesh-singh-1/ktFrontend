@@ -307,13 +307,6 @@ function inr(n: number): string {
 export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): string {
   const profile = getTenantPrintProfile();
 
-  const paymentMode =
-    shipment.paymentTerm === PaymentTerm.Paid
-      ? "PAID"
-      : shipment.paymentTerm === PaymentTerm.TBB
-      ? "T.B.B."
-      : "TO PAY";
-
   const items = shipment.items || [];
   const totalPackages = items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0) || 0;
   const totalWeight = items.reduce((sum, it) => sum + (Number(it.weight) || 0), 0);
@@ -327,7 +320,6 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
   const hamali = pickCharge(shipment, /hamali/i);
   // Other = totalOtherCharges - hamali (avoid double counting), floor at 0
   const otherCharges = Math.max(0, (shipment.totalOtherCharges || 0) - hamali);
-  const goodsValue = shipment.goodsValue || 0;
   const grandTotal = shipment.grandTotal || 0;
 
   const disclaimer = profile.printDisclaimer || "";
@@ -337,6 +329,24 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
   const logoInitials = firstLetters(profile.companyName);
 
   const dateStr = new Date(shipment.shipmentDate || shipment.createdAt).toLocaleDateString("en-IN");
+
+  // Location shorthand — user may store a full address; show only the last comma-segment
+  // (typically the city/hub name) so the bill reads "PATNA -> PUNE" not the whole street.
+  const shortLoc = (loc?: string): string => {
+    if (!loc) return "-";
+    const parts = loc.split(",").map((s) => s.trim()).filter(Boolean);
+    return parts.length > 0 ? parts[parts.length - 1] : loc.trim();
+  };
+
+  // Footer strip: list of station names pulled from tenant profile. Names only, no codes.
+  const stationsRaw = profile.activeStations || [];
+  const stationNames = stationsRaw
+    .map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim()))
+    .filter(Boolean);
+  const stationsStrip =
+    stationNames.length > 0
+      ? `<span class="stations-label">STATIONS:</span> ${stationNames.map(esc).join(" &nbsp;·&nbsp; ")}`
+      : `For ${esc(profile.companyName)}`;
 
   return `
   <div class="copy">
@@ -352,9 +362,9 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         <div class="company-subtitle">H.O.: ${esc(profile.address || "-")}</div>
         <div class="company-contact">
           ${profile.phone ? `Phone: ${esc(profile.phone)}` : ""}
-          ${profile.email ? ` &nbsp;|&nbsp; Email: ${esc(profile.email)}` : ""}
-          ${profile.gstin ? ` &nbsp;|&nbsp; GSTIN: ${esc(profile.gstin)}` : ""}
+          ${profile.email ? ` &nbsp;|&nbsp; ${esc(profile.email)}` : ""}
         </div>
+        ${profile.gstin ? `<div class="company-gstin">GSTIN: ${esc(profile.gstin)}${profile.panNumber ? ` &nbsp;·&nbsp; PAN: ${esc(profile.panNumber)}` : ""}</div>` : ""}
       </div>
 
       <div class="copy-meta">
@@ -370,30 +380,30 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       <div class="party">
         <div class="field-label">Consignor's Name</div>
         <div class="field-value">${esc(shipment.consignorName || "-")}</div>
-        <div class="field-label" style="margin-top:1.2mm;">Address / GST</div>
-        <div class="field-value small-value">
-          ${esc(shipment.consignorAddress || "-")}<br>
+        <div class="field-label" style="margin-top:1mm;">Address</div>
+        <div class="field-value small-value party-addr">${esc(shipment.consignorAddress || "-")}</div>
+        <div class="party-meta">
           ${shipment.consignorGstNo ? `GSTIN: ${esc(shipment.consignorGstNo)}` : ""}
-          ${shipment.consignorMobile ? ` &nbsp;·&nbsp; Mob: ${esc(shipment.consignorMobile)}` : ""}
+          ${shipment.consignorMobile ? `${shipment.consignorGstNo ? " &nbsp;·&nbsp; " : ""}Mob: ${esc(shipment.consignorMobile)}` : ""}
         </div>
       </div>
 
       <div class="party">
         <div class="field-label">Consignee's Name</div>
         <div class="field-value">${esc(shipment.consigneeName || "-")}</div>
-        <div class="field-label" style="margin-top:1.2mm;">Address / GST</div>
-        <div class="field-value small-value">
-          ${esc(shipment.consigneeAddress || "-")}<br>
+        <div class="field-label" style="margin-top:1mm;">Address</div>
+        <div class="field-value small-value party-addr">${esc(shipment.consigneeAddress || "-")}</div>
+        <div class="party-meta">
           ${shipment.consigneeGstNo ? `GSTIN: ${esc(shipment.consigneeGstNo)}` : ""}
-          ${shipment.consigneeMobile ? ` &nbsp;·&nbsp; Mob: ${esc(shipment.consigneeMobile)}` : ""}
+          ${shipment.consigneeMobile ? `${shipment.consigneeGstNo ? " &nbsp;·&nbsp; " : ""}Mob: ${esc(shipment.consigneeMobile)}` : ""}
         </div>
       </div>
 
       <div class="route-box">
         <div class="field-label">Date</div>
         <div class="field-value">${dateStr}</div>
-        <div class="route">FROM: <span>${esc(shipment.fromLocation || "-")}</span></div>
-        <div class="route">TO: <span>${esc(shipment.toLocation || "-")}</span></div>
+        <div class="route">FROM: <span>${esc(shortLoc(shipment.fromLocation))}</span></div>
+        <div class="route">TO: <span>${esc(shortLoc(shipment.toLocation))}</span></div>
       </div>
     </div>
 
@@ -402,25 +412,25 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       <div class="th">PACKAGE TYPE</div>
       <div class="th">SAID TO CONTAIN / DESCRIPTION</div>
       <div class="th">ACTUAL WT.<br>(KG)</div>
-      <div class="th">CHARGES / VALUE</div>
+      <div class="th">SIGNATURES</div>
 
       <div class="td"><div class="goods-main">${totalPackages}</div></div>
       <div class="td"><div class="goods-main">${esc(packageType)}</div></div>
       <div class="td">
         <div class="goods-main">${esc(goodsDescription)}</div>
         <div class="goods-sub">
-          ${shipment.invoiceNo ? `Invoice No: ${esc(shipment.invoiceNo)}<br>` : ""}
-          ${shipment.ewayBillNo ? `E-Way Bill: ${esc(shipment.ewayBillNo)}<br>` : ""}
-          ${shipment.truckNo ? `Vehicle No: ${esc(shipment.truckNo)}` : ""}
+          ${shipment.invoiceNo ? `Invoice No: ${esc(shipment.invoiceNo)}` : ""}
+          ${shipment.ewayBillNo ? `${shipment.invoiceNo ? "<br>" : ""}E-Way Bill: ${esc(shipment.ewayBillNo)}` : ""}
         </div>
       </div>
       <div class="td"><div class="goods-main">${totalWeight}</div><div class="goods-sub">Kg</div></div>
-      <div class="td">
-        <div class="goods-sub">Freight: ₹ ${inr(freight)}</div>
-        <div class="goods-sub">Hamali: ₹ ${inr(hamali)}</div>
-        <div class="goods-sub">Other: ₹ ${inr(otherCharges)}</div>
-        <div class="goods-sub">Goods Value: ₹ ${inr(goodsValue)}</div>
-        <div class="goods-sub"><b>Total: ₹ ${inr(grandTotal)}</b></div>
+      <div class="td sig-cell">
+        <div class="sig-row">
+          <div class="sig-line-label">Consignor's Signature</div>
+        </div>
+        <div class="sig-row sig-row-last">
+          <div class="sig-line-label">For ${esc(profile.companyName)}<br>(Auth. Signatory)</div>
+        </div>
       </div>
     </div>
 
@@ -442,9 +452,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     </div>
 
     <div class="footer">
-      <div class="footer-cell">Total Pack: <b>${totalPackages}</b></div>
-      <div class="footer-cell center">Payment: ${paymentMode}</div>
-      <div class="footer-cell right">For ${esc(profile.companyName)}</div>
+      <div class="footer-stations">${stationsStrip}</div>
     </div>
   </div>`;
 }
@@ -454,7 +462,6 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
   const isCompact = layout === "3-up";
   const copyHeight = isCompact ? "93mm" : "auto";
   const copyGap = isCompact ? "3.5mm" : "0";
-  const bannerColorFallback = "#065f46";
 
   // Standardized border weights so every rule prints identically.
   const B_OUTER = "0.35mm solid #222";
@@ -540,6 +547,12 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       font-size: 2.2mm; line-height: 2.8mm;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .company-gstin {
+      font-size: 2.3mm; line-height: 2.8mm;
+      font-weight: 700; color: #111;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      margin-top: 0.3mm;
+    }
 
     .copy-meta {
       border-left: ${B_INNER};
@@ -548,13 +561,14 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       overflow: hidden;
     }
     .copy-label {
-      font-size: 2.8mm; font-weight: 700;
+      font-size: 2.9mm; font-weight: 800;
       text-align: center;
       display: flex; align-items: center; justify-content: center;
       border-bottom: ${B_INNER};
-      background: ${bannerColorFallback};
-      color: #fff;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      background: #fff;
+      color: #111;
+      letter-spacing: 0.4mm;
+      text-transform: uppercase;
     }
     .lr-number {
       display: grid; grid-template-columns: 14mm 1fr;
@@ -593,6 +607,22 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       overflow: hidden;
     }
     .small-value { font-size: 2.4mm; font-weight: 500; line-height: 2.8mm; }
+    .party-addr {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      color: #1f2937;
+    }
+    .party-meta {
+      font-size: 2.3mm;
+      line-height: 2.7mm;
+      color: #374151;
+      margin-top: 0.4mm;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .route-box {
       padding: 1.1mm 2mm;
       overflow: hidden;
@@ -633,6 +663,33 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     .td:last-child { border-right: 0; }
     .goods-main { font-size: 2.9mm; font-weight: 600; }
     .goods-sub { font-size: 2.2mm; margin-top: 0.8mm; line-height: 2.7mm; }
+
+    /* Signature cell — the rightmost goods column. Two stacked rows: consignor sig
+       on top, transporter auth sig on the bottom, each ending in a dashed line. */
+    .sig-cell {
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+    }
+    .sig-row {
+      flex: 1 1 0;
+      border-bottom: ${B_HAIR};
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1mm 1.5mm 0.8mm;
+      overflow: hidden;
+    }
+    .sig-row-last { border-bottom: 0; }
+    .sig-line-label {
+      font-size: 2.2mm;
+      font-weight: 700;
+      color: #111;
+      border-top: 0.3mm dashed #333;
+      padding-top: 0.6mm;
+      line-height: 2.6mm;
+      text-align: center;
+    }
 
     /* ---------- BOTTOM (18mm) — remarks + charges ---------- */
     .bottom {
@@ -681,21 +738,32 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
 
-    /* ---------- FOOTER (7mm) — natural flow, no absolute positioning ---------- */
+    /* ---------- FOOTER (7mm) — stations horizontal strip ---------- */
     .footer {
       flex: 0 0 7mm;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1.4fr;
+      display: flex;
       align-items: center;
       padding: 0 2.5mm;
       overflow: hidden;
+      background: #f6f6f6;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
-    .footer-cell {
-      font-size: 2.1mm; line-height: 2.5mm;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    .footer-stations {
+      font-size: 2mm;
+      line-height: 2.4mm;
+      color: #1f2937;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      letter-spacing: 0.1mm;
     }
-    .footer-cell.center { text-align: center; }
-    .footer-cell.right { text-align: right; font-weight: 700; }
+    .footer-stations .stations-label {
+      font-weight: 800;
+      color: #111;
+      margin-right: 1.5mm;
+      letter-spacing: 0.3mm;
+    }
   `;
 }
 
