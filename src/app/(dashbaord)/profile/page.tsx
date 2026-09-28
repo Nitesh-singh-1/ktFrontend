@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { UserCircle, Save, Lock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { authService } from "../../../../services/authService";
+import { validateMobile, validateEmail, firstError } from "@/utils/validation";
 
 interface ProfileState {
   id: number;
@@ -44,6 +45,14 @@ export default function ProfilePage() {
     setProfileMsg(null);
     if (!form.fullName.trim()) {
       setProfileMsg({ type: "err", text: "Full name is required." });
+      return;
+    }
+    const valErr = firstError(
+      validateMobile(form.mobile, "Mobile number"),
+      validateEmail(form.email, "Email"),
+    );
+    if (valErr) {
+      setProfileMsg({ type: "err", text: valErr });
       return;
     }
     try {

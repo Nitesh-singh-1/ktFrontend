@@ -13,6 +13,7 @@ import { shipmentService } from "services/shipmentService";
 import ShipmentStatusBadge from "@/app/components/shipment/ShipmentStatusBadge";
 import StatusTransitionModal from "@/app/components/shipment/StatusTransitionModal";
 import { printShipment } from "@/utils/print/printShipment";
+import PrintOptionsModal from "@/app/components/print/PrintOptionsModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import {
   Plus,
@@ -65,6 +66,9 @@ export default function ShipmentsListPage() {
 
   // Status Modal State
   const [selectedForStatus, setSelectedForStatus] = useState<Shipment | null>(null);
+
+  // Print Modal State
+  const [printTarget, setPrintTarget] = useState<Shipment | null>(null);
 
   useEffect(() => {
     fetchShipments();
@@ -339,7 +343,7 @@ export default function ShipmentsListPage() {
               <div className="flex items-center justify-center gap-1.5">
                 <Link href={`/shipments/details?id=${s.id}`} className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition" title="View Details & Timeline">View</Link>
                 <button type="button" onClick={() => setSelectedForStatus(s)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition cursor-pointer" title="Update Status Stage">Status</button>
-                <button type="button" onClick={() => printShipment(s)} className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer" title="Print Waybill"><Printer className="w-3.5 h-3.5" /></button>
+                <button type="button" onClick={() => setPrintTarget(s)} className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer" title="Print Waybill"><Printer className="w-3.5 h-3.5" /></button>
                 <Link href={`/shipments/create?id=${s.id}`} className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-md transition" title="Edit Consignment"><Edit className="w-3.5 h-3.5" /></Link>
                 {s.status !== ShipmentStatus.Cancelled && (
                   <button type="button" onClick={() => handleCancelShipment(s.id, s.shipmentNo)} className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 rounded-md transition cursor-pointer" title="Cancel Consignment"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -364,6 +368,17 @@ export default function ShipmentsListPage() {
           }}
         />
       )}
+
+      {/* Print Options Modal */}
+      <PrintOptionsModal
+        isOpen={!!printTarget}
+        onClose={() => setPrintTarget(null)}
+        onPrint={(opts) => {
+          if (printTarget) printShipment(printTarget, opts);
+        }}
+        title={printTarget ? `Print Bilty ${printTarget.shipmentNo}` : "Print Bilty"}
+        subtitle="Pick which copies to print and how to arrange them."
+      />
     </div>
   );
 }

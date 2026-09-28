@@ -1848,6 +1848,39 @@ export default function SettingsPage() {
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                    Bilty / GR Print Style
+                  </label>
+                  <select
+                    value={((formData.general as any).biltyPreset as string) || "standard"}
+                    onChange={(e) =>
+                      setFormData({ ...formData, general: { ...formData.general, biltyPreset: e.target.value } as any })
+                    }
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15 cursor-pointer"
+                  >
+                    <option value="standard">Standard — spacious full-page copies</option>
+                    <option value="dense">Dense — 3 copies per A4 (Rohtas-style)</option>
+                  </select>
+                  <p className="text-[11px] text-slate-400 mt-1">Standard prints one detailed copy per page (recommended for most). Dense fits three tightly-packed copies on one A4.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                    Bilty / GR Print Disclaimer
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={(formData.general as any).printDisclaimer || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, general: { ...formData.general, printDisclaimer: e.target.value } as any })
+                    }
+                    placeholder="All disputes subject to local jurisdiction. Goods carried at owner's risk. Not responsible for leakage, breakage or shortage. Freight payable as per terms. Received in good condition unless otherwise stated."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">Printed at the bottom of every Bilty / GR copy. Leave blank to use the default terms.</p>
+                </div>
               </div>
             </div>
 

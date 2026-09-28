@@ -19,6 +19,10 @@ export const vendorService = {
     return baseService.post<VendorDto>("/vendor", data);
   },
 
+  updateVendor: (id: number, data: Partial<VendorDto>): Promise<VendorDto> => {
+    return baseService.put<VendorDto>(`/vendor/${id}`, data);
+  },
+
   deleteVendor: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/vendor/${id}`);
   },

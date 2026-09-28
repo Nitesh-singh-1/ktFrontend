@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { CreateClaimRequest, ClaimType } from "@/types/tms";
 import { claimsService } from "services/claimsService";
 import { AlertTriangle, X } from "lucide-react";
+import { sanitizeMobile, validateMobile } from "@/utils/validation";
 
 interface ClaimModalProps {
   isOpen: boolean;
@@ -33,6 +34,12 @@ export default function ClaimModal({ isOpen, onClose, onSaved }: ClaimModalProps
     }
     if (!claimedAmount || claimedAmount <= 0) {
       setError("Please enter a valid claimed amount.");
+      return;
+    }
+
+    const mobErr = validateMobile(claimantMobile, "Claimant mobile");
+    if (mobErr) {
+      setError(mobErr);
       return;
     }
 
@@ -176,9 +183,10 @@ export default function ClaimModal({ isOpen, onClose, onSaved }: ClaimModalProps
               <input
                 type="tel"
                 maxLength={10}
+                inputMode="numeric"
                 placeholder="9876543210"
                 value={claimantMobile}
-                onChange={(e) => setClaimantMobile(e.target.value)}
+                onChange={(e) => setClaimantMobile(sanitizeMobile(e.target.value))}
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>

@@ -11,6 +11,7 @@ import { vendorService } from "services/vendorService";
 import { fleetService } from "services/fleetService";
 import SearchableSelect from "../ui/SearchableSelect";
 import { FileText, X } from "lucide-react";
+import { sanitizeMobile, validateMobile } from "@/utils/validation";
 
 interface LorryHireModalProps {
   isOpen: boolean;
@@ -108,6 +109,12 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
     }
     if (!totalHireAmount || totalHireAmount <= 0) {
       setError("Total Hire / Freight Amount must be greater than zero.");
+      return;
+    }
+
+    const mobErr = validateMobile(driverMobile, "Driver mobile");
+    if (mobErr) {
+      setError(mobErr);
       return;
     }
 
@@ -251,9 +258,10 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
               <input
                 type="tel"
                 maxLength={10}
+                inputMode="numeric"
                 placeholder="9876543210"
                 value={driverMobile}
-                onChange={(e) => setDriverMobile(e.target.value)}
+                onChange={(e) => setDriverMobile(sanitizeMobile(e.target.value))}
                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>

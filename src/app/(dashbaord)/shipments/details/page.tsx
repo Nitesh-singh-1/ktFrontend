@@ -13,6 +13,7 @@ import ShipmentStatusBadge from "@/app/components/shipment/ShipmentStatusBadge";
 import TrackingTimeline from "@/app/components/shipment/TrackingTimeline";
 import StatusTransitionModal from "@/app/components/shipment/StatusTransitionModal";
 import { printShipment } from "@/utils/print/printShipment";
+import PrintOptionsModal from "@/app/components/print/PrintOptionsModal";
 import { numberToWords } from "@/utils/numberToWords";
 import {
   AlertTriangle,
@@ -40,6 +41,7 @@ function ShipmentDetailsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   useEffect(() => {
     if (id && !isNaN(id)) {
@@ -164,7 +166,7 @@ function ShipmentDetailsContent() {
 
           <button
             type="button"
-            onClick={() => printShipment(shipment)}
+            onClick={() => setIsPrintModalOpen(true)}
             className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-xl text-xs border border-[#D9E2E3] transition flex items-center gap-1.5 cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -415,6 +417,15 @@ function ShipmentDetailsContent() {
           }}
         />
       )}
+
+      {/* Print Options Modal */}
+      <PrintOptionsModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        onPrint={(opts) => printShipment(shipment, opts)}
+        title={`Print Bilty ${shipment.shipmentNo}`}
+        subtitle="Pick which copies to print and how to arrange them."
+      />
     </div>
   );
 }

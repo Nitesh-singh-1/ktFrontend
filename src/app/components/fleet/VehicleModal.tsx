@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { VehicleMaster, DriverLookupItem } from "@/types/shipment";
 import { fleetService } from "services/fleetService";
 import { Truck, X, AlertTriangle } from "lucide-react";
+import { sanitizeMobile, validateMobile, firstError } from "@/utils/validation";
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -136,8 +137,7 @@ export default function VehicleModal({
   };
 
   const handleMobileChange = (val: string) => {
-    const digits = val.replace(/\D/g, "").slice(0, 10);
-    setOwnerMobile(digits);
+    setOwnerMobile(sanitizeMobile(val));
   };
 
   if (!isOpen) return null;
@@ -146,6 +146,15 @@ export default function VehicleModal({
     e.preventDefault();
     if (!vehicleNo.trim()) {
       setError("Vehicle / Lorry Registration No is required.");
+      return;
+    }
+
+    const mobErr = firstError(
+      validateMobile(ownerMobile, "Owner mobile"),
+      validateMobile(driverMobile, "Driver mobile"),
+    );
+    if (mobErr) {
+      setError(mobErr);
       return;
     }
 

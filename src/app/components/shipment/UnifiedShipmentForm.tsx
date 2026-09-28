@@ -24,6 +24,7 @@ import { partyService } from "services/partyService";
 import { fleetService } from "services/fleetService";
 import { invoiceService } from "services/invoiceService";
 import { rateCardService } from "services/rateCardService";
+import { sanitizeMobile, validateMobile } from "@/utils/validation";
 import {
   Package,
   MapPin,
@@ -334,6 +335,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         }
       });
     }
+
+    const cnrErr = validateMobile(consignorMobile, "Sender mobile");
+    if (cnrErr) errs.push(cnrErr);
+    const cneErr = validateMobile(consigneeMobile, "Receiver mobile");
+    if (cneErr) errs.push(cneErr);
 
     return errs;
   };
@@ -753,10 +759,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <input
                 type="tel"
                 maxLength={10}
+                inputMode="numeric"
                 placeholder="9876543210"
                 value={consignorMobile}
-                onChange={(e) => setConsignorMobile(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+                onChange={(e) => setConsignorMobile(sanitizeMobile(e.target.value))}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>
           </div>
@@ -855,9 +862,10 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <input
                 type="tel"
                 maxLength={10}
+                inputMode="numeric"
                 placeholder="9876543210"
                 value={consigneeMobile}
-                onChange={(e) => setConsigneeMobile(e.target.value)}
+                onChange={(e) => setConsigneeMobile(sanitizeMobile(e.target.value))}
                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>

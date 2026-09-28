@@ -8,6 +8,7 @@ import { tenantService } from "services/tenantService";
 import { authService } from "services/authService";
 import { TenantOnboardingRequest } from "@/types/shipment";
 import BrandLogo from "@/app/components/ui/BrandLogo";
+import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function OnboardPage() {
     adminPassword: "",
     adminFullName: "",
     adminMobile: "",
+    adminEmail: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -36,9 +38,15 @@ export default function OnboardPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let normalized = value;
+    if (name === "organizationCode") {
+      normalized = value.toUpperCase().replace(/[^A-Z0-9_-]/g, "");
+    } else if (name === "adminMobile") {
+      normalized = sanitizeMobile(value);
+    }
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "organizationCode" ? value.toUpperCase().replace(/[^A-Z0-9_-]/g, "") : value,
+      [name]: normalized,
     }));
   };
 
@@ -84,6 +92,15 @@ export default function OnboardPage() {
     }
     if (!formData.adminPassword || formData.adminPassword.length < 6) {
       setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const valErr = firstError(
+      validateMobile(formData.adminMobile || "", "Admin mobile number"),
+      validateEmail(formData.adminEmail || "", "Admin email"),
+    );
+    if (valErr) {
+      setError(valErr);
       return;
     }
 
@@ -241,14 +258,29 @@ export default function OnboardPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#64748B] mb-1">
-                    Mobile Number
+                    Mobile Number (10 Digits)
                   </label>
                   <input
                     type="tel"
                     name="adminMobile"
                     placeholder="9876543210"
                     maxLength={10}
+                    inputMode="numeric"
                     value={formData.adminMobile || ""}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium font-mono"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
+                    Admin Email
+                  </label>
+                  <input
+                    type="email"
+                    name="adminEmail"
+                    placeholder="admin@yourcompany.com"
+                    value={formData.adminEmail || ""}
                     onChange={handleChange}
                     className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
                   />

@@ -4,6 +4,15 @@ import React, { useState, useEffect } from "react";
 import { Users, X, Landmark, Building2, Check } from "lucide-react";
 import { VendorDto } from "@/types/tms";
 import { vendorService } from "services/vendorService";
+import {
+  sanitizeMobile,
+  validateMobile,
+  validateEmail,
+  validateGstin,
+  validatePan,
+  validateIfsc,
+  firstError,
+} from "@/utils/validation";
 
 interface VendorModalProps {
   isOpen: boolean;
@@ -92,6 +101,18 @@ export default function VendorModal({
       return;
     }
 
+    const valErr = firstError(
+      validateGstin(gstNo),
+      validatePan(panNo),
+      validateMobile(mobile),
+      validateEmail(email),
+      validateIfsc(ifscCode),
+    );
+    if (valErr) {
+      setError(valErr);
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -115,7 +136,11 @@ export default function VendorModal({
         isActive,
       };
 
-      await vendorService.createVendor(payload);
+      if (initialVendor?.id) {
+        await vendorService.updateVendor(initialVendor.id, payload);
+      } else {
+        await vendorService.createVendor(payload);
+      }
       onSaved();
       onClose();
     } catch (err: any) {
@@ -255,7 +280,7 @@ export default function VendorModal({
                 maxLength={10}
                 placeholder="9876543210"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+                onChange={(e) => setMobile(sanitizeMobile(e.target.value))}
                 className="w-full px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-white bg-white dark:bg-slate-800 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
               />
             </div>

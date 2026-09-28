@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { authService } from "../../../../services/authService";
 import BrandLogo from "@/app/components/ui/BrandLogo";
+import { sanitizeMobile, validateMobileRequired } from "@/utils/validation";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -58,14 +59,15 @@ export default function ForgotPasswordPage() {
     setError("");
     setSuccess("");
 
-    if (!username.trim() || !mobile.trim()) {
-      setError("Please provide both your account username and registered mobile number.");
+    if (!username.trim()) {
+      setError("Please provide your account username.");
       return;
     }
 
-    const cleanMobile = mobile.replace(/\D/g, "");
-    if (cleanMobile.length < 10) {
-      setError("Please enter a valid 10-digit mobile number.");
+    const cleanMobile = sanitizeMobile(mobile);
+    const mobErr = validateMobileRequired(cleanMobile, "Registered mobile number");
+    if (mobErr) {
+      setError(mobErr);
       return;
     }
 
@@ -271,10 +273,11 @@ export default function ForgotPasswordPage() {
                 <input
                   type="tel"
                   required
-                  maxLength={15}
+                  maxLength={10}
+                  inputMode="numeric"
                   placeholder="e.g. 9876543210"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) => setMobile(sanitizeMobile(e.target.value))}
                   className="w-full pl-10 pr-3.5 py-3 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-sm font-mono font-medium text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] transition"
                 />
               </div>

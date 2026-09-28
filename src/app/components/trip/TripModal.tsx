@@ -12,6 +12,7 @@ import { PaymentTerm } from "@/types/shipment";
 import { tripService } from "services/tripService";
 import { fleetService } from "services/fleetService";
 import SearchableSelect from "../ui/SearchableSelect";
+import { sanitizeMobile, validateMobile } from "@/utils/validation";
 import { 
   Truck, 
   X, 
@@ -197,6 +198,12 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
     }
     if (!destinationLocationName.trim()) {
       setError("Destination Route / Station (Point B) is required.");
+      return;
+    }
+
+    const mobErr = validateMobile(driverMobile, "Driver mobile");
+    if (mobErr) {
+      setError(mobErr);
       return;
     }
 
@@ -438,9 +445,10 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                 <input
                   type="tel"
                   maxLength={10}
+                  inputMode="numeric"
                   placeholder="9876543210"
                   value={driverMobile}
-                  onChange={(e) => setDriverMobile(e.target.value)}
+                  onChange={(e) => setDriverMobile(sanitizeMobile(e.target.value))}
                   className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-medium text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
                 />
               </div>

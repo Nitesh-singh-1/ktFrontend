@@ -455,6 +455,7 @@ export interface TenantOnboardingRequest {
   adminPassword: string;
   adminFullName: string;
   adminMobile?: string;
+  adminEmail?: string;
 }
 
 export interface UserDto {

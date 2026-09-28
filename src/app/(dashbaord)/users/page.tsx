@@ -34,6 +34,7 @@ import {
   Copy,
 } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
+import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
 
 // Available system features for granular user assignment
 const SYSTEM_MODULES = [
@@ -81,6 +82,11 @@ export default function UsersManagementPage() {
   const handleSendInvite = async () => {
     if (!inviteForm.email.trim()) {
       setNotification({ type: "error", message: "Please enter an email address." });
+      return;
+    }
+    const emailErr = validateEmail(inviteForm.email, "Email");
+    if (emailErr) {
+      setNotification({ type: "error", message: emailErr });
       return;
     }
     try {
@@ -204,6 +210,12 @@ export default function UsersManagementPage() {
       return;
     }
 
+    const mobErr = validateMobile(addForm.mobile || "", "Mobile number");
+    if (mobErr) {
+      showToast("error", mobErr);
+      return;
+    }
+
     try {
       setSubmittingAdd(true);
       const res = await userService.createSubUser(addForm);
@@ -273,6 +285,15 @@ export default function UsersManagementPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
+
+    const valErr = firstError(
+      validateMobile(editForm.mobile || "", "Mobile number"),
+      validateEmail((editForm as any).email || "", "Email"),
+    );
+    if (valErr) {
+      showToast("error", valErr);
+      return;
+    }
 
     try {
       setSubmittingEdit(true);
@@ -846,10 +867,11 @@ export default function UsersManagementPage() {
                     </label>
                     <input
                       type="tel"
-                      maxLength={15}
+                      maxLength={10}
+                      inputMode="numeric"
                       placeholder="e.g. 9876543210"
                       value={addForm.mobile}
-                      onChange={(e) => setAddForm({ ...addForm, mobile: e.target.value })}
+                      onChange={(e) => setAddForm({ ...addForm, mobile: sanitizeMobile(e.target.value) })}
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
                     />
                   </div>
@@ -1106,9 +1128,10 @@ export default function UsersManagementPage() {
                   </label>
                   <input
                     type="tel"
-                    maxLength={15}
+                    maxLength={10}
+                    inputMode="numeric"
                     value={editForm.mobile || ""}
-                    onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })}
+                    onChange={(e) => setEditForm({ ...editForm, mobile: sanitizeMobile(e.target.value) })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
                   />
                 </div>
