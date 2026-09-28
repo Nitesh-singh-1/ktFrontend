@@ -456,6 +456,11 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
   const copyGap = isCompact ? "3.5mm" : "0";
   const bannerColorFallback = "#065f46";
 
+  // Standardized border weights so every rule prints identically.
+  const B_OUTER = "0.35mm solid #222";
+  const B_INNER = "0.3mm solid #333";
+  const B_HAIR = "0.25mm solid #555";
+
   return `
     @page { size: ${pageSize}; margin: 0; }
     * { box-sizing: border-box; }
@@ -480,140 +485,215 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     }
     .copy-slot:last-child { margin-bottom: 0; page-break-after: auto; }
 
+    /* Card is a rigid flex column. Section heights sum to exactly ${copyHeight}
+       so nothing overlaps the footer or spills past the border. */
     .copy {
       width: 200mm;
       height: ${copyHeight};
-      border: 0.45mm solid #222;
-      position: relative;
+      border: ${B_OUTER};
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       page-break-inside: avoid;
       background: #fff;
     }
 
-    /* Header */
+    /* ---------- HEADER (18mm) ---------- */
     .header {
-      height: 20mm;
+      flex: 0 0 18mm;
       display: grid;
-      grid-template-columns: 27mm 1fr 52mm;
-      border-bottom: 0.35mm solid #222;
-    }
-    .logo-box {
-      border-right: 0.35mm solid #222;
-      display: flex; align-items: center; justify-content: center;
-      padding: 2mm;
+      grid-template-columns: 24mm 1fr 46mm;
+      border-bottom: ${B_INNER};
       overflow: hidden;
     }
-    .logo-circle {
-      width: 16mm; height: 16mm;
-      border: 0.7mm solid #333; border-radius: 50%;
+    .logo-box {
+      border-right: ${B_INNER};
       display: flex; align-items: center; justify-content: center;
-      font-size: 7mm; font-weight: bold;
+      padding: 1.5mm;
+      overflow: hidden;
     }
-    .company { padding: 1.5mm 3mm; text-align: center; overflow: hidden; }
+    .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .logo-circle {
+      width: 14mm; height: 14mm;
+      border: 0.5mm solid #333; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6mm; font-weight: bold;
+    }
+    .company {
+      padding: 1.5mm 3mm;
+      text-align: center;
+      overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center;
+    }
     .company-name {
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 7.2mm; font-weight: 700;
-      line-height: 7.5mm; white-space: nowrap;
+      font-size: 6.4mm; font-weight: 700;
+      line-height: 6.6mm;
       letter-spacing: 0.4mm;
-      overflow: hidden; text-overflow: ellipsis;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .company-subtitle { font-size: 2.7mm; line-height: 3.5mm; margin-top: 0.5mm; }
-    .company-contact { font-size: 2.35mm; line-height: 3mm; }
+    .company-subtitle {
+      font-size: 2.5mm; line-height: 3mm; margin-top: 0.5mm;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .company-contact {
+      font-size: 2.2mm; line-height: 2.8mm;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
 
     .copy-meta {
-      border-left: 0.35mm solid #222;
+      border-left: ${B_INNER};
       display: grid;
-      grid-template-rows: 8mm 12mm;
+      grid-template-rows: 7mm 11mm;
+      overflow: hidden;
     }
     .copy-label {
-      font-size: 3mm; font-weight: 700;
-      text-align: center; padding-top: 1.5mm;
-      border-bottom: 0.35mm solid #222;
+      font-size: 2.8mm; font-weight: 700;
+      text-align: center;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: ${B_INNER};
       background: ${bannerColorFallback};
       color: #fff;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
-    .lr-number { display: grid; grid-template-columns: 16mm 1fr; align-items: center; }
-    .lr-label { font-size: 2.5mm; padding-left: 2mm; }
-    .lr-value { font-size: 5mm; font-weight: 700; text-align: center; }
-
-    /* Parties */
-    .parties {
-      height: 20mm;
-      display: grid;
-      grid-template-columns: 1fr 1fr 34mm;
-      border-bottom: 0.35mm solid #222;
+    .lr-number {
+      display: grid; grid-template-columns: 14mm 1fr;
+      align-items: center;
+      overflow: hidden;
     }
-    .party { padding: 1.1mm 2mm; border-right: 0.35mm solid #222; overflow: hidden; }
+    .lr-label { font-size: 2.3mm; padding-left: 2mm; line-height: 1.15; }
+    .lr-value {
+      font-size: 4.4mm; font-weight: 700;
+      text-align: center; padding: 0 1mm;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ---------- PARTIES (20mm) ---------- */
+    .parties {
+      flex: 0 0 20mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr 40mm;
+      border-bottom: ${B_INNER};
+      overflow: hidden;
+    }
+    .party {
+      padding: 1.1mm 2mm;
+      border-right: ${B_INNER};
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
     .party:last-child { border-right: 0; }
     .field-label {
-      font-size: 2.25mm; font-weight: 700;
+      font-size: 2.2mm; font-weight: 700;
       text-transform: uppercase; color: #333;
-      margin-bottom: 0.5mm;
+      margin-bottom: 0.4mm; line-height: 1.15;
     }
-    .field-value { font-size: 2.9mm; font-weight: 600; line-height: 3.3mm; }
-    .small-value { font-size: 2.45mm; font-weight: 500; }
-    .route-box { padding: 1.1mm 2mm; overflow: hidden; }
-    .route { font-size: 3.4mm; font-weight: 700; line-height: 4.3mm; margin-bottom: 1mm; }
+    .field-value {
+      font-size: 2.8mm; font-weight: 600; line-height: 3.1mm;
+      overflow: hidden;
+    }
+    .small-value { font-size: 2.4mm; font-weight: 500; line-height: 2.8mm; }
+    .route-box {
+      padding: 1.1mm 2mm;
+      overflow: hidden;
+      display: flex; flex-direction: column; gap: 0.4mm;
+    }
+    .route {
+      font-size: 2.8mm; font-weight: 700;
+      line-height: 3.2mm;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     .route span { font-weight: 400; }
 
-    /* Goods */
+    /* ---------- GOODS (30mm) ---------- */
     .goods {
-      height: 34mm;
+      flex: 0 0 30mm;
       display: grid;
-      grid-template-columns: 20mm 45mm 1fr 27mm 39mm;
-      grid-template-rows: 6mm 1fr;
-      border-bottom: 0.35mm solid #222;
+      grid-template-columns: 20mm 40mm 1fr 25mm 40mm;
+      grid-template-rows: 5mm 1fr;
+      border-bottom: ${B_INNER};
+      overflow: hidden;
     }
     .th {
       background: #eee;
-      border-right: 0.35mm solid #222;
-      border-bottom: 0.35mm solid #222;
-      font-size: 2.3mm; font-weight: 700;
+      border-right: ${B_INNER};
+      border-bottom: ${B_INNER};
+      font-size: 2.2mm; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
-      text-align: center; padding: 0.5mm;
+      text-align: center; padding: 0.4mm;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .th:last-child { border-right: 0; }
     .td {
-      border-right: 0.35mm solid #222;
-      padding: 1.1mm 1.5mm;
-      font-size: 2.7mm; line-height: 3.2mm;
+      border-right: ${B_INNER};
+      padding: 1mm 1.5mm;
+      font-size: 2.6mm; line-height: 3mm;
       overflow: hidden;
     }
     .td:last-child { border-right: 0; }
-    .goods-main { font-size: 3mm; font-weight: 600; }
-    .goods-sub { font-size: 2.3mm; margin-top: 1mm; }
+    .goods-main { font-size: 2.9mm; font-weight: 600; }
+    .goods-sub { font-size: 2.2mm; margin-top: 0.8mm; line-height: 2.7mm; }
 
-    /* Bottom (Remarks + Charges) */
+    /* ---------- BOTTOM (18mm) — remarks + charges ---------- */
     .bottom {
-      height: 18mm;
+      flex: 0 0 18mm;
       display: grid;
       grid-template-columns: 1fr 50mm;
+      border-bottom: ${B_INNER};
+      overflow: hidden;
     }
-    .remarks { padding: 1.1mm 2mm; border-right: 0.35mm solid #222; overflow: hidden; }
-    .remarks-title { font-size: 2.4mm; font-weight: 700; margin-bottom: 0.5mm; }
-    .remarks-text { font-size: 2.2mm; line-height: 2.8mm; }
-    .charges { display: grid; grid-template-columns: 1fr 22mm; font-size: 2.3mm; }
-    .charge-label, .charge-value {
-      padding: 0.55mm 1.3mm;
-      border-bottom: 0.25mm solid #777;
+    .remarks {
+      padding: 1mm 2mm;
+      border-right: ${B_INNER};
+      overflow: hidden;
     }
-    .charge-label { border-right: 0.25mm solid #777; }
-    .charge-total { font-weight: 700; font-size: 2.6mm; }
-
-    /* Footer */
-    .footer {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 7mm;
-      border-top: 0.35mm solid #222;
+    .remarks-title {
+      font-size: 2.3mm; font-weight: 700;
+      margin-bottom: 0.4mm;
+    }
+    .remarks-text {
+      font-size: 2.1mm;
+      line-height: 2.6mm;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+    }
+    .charges {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      align-items: center;
-      padding: 0 2mm;
+      grid-template-columns: 1fr 22mm;
+      grid-auto-rows: min-content;
+      font-size: 2.3mm;
+      overflow: hidden;
     }
-    .footer-cell { font-size: 2mm; line-height: 2.5mm; }
+    .charge-label, .charge-value {
+      padding: 0.5mm 1.3mm;
+      border-bottom: ${B_HAIR};
+      line-height: 1.2;
+    }
+    .charge-label { border-right: ${B_HAIR}; }
+    .charge-value { font-variant-numeric: tabular-nums; text-align: right; }
+    .charge-total {
+      font-weight: 700;
+      font-size: 2.5mm;
+      background: #f5f5f5;
+      border-bottom: 0;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+
+    /* ---------- FOOTER (7mm) — natural flow, no absolute positioning ---------- */
+    .footer {
+      flex: 0 0 7mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.4fr;
+      align-items: center;
+      padding: 0 2.5mm;
+      overflow: hidden;
+    }
+    .footer-cell {
+      font-size: 2.1mm; line-height: 2.5mm;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     .footer-cell.center { text-align: center; }
     .footer-cell.right { text-align: right; font-weight: 700; }
   `;
