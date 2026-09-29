@@ -9,6 +9,7 @@ import { authService } from "services/authService";
 import { TenantOnboardingRequest } from "@/types/shipment";
 import BrandLogo from "@/app/components/ui/BrandLogo";
 import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
+import { useUsernameAvailability } from "@/utils/useUsernameAvailability";
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function OnboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const usernameAvailability = useUsernameAvailability(formData.adminUsername);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -88,6 +91,10 @@ export default function OnboardPage() {
     }
     if (!formData.adminUsername.trim()) {
       setError("Admin username is required.");
+      return;
+    }
+    if (usernameAvailability.status === "taken") {
+      setError(`Username '${formData.adminUsername}' is already taken. Please pick a different one.`);
       return;
     }
     if (!formData.adminPassword || formData.adminPassword.length < 6) {
@@ -287,9 +294,23 @@ export default function OnboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#64748B] mb-1">
-                    Username *
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-[#64748B]">
+                      Username *
+                    </label>
+                    {usernameAvailability.status === "checking" && (
+                      <span className="text-[10px] font-semibold text-[#64748B]">Checking…</span>
+                    )}
+                    {usernameAvailability.status === "available" && (
+                      <span className="text-[10px] font-bold text-[#2F9E8F]">Available ✓</span>
+                    )}
+                    {usernameAvailability.status === "taken" && (
+                      <span className="text-[10px] font-bold text-[#D95C5C]">Already taken</span>
+                    )}
+                    {usernameAvailability.status === "invalid" && (
+                      <span className="text-[10px] font-bold text-[#B76E32]">{usernameAvailability.message || "Invalid"}</span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     required
@@ -297,7 +318,14 @@ export default function OnboardPage() {
                     placeholder="admin_acme"
                     value={formData.adminUsername}
                     onChange={handleChange}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#D9E2E3] rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] font-medium"
+                    aria-invalid={usernameAvailability.status === "taken" || usernameAvailability.status === "invalid"}
+                    className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 font-medium transition ${
+                      usernameAvailability.status === "taken" || usernameAvailability.status === "invalid"
+                        ? "border-[#D95C5C] focus:ring-[#D95C5C]/20 focus:border-[#D95C5C]"
+                        : usernameAvailability.status === "available"
+                        ? "border-[#2F9E8F] focus:ring-[#2F9E8F]/20 focus:border-[#2F9E8F]"
+                        : "border-[#D9E2E3] focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
+                    }`}
                   />
                 </div>
 

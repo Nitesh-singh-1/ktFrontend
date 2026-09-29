@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Building2, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { authService } from "services/authService";
+import { useUsernameAvailability } from "@/utils/useUsernameAvailability";
 
 export default function AcceptInvitePage() {
   return (
@@ -27,6 +28,8 @@ function AcceptInviteInner() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const usernameAvailability = useUsernameAvailability(form.username);
 
   useEffect(() => {
     if (!token) {
@@ -52,6 +55,7 @@ function AcceptInviteInner() {
     setError("");
     if (!form.fullName.trim()) return setError("Please enter your full name.");
     if (!form.username.trim()) return setError("Please choose a username.");
+    if (usernameAvailability.status === "taken") return setError(`Username '${form.username}' is already taken. Please choose another.`);
     if (form.password.length < 6) return setError("Password must be at least 6 characters.");
 
     try {
@@ -116,8 +120,20 @@ function AcceptInviteInner() {
                 <input className={inputCls} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Ramesh Kumar" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] mb-1">Username *</label>
-                <input className={inputCls} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="choose a login username" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-[#64748B]">Username *</label>
+                  {usernameAvailability.status === "checking" && <span className="text-[10px] font-semibold text-[#64748B]">Checking…</span>}
+                  {usernameAvailability.status === "available" && <span className="text-[10px] font-bold text-[#2F9E8F]">Available ✓</span>}
+                  {usernameAvailability.status === "taken" && <span className="text-[10px] font-bold text-[#D95C5C]">Already taken</span>}
+                  {usernameAvailability.status === "invalid" && <span className="text-[10px] font-bold text-[#B76E32]">{usernameAvailability.message || "Invalid"}</span>}
+                </div>
+                <input
+                  className={inputCls}
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  placeholder="choose a login username"
+                  aria-invalid={usernameAvailability.status === "taken" || usernameAvailability.status === "invalid"}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#64748B] mb-1">Mobile</label>

@@ -123,6 +123,31 @@ export const authService = {
     return await baseService.post("/auth/forgot-password/request-code", payload);
   },
 
+  /**
+   * Anonymous username availability probe. Returns `{available, valid, message?}`.
+   * The backend rate-limits this endpoint under the shared AuthPolicy and validates
+   * the input before hitting the DB, so it is safe to call while the user is typing.
+   * Callers should debounce (~400ms) and skip the call for short (< 3 char) inputs.
+   */
+  checkUsernameAvailable: async (
+    username: string,
+  ): Promise<{ available: boolean; valid: boolean; message?: string }> => {
+    const clean = (username || "").trim();
+    if (clean.length < 3) {
+      return { available: false, valid: false, message: "Username must be at least 3 characters." };
+    }
+    try {
+      const res = await baseService.get<{ available: boolean; valid: boolean; message?: string }>(
+        `/auth/username-available?u=${encodeURIComponent(clean)}`,
+      );
+      return { available: !!res?.available, valid: !!res?.valid, message: res?.message };
+    } catch {
+      // Offline or 429 rate-limited — treat as unknown, don't block the form's Save button
+      // just because the probe failed. Server-side duplicate check is still the authority.
+      return { available: false, valid: false, message: undefined };
+    }
+  },
+
   verifyAndResetPassword: async (payload: { username: string; mobile: string; verificationCode: string; newPassword: string }): Promise<{ success: boolean; message?: string }> => {
     return await baseService.post("/auth/forgot-password/verify-and-reset", payload);
   },

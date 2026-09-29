@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
 import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
+import { useUsernameAvailability } from "@/utils/useUsernameAvailability";
 
 // Available system features for granular user assignment
 const SYSTEM_MODULES = [
@@ -134,6 +135,10 @@ export default function UsersManagementPage() {
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
 
+  // Debounced availability probe for the add-user form. UX hint only — server still
+  // rejects a real duplicate on POST, so this never blocks legitimate submissions.
+  const addUsernameAvailability = useUsernameAvailability(addForm.username);
+
   // Edit User Form State
   const [editForm, setEditForm] = useState<UpdateSubUserPayload>({
     fullName: "",
@@ -207,6 +212,11 @@ export default function UsersManagementPage() {
 
     if (addForm.password.length < 6) {
       showToast("error", "Initial password must be at least 6 characters long.");
+      return;
+    }
+
+    if (addUsernameAvailability.status === "taken") {
+      showToast("error", `Username '${addForm.username}' is already taken. Please choose another.`);
       return;
     }
 
@@ -818,16 +828,37 @@ export default function UsersManagementPage() {
               <form onSubmit={handleAddSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-                      Username *
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                        Username *
+                      </label>
+                      {addUsernameAvailability.status === "checking" && (
+                        <span className="text-[10px] font-semibold text-slate-500">Checking…</span>
+                      )}
+                      {addUsernameAvailability.status === "available" && (
+                        <span className="text-[10px] font-bold text-[#2F9E8F]">Available ✓</span>
+                      )}
+                      {addUsernameAvailability.status === "taken" && (
+                        <span className="text-[10px] font-bold text-[#D95C5C]">Already taken</span>
+                      )}
+                      {addUsernameAvailability.status === "invalid" && (
+                        <span className="text-[10px] font-bold text-[#B76E32]">{addUsernameAvailability.message || "Invalid"}</span>
+                      )}
+                    </div>
                     <input
                       type="text"
                       required
                       placeholder="e.g. rajesh_ops"
                       value={addForm.username}
                       onChange={(e) => setAddForm({ ...addForm, username: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
+                      aria-invalid={addUsernameAvailability.status === "taken" || addUsernameAvailability.status === "invalid"}
+                      className={`w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 transition ${
+                        addUsernameAvailability.status === "taken" || addUsernameAvailability.status === "invalid"
+                          ? "border-[#D95C5C] focus:ring-[#D95C5C]/20 focus:border-[#D95C5C]"
+                          : addUsernameAvailability.status === "available"
+                          ? "border-[#2F9E8F] focus:ring-[#2F9E8F]/20 focus:border-[#2F9E8F]"
+                          : "border-[#D9E2E3] dark:border-slate-700 focus:ring-[#2F8E86]/15 focus:border-[#2F8E86]"
+                      }`}
                     />
                   </div>
 
