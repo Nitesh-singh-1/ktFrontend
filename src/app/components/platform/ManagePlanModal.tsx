@@ -21,7 +21,7 @@ const PLAN_TIERS: PlanTier[] = ["Starter", "Professional", "Enterprise"];
 
 const PLAN_META: Record<PlanTier, { blurb: string; monthly: string }> = {
   Starter: { blurb: "Single branch · up to 10 vehicles", monthly: "₹999" },
-  Professional: { blurb: "Regional fleet · up to 50 vehicles", monthly: "₹3,999" },
+  Professional: { blurb: "Regional fleet · up to 50 vehicles", monthly: "₹2,999" },
   Enterprise: { blurb: "National scale · 500+ vehicles", monthly: "₹9,999" },
 };
 

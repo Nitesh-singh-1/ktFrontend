@@ -24,6 +24,8 @@ import {
 import { X } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
 import ManagePlanModal from "@/app/components/platform/ManagePlanModal";
+import { sanitizeMobile, validateMobile } from "@/utils/validation";
+import { sweetAlert } from "@/utils/sweetAlert";
 
 export default function ClientsManagementPage() {
   const [clients, setClients] = useState<TenantAdminListItem[]>([]);
@@ -288,13 +290,29 @@ export default function ClientsManagementPage() {
   // Onboarding Helpers
   const handleOnboardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Defense in depth: re-validate everything at final submit, not just when the user
+    // clicked "Next Step" — covers the case where a value became invalid after a step
+    // was already passed (e.g. browser back/forward, or state edited some other way).
+    const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
+    if (mobileErr) {
+      await sweetAlert.error("Invalid mobile number", mobileErr);
+      setOnboardStep(1);
+      return;
+    }
+    if (!onboardForm.adminPassword || onboardForm.adminPassword.length < 6) {
+      await sweetAlert.error("Password too short", "Initial password must be at least 6 characters long.");
+      setOnboardStep(2);
+      return;
+    }
+
     try {
       setSubmittingOnboard(true);
       const res = await tenantService.onboardTenant(onboardForm);
       if (res.success) {
-        showToast(
-          "success",
-          `Client "${onboardForm.organizationName}" onboarded successfully with initial admin "${onboardForm.adminUsername}"!`
+        await sweetAlert.success(
+          "Client onboarded",
+          `"${onboardForm.organizationName}" is live with initial admin "${onboardForm.adminUsername}".`
         );
         setShowOnboardModal(false);
         setOnboardStep(1);
@@ -321,10 +339,13 @@ export default function ClientsManagementPage() {
         });
         loadClients();
       } else {
-        showToast("error", res.message || "Failed to onboard client.");
+        await sweetAlert.error("Onboarding failed", res.message || "Failed to onboard client.");
       }
     } catch (err: any) {
-      showToast("error", err.message || "Error during client onboarding.");
+      // err.message now carries the unpacked field-level validation message when the
+      // backend rejected a value (see baseservice.ts extractValidationMessage), instead
+      // of the generic "One or more validation errors occurred."
+      await sweetAlert.error("Onboarding failed", err.message || "Error during client onboarding.");
     } finally {
       setSubmittingOnboard(false);
     }
@@ -896,19 +917,21 @@ export default function ClientsManagementPage() {
 
                       <div>
                         <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
-                          Contact Mobile / Phone
+                          Contact Mobile / Phone (10 Digits)
                         </label>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
+                          maxLength={10}
                           placeholder="e.g. 9876543210"
                           value={onboardForm.adminMobile}
                           onChange={(e) =>
                             setOnboardForm({
                               ...onboardForm,
-                              adminMobile: e.target.value,
+                              adminMobile: sanitizeMobile(e.target.value),
                             })
                           }
-                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1014,7 +1037,7 @@ export default function ClientsManagementPage() {
                                 {tier === "Starter"
                                   ? "₹999/mo"
                                   : tier === "Professional"
-                                  ? "₹3,999/mo"
+                                  ? "₹2,999/mo"
                                   : "₹9,999/mo"}
                               </div>
                             </div>
@@ -1100,10 +1123,15 @@ export default function ClientsManagementPage() {
                             !onboardForm.organizationName ||
                             !onboardForm.organizationCode
                           ) {
-                            showToast(
-                              "error",
+                            sweetAlert.warning(
+                              "Missing details",
                               "Please enter organization name and code."
                             );
+                            return;
+                          }
+                          const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
+                          if (mobileErr) {
+                            sweetAlert.error("Invalid mobile number", mobileErr);
                             return;
                           }
                         } else if (onboardStep === 2) {
@@ -1112,9 +1140,16 @@ export default function ClientsManagementPage() {
                             !onboardForm.adminPassword ||
                             !onboardForm.adminFullName
                           ) {
-                            showToast(
-                              "error",
+                            sweetAlert.warning(
+                              "Missing details",
                               "Please complete admin credentials."
+                            );
+                            return;
+                          }
+                          if (onboardForm.adminPassword.length < 6) {
+                            sweetAlert.error(
+                              "Password too short",
+                              "Initial password must be at least 6 characters long."
                             );
                             return;
                           }

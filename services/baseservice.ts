@@ -25,6 +25,41 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * ASP.NET Core's [ApiController] attribute auto-validates the model BEFORE the action
+ * method runs — so every DataAnnotation ([Required], [RegularExpression], [Range], etc.)
+ * we add to a request DTO produces this exact response shape (RFC 9110 ProblemDetails),
+ * not our own {success,message,traceId} envelope from ExceptionHandlingMiddleware:
+ *
+ *   {
+ *     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+ *     "title": "One or more validation errors occurred.",
+ *     "status": 400,
+ *     "errors": { "AdminMobile": ["Mobile number must be a valid 10-digit..."] },
+ *     "traceId": "00-c563...-00"
+ *   }
+ *
+ * Falling back to `error.title` alone (as we did before) shows the user the useless
+ * generic "One or more validation errors occurred." — the actually useful message is
+ * buried in `errors`. This pulls out the first field error and prefixes it with the
+ * field name so multi-field responses still make sense.
+ */
+function extractValidationMessage(body: any): string | null {
+  if (!body || typeof body !== "object" || !body.errors || typeof body.errors !== "object") {
+    return null;
+  }
+  const fields = Object.keys(body.errors);
+  if (fields.length === 0) return null;
+
+  const firstField = fields[0];
+  const messages = body.errors[firstField];
+  const firstMessage = Array.isArray(messages) ? messages[0] : String(messages);
+  if (!firstMessage) return null;
+
+  const extra = fields.length > 1 ? ` (and ${fields.length - 1} other field${fields.length > 2 ? "s" : ""})` : "";
+  return `${firstMessage}${extra}`;
+}
+
 // Generate a 12-hex-char id — same shape the backend uses when no header is present
 // (see CorrelationIdMiddleware.GenerateId). Having the client mint the id means the
 // user's browser DevTools also shows the same id BEFORE the response arrives, so a
@@ -152,6 +187,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
       const error = await response.json().catch(() => ({}));
       const message =
         error.message ||
+        extractValidationMessage(error) ||
         error.title ||
         (typeof error === "string" ? error : "Something went wrong");
       // Prefer server-provided traceId (from the error envelope) over the header;
@@ -212,8 +248,8 @@ async function getPaginatedRequest<T>(endpoint: string): Promise<PaginatedResult
     }
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new ApiError(err?.message || "Something went wrong",
-        { traceId: err?.traceId || serverTraceId, status: response.status });
+      const message = err?.message || extractValidationMessage(err) || err?.title || "Something went wrong";
+      throw new ApiError(message, { traceId: err?.traceId || serverTraceId, status: response.status });
     }
 
     const totalHeader = response.headers.get("X-Total-Count") || response.headers.get("x-total-count");
