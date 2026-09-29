@@ -1,0 +1,53 @@
+# TASK-013 slice 1: minimal CI for the Next.js 16 / React 19 frontend.
+# Runs on every push and PR to any branch.
+#
+# What it does:
+#   1. Installs deps with npm ci
+#   2. Typechecks with `tsc --noEmit`
+#   3. Full production build (`next build`) — catches SSR / route errors that
+#      typecheck alone misses
+#
+# Not yet:
+#   - Playwright smoke tests (added when we have a stable staging endpoint or
+#     an in-process backend fixture; needs more setup than a first CI slice
+#     should carry).
+#   - Vitest unit tests (added alongside first shared util that warrants
+#     coverage — right now the shared code is validators / print utils that
+#     are pure functions but not covered).
+
+name: ktFrontend CI
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          # A dummy API URL is enough for the static build — Next.js only inlines
+          # NEXT_PUBLIC_* at build time and none of our pages hit the API from
+          # server components. Override in the real deploy.
+          NEXT_PUBLIC_API_URL: https://ci.placeholder.invalid/api
