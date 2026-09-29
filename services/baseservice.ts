@@ -8,6 +8,39 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
+/**
+ * ApiError carries the same `traceId` value the backend echoed in the `X-Request-Id`
+ * response header (see TASK-010). Callers that show a user-facing error toast can pass
+ * this to `toast.error(msg, { traceId })` so a support ticket includes the id needed to
+ * find the exact log line on the server.
+ */
+export class ApiError extends Error {
+  public readonly traceId?: string;
+  public readonly status?: number;
+  constructor(message: string, opts: { traceId?: string; status?: number } = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.traceId = opts.traceId;
+    this.status = opts.status;
+  }
+}
+
+// Generate a 12-hex-char id — same shape the backend uses when no header is present
+// (see CorrelationIdMiddleware.GenerateId). Having the client mint the id means the
+// user's browser DevTools also shows the same id BEFORE the response arrives, so a
+// bug reporter can copy the header value straight from the Network tab.
+function generateRequestId(): string {
+  // crypto.getRandomValues is available in every modern browser + Node; fall back to
+  // Math.random for SSR-early paths that shouldn't happen but shouldn't crash if they do.
+  try {
+    const buf = new Uint8Array(6);
+    (globalThis.crypto || (globalThis as any).msCrypto).getRandomValues(buf);
+    return Array.from(buf).map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return Math.floor(Math.random() * 0xffffffffffff).toString(16).padStart(12, "0");
+  }
+}
+
 // Shared in-flight refresh so concurrent 401s trigger only one /auth/refresh call.
 let refreshInFlight: Promise<string | null> | null = null;
 
@@ -61,17 +94,26 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const tenantId = typeof window !== "undefined" ? localStorage.getItem("tenantId") : null;
 
+  // Per-request correlation id. Caller can override by passing headers["X-Request-Id"].
+  const requestId = headers["X-Request-Id"] || headers["x-request-id"] || generateRequestId();
+
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method,
       headers: {
         "Content-Type": "application/json",
+        "X-Request-Id": requestId,
         ...(token && { Authorization: `Bearer ${token}` }),
         ...(tenantId && { "X-Tenant-ID": tenantId }),
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
     });
+
+    // Server echoes X-Request-Id back on both success and error paths (see TASK-010
+    // CorrelationIdMiddleware). Fall back to the id we sent — the server accepts it
+    // when supplied, so the sent-id IS the trace id.
+    const serverTraceId = response.headers.get("x-request-id") || requestId;
 
     // 401 Unauthorized: try a one-time silent refresh, then retry; otherwise sign out.
     if (response.status === 401) {
@@ -83,12 +125,15 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
         }
       }
       clearSessionAndRedirect();
-      throw new Error("Session expired. Please log in again.");
+      throw new ApiError("Session expired. Please log in again.", { traceId: serverTraceId, status: 401 });
     }
 
     // 403 Forbidden handling: Clean, user-friendly business message
     if (response.status === 403) {
-      throw new Error("This section is restricted for your role or organization subscription tier.");
+      throw new ApiError(
+        "This section is restricted for your role or organization subscription tier.",
+        { traceId: serverTraceId, status: 403 },
+      );
     }
 
     if (!response.ok) {
@@ -97,7 +142,9 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
         error.message ||
         error.title ||
         (typeof error === "string" ? error : "Something went wrong");
-      throw new Error(message);
+      // Prefer server-provided traceId (from the error envelope) over the header;
+      // both should match now but the envelope wins if there's ever drift.
+      throw new ApiError(message, { traceId: error?.traceId || serverTraceId, status: response.status });
     }
 
     // Handle 204 No Content or empty responses
@@ -107,7 +154,13 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
     }
     return {} as T;
   } catch (err: any) {
-    throw err;
+    // Network-level failures (no response) also carry the request id so a user can
+    // still report "the client thought it sent request X but never got a reply".
+    if (err instanceof ApiError) throw err;
+    if (err instanceof Error) {
+      throw new ApiError(err.message || "Network error", { traceId: requestId });
+    }
+    throw new ApiError(String(err ?? "Unknown error"), { traceId: requestId });
   }
 }
 
