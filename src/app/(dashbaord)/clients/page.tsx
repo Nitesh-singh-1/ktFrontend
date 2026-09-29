@@ -23,6 +23,7 @@ import {
 } from "@/app/components/ui/Icons";
 import { X } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
+import ManagePlanModal from "@/app/components/platform/ManagePlanModal";
 
 export default function ClientsManagementPage() {
   const [clients, setClients] = useState<TenantAdminListItem[]>([]);
@@ -73,6 +74,9 @@ export default function ClientsManagementPage() {
   const [tenantUsers, setTenantUsers] = useState<TenantUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
+
+  // Manage Plan (TASK-009) — per-tenant usage + change subscription tier.
+  const [planClient, setPlanClient] = useState<TenantAdminListItem | null>(null);
 
   useEffect(() => {
     loadClients();
@@ -591,6 +595,12 @@ export default function ClientsManagementPage() {
 
                         <td className="py-3.5 px-4 text-right">
                           <div className="inline-flex items-center gap-2">
+                            <button
+                              onClick={() => setPlanClient(client)}
+                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                            >
+                              Manage Plan
+                            </button>
                             <button
                               onClick={() => handleOpenUsers(client)}
                               className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
@@ -1201,6 +1211,14 @@ export default function ClientsManagementPage() {
             </div>
           </div>
         )}
+
+        {/* Manage Plan Modal (TASK-009) */}
+        <ManagePlanModal
+          isOpen={!!planClient}
+          client={planClient}
+          onClose={() => setPlanClient(null)}
+          onSaved={loadClients}
+        />
       </div>
     </PagePermissionGuard>
   );

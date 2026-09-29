@@ -110,6 +110,10 @@ export const tenantService = {
   // Current tenant's usage snapshot vs. plan limits (TASK-007 slice 1). Any authenticated
   // user of the tenant can call this — the server derives tenant scope from the JWT.
   getMyUsage: () => baseService.get<TenantUsageDto>("/tenant/usage"),
+
+  // Platform-operator view of another tenant's usage (TASK-009). Requires platform-admin
+  // JWT — a regular tenant admin gets 403.
+  getUsageFor: (id: string) => baseService.get<TenantUsageDto>(`/tenant/${id}/usage`),
 };
 
 export interface ResourceUsageDto {
