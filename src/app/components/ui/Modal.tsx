@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import Button from "./Button";
 import { X } from "lucide-react";
+import { useFocusTrap } from "@/utils/useFocusTrap";
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ interface ModalProps {
   isSaving?: boolean;
   saveDisabled?: boolean;
   showFooterButtons?: boolean;
+  /** Set false to disable clicking on the backdrop to dismiss. Default true. */
+  dismissOnBackdropClick?: boolean;
 }
 
 export default function Modal({
@@ -34,7 +37,16 @@ export default function Modal({
   isSaving = false,
   saveDisabled = false,
   showFooterButtons = false,
+  dismissOnBackdropClick = true,
 }: ModalProps) {
+  // Stable ids so we can wire aria-labelledby/aria-describedby without collisions
+  // between two modals mounted at the same time.
+  const titleId = useId();
+  const subtitleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useFocusTrap(dialogRef, isOpen);
+
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,22 +74,41 @@ export default function Modal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs overflow-y-auto"
+      onMouseDown={(e) => {
+        // Only close when the click both started and ended on the backdrop —
+        // otherwise dragging text out of an input into the backdrop area also
+        // dismisses the modal, which is a known usability trap.
+        if (dismissOnBackdropClick && e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
+        ref={dialogRef}
         className={`relative bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xl overflow-hidden flex flex-col w-full my-auto transition-all animate-in fade-in zoom-in-95 duration-150 ${
           maxWidthMap[maxWidth] || "max-w-3xl"
         }`}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitle ? subtitleId : undefined}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/50">
           <div>
-            <h3 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
+            <h3
+              id={titleId}
+              className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2"
+            >
               {title}
             </h3>
             {subtitle && (
-              <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
+              <p
+                id={subtitleId}
+                className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5"
+              >
                 {subtitle}
               </p>
             )}
