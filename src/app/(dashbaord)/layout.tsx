@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
+import PlanUsageBanner from "../components/layout/PlanUsageBanner";
 import { TenantConfigProvider } from "@/context/TenantConfigContext";
 import { NavigationProvider } from "@/context/NavigationContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -39,7 +40,10 @@ export default function DashboardLayout({
             >
               <Navbar onMenuClick={() => setMobileOpen(true)} />
 
-              <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#F7F8F8] dark:bg-slate-950 overflow-x-hidden">{children}</main>
+              <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#F7F8F8] dark:bg-slate-950 overflow-x-hidden">
+                <PlanUsageBanner />
+                {children}
+              </main>
             </div>
           </div>
         </NavigationProvider>

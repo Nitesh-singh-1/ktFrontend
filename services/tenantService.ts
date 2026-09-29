@@ -106,7 +106,29 @@ export const tenantService = {
   // Platform-operator: set a tenant user's role (promote to admin / demote to standard user)
   setTenantUserRole: (id: string, userId: number, role: "admin" | "SUB_USER") =>
     baseService.put<{ success: boolean; message: string }>(`/tenant/${id}/users/${userId}/role`, { userId, role }),
+
+  // Current tenant's usage snapshot vs. plan limits (TASK-007 slice 1). Any authenticated
+  // user of the tenant can call this — the server derives tenant scope from the JWT.
+  getMyUsage: () => baseService.get<TenantUsageDto>("/tenant/usage"),
 };
+
+export interface ResourceUsageDto {
+  current: number;
+  max: number;
+  percent: number;
+  isCritical: boolean;
+}
+
+export interface TenantUsageDto {
+  planTier: string;
+  planStatus: string;
+  expiresAt?: string;
+  vehicles: ResourceUsageDto;
+  users: ResourceUsageDto;
+  monthlyShipments: ResourceUsageDto;
+  /** Pre-computed human-readable strings; empty when nothing to warn about. */
+  warnings: string[];
+}
 
 export interface TenantUser {
   id: number;
