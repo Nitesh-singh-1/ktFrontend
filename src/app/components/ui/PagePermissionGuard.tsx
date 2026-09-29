@@ -23,8 +23,17 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
 }) => {
   const { hasPermission, isLoading } = useNavigation();
   const [isSuperUser, setIsSuperUser] = useState(false);
-  // null = still checking; drives the platformOnly gate authoritatively via /me.
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean | null>(null);
+  // Hydrate synchronously from the cached user (set on login/refresh). Only override
+  // on a definitive /me success — a failed /me must not block the actual platform
+  // operator from their gated pages (Multi-Client Manager etc.).
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
+  // Separately track whether /me has resolved so we can show the spinner briefly on
+  // pages that gate on platformOnly and the cached user says NO — the fresh /me might
+  // still say yes (e.g. right after a role change).
+  const [profileResolved, setProfileResolved] = useState<boolean>(() =>
+    // If the cache already says platform-admin, we don't need /me before rendering.
+    platformOnly ? authService.isPlatformAdminSync() : true,
+  );
 
   useEffect(() => {
     try {
@@ -39,12 +48,18 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
     if (platformOnly) {
       authService
         .getMyProfile()
-        .then((p) => setIsPlatformAdmin(!!p.isPlatformAdmin))
-        .catch(() => setIsPlatformAdmin(false));
+        .then((p) => {
+          setIsPlatformAdmin(!!p.isPlatformAdmin);
+          setProfileResolved(true);
+        })
+        .catch(() => {
+          // Keep the sync-cached value; don't demote the platform operator on a hiccup.
+          setProfileResolved(true);
+        });
     }
   }, [platformOnly]);
 
-  if (isLoading || (platformOnly && isPlatformAdmin === null)) {
+  if (isLoading || (platformOnly && !profileResolved)) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <div className="w-8 h-8 border-3 border-[#2F8E86] border-t-transparent rounded-full animate-spin"></div>
@@ -52,7 +67,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
     );
   }
 
-  const isAllowed = platformOnly ? isPlatformAdmin === true : hasPermission(permission);
+  const isAllowed = platformOnly ? isPlatformAdmin : hasPermission(permission);
 
   if (!isAllowed) {
     return (

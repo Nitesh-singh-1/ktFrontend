@@ -270,7 +270,10 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   // Entitlement/subscription control is PLATFORM-operator only. A tenant admin must never be able to
   // grant their own org modules/reports or change their plan — those tabs are gated on this flag.
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
+  // Hydrated synchronously from the cached user (set on login) so the tab set renders correctly
+  // on first paint; /me only OVERRIDES on success — a failed /me keeps the cached value rather
+  // than blanking the SaaS Configuration tabs for the actual platform operator.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
   const [exporting, setExporting] = useState<boolean>(false);
   const [matrixMode, setMatrixMode] = useState<MatrixMode>("menus");
 
@@ -449,17 +452,26 @@ export default function SettingsPage() {
 
   // Determine whether the current user is the platform operator (controls entitlements/subscription).
   useEffect(() => {
+    // If the sync cache already says we're the platform operator, land on the
+    // entitlement matrix immediately — don't wait for /me and don't briefly show
+    // "Organization Settings" first.
+    if (authService.isPlatformAdminSync()) {
+      setActiveTab("menu_entitlements");
+    }
+
     authService
       .getMyProfile()
       .then((p) => {
         const platform = !!p.isPlatformAdmin;
         setIsPlatformAdmin(platform);
-        if (platform) {
-          // Platform operator lands on the entitlement matrix; tenant admins stay on their org settings.
+        if (platform && activeTab !== "menu_entitlements") {
           setActiveTab("menu_entitlements");
         }
       })
-      .catch(() => setIsPlatformAdmin(false));
+      .catch(() => { /* keep the sync-cached value; do not demote the platform operator on /me failure */ });
+    // We intentionally read activeTab through the setter callback pattern above where needed;
+    // this effect should only ever run on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load configuration, tenants, users and subscription data

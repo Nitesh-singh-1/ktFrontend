@@ -22,7 +22,9 @@ import { useAppTheme, ThemeKey } from "@/context/ThemeContext";
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {}) {
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
+  // Hydrate synchronously from the cached user so the navbar renders "SaaS Configuration"
+  // vs. "Organization Settings" correctly on first paint; /me only overrides on success.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
   const [planTier, setPlanTier] = useState<string | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false);
 
@@ -48,7 +50,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
 
     authService.getMyProfile()
       .then((p) => setIsPlatformAdmin(!!p.isPlatformAdmin))
-      .catch(() => setIsPlatformAdmin(false));
+      .catch(() => { /* keep cached value — a failed /me must not strip menu items */ });
 
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {

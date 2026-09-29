@@ -18,6 +18,14 @@ export interface LoginResponse {
     fullName: string;
     role: string;
     mobile?: string;
+    email?: string;
+    /**
+     * Platform operator flag. Backend computes this as
+     *   admin-class role AND user.TenantId == TenantContext.DefaultTenantId
+     * and returns it on every login / register / refresh so the frontend does
+     * NOT need to hit /auth/me before rendering the correct menu.
+     */
+    isPlatformAdmin?: boolean;
   };
 }
 
@@ -80,16 +88,41 @@ export const authService = {
   logout: () => {
     if (typeof window === "undefined") return;
     const refreshToken = localStorage.getItem("refreshToken");
-    // Clear the session synchronously so callers can redirect immediately...
+    // Clear the session synchronously so callers can redirect immediately.
+    // Includes tenant-scoped caches (config, print prefs) so signing out
+    // and signing back in as a different tenant / user never surfaces the
+    // previous tenant's menu, logo, disclaimer, or cached stations.
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem("tenantId");
     localStorage.removeItem("organizationName");
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("tenant_config");
+    localStorage.removeItem("kt.print_stations_cache");
+    try { sessionStorage.removeItem("kt.plan_usage_banner_dismissed"); } catch {}
     // ...then best-effort revoke the refresh token server-side in the background.
     if (refreshToken) {
       try { baseService.post("/auth/logout", { refreshToken }).catch(() => {}); } catch {}
+    }
+  },
+
+  /**
+   * Fast, synchronous read of the cached user's isPlatformAdmin flag. Set on login /
+   * register / accept-invite / refresh (backend includes it in every AuthResponse).
+   * Components should hydrate their state from THIS first, then only override it if
+   * a fresh /auth/me call returns a definitive value — a network hiccup on /me must
+   * NOT knock the platform admin's menu out of "SaaS Configuration" mode.
+   */
+  isPlatformAdminSync: (): boolean => {
+    if (typeof window === "undefined") return false;
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!parsed?.isPlatformAdmin;
+    } catch {
+      return false;
     }
   },
 

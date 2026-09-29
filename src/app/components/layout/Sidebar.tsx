@@ -62,15 +62,19 @@ export default function Sidebar({
   const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
+  // Hydrate from the cached user (set on login/refresh) so the menu renders with the
+  // correct items on the very first paint — no flash of "regular user" menu while /me
+  // resolves. A background refresh below keeps the value fresh, but a failed /me is
+  // treated as "keep whatever we already know" instead of resetting to false, so a
+  // transient network blip can't strip the platform operator's SaaS Configuration link.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
 
   useEffect(() => {
     setUser(authService.getUser());
     setOrgName(authService.getOrganizationName());
-    // Authoritative platform-operator check gates platform-only menu items (client mgmt, onboarding).
     authService.getMyProfile()
       .then((p) => setIsPlatformAdmin(!!p.isPlatformAdmin))
-      .catch(() => setIsPlatformAdmin(false));
+      .catch(() => { /* keep cached value */ });
   }, []);
 
   // Menu items reserved for the platform operator; hidden from tenant admins/users.
