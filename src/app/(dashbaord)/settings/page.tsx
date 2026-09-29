@@ -58,6 +58,15 @@ import {
 type TabKey = "general" | "menu_entitlements" | "billing" | "sequences" | "workflows" | "modules" | "integrations";
 type MatrixMode = "subscriptions" | "menus" | "roles" | "users" | "reports";
 
+// Roles the backend (NavigationService.GetDynamicMenuAsync) treats as a tenant super-user:
+// they always get every organization-subscribed module and NEVER consult UserOverridesJson —
+// the "Sub-User Management & Feature Permissions" checklist below has zero effect on them by
+// design (an admin restricting their own admin access would be a lockout footgun). Keep this
+// list in sync with the equivalent checks in Sidebar.tsx / Navbar.tsx.
+const ADMIN_EQUIVALENT_ROLES = ["SUPER_USER", "ADMIN", "TENANTADMIN", "TENANT_OWNER", "SUPERADMIN"];
+const isAdminEquivalentRole = (role?: string): boolean =>
+  ADMIN_EQUIVALENT_ROLES.includes((role || "").toUpperCase());
+
 export interface MenuItemDefinition {
   key: string;
   title: string;
@@ -536,7 +545,14 @@ export default function SettingsPage() {
 
         if (usersRes.status === "fulfilled" && usersRes.value && usersRes.value.length > 0) {
           setTenantUsers(usersRes.value);
-          if (usersRes.value[0]?.username) {
+          // Default to the first NON-admin user — admin-role users always have full access
+          // (see isAdminEquivalentRole) so their override checklist is a no-op. Defaulting to
+          // one was exactly the trap this fix closes: the operator configures "admin"'s
+          // checklist believing it restricts them, saves, and nothing changes for that user.
+          const firstAssignable = usersRes.value.find((u) => !isAdminEquivalentRole(u.role));
+          if (firstAssignable?.username) {
+            setSelectedUserId(firstAssignable.username);
+          } else if (usersRes.value[0]?.username) {
             setSelectedUserId(usersRes.value[0].username);
           }
         }
@@ -1197,6 +1213,7 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Create sub-users and assign dedicated modules strictly filtered to your organization's subscribed features.
+                    Admin-role users are excluded below — they always have full access to every subscribed module by design.
                   </p>
                 </div>
 
@@ -1216,50 +1233,83 @@ export default function SettingsPage() {
               </div>
 
               {/* User Selection and Status Controls */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-black text-sm">
-                    {selectedUserId.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                      Selected Sub-User:
-                    </label>
-                    <select
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86]"
-                    >
-                      {tenantUsers.map((u) => (
-                        <option key={u.id} value={u.username}>
-                          {u.fullName || u.username} ({u.role || "SUB_USER"}) {u.isActive === false ? "[Inactive]" : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+              {(() => {
+                const assignableSubUsers = tenantUsers.filter((u) => !isAdminEquivalentRole(u.role));
+                const selectedIsAdmin = isAdminEquivalentRole(
+                  tenantUsers.find((u) => u.username === selectedUserId)?.role
+                );
 
-                <div className="flex items-center gap-3">
-                  {selectedUserId !== "admin" && (
-                    <button
-                      type="button"
-                      onClick={() => handleToggleUserStatus(selectedUserId)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
-                        tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
-                          : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:border-red-800"
-                      }`}
-                    >
-                      {tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
-                        ? "Activate User"
-                        : "Deactivate User"}
-                    </button>
-                  )}
-                  <span className="text-xs font-bold text-[#2F8E86] bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 shadow-2xs">
-                    {(userOverrides[selectedUserId] || []).length} Assigned
-                  </span>
-                </div>
-              </div>
+                if (assignableSubUsers.length === 0) {
+                  return (
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-start gap-2.5">
+                      <Zap className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>
+                        No standard sub-users found for this organization yet. Every current user has an admin-equivalent
+                        role, which always grants full access to every subscribed module — there's nothing to restrict.
+                        Click <strong>Create Sub-User</strong> above to add a role-limited account you can configure here.
+                      </span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    {selectedIsAdmin && (
+                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-[11px] font-semibold flex items-center gap-2">
+                        <Zap className="w-3.5 h-3.5 shrink-0" />
+                        <span>
+                          "{selectedUserId}" has an admin-equivalent role — the checklist below is saved but has NO effect
+                          on their menu; admins always see every subscribed module. Select a standard sub-user instead.
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-black text-sm">
+                          {selectedUserId.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            Selected Sub-User:
+                          </label>
+                          <select
+                            value={selectedUserId}
+                            onChange={(e) => setSelectedUserId(e.target.value)}
+                            className="bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86]"
+                          >
+                            {assignableSubUsers.map((u) => (
+                              <option key={u.id} value={u.username}>
+                                {u.fullName || u.username} ({u.role || "SUB_USER"}) {u.isActive === false ? "[Inactive]" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {selectedUserId !== "admin" && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleUserStatus(selectedUserId)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                              tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
+                                : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:border-red-800"
+                            }`}
+                          >
+                            {tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
+                              ? "Activate User"
+                              : "Deactivate User"}
+                          </button>
+                        )}
+                        <span className="text-xs font-bold text-[#2F8E86] bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 shadow-2xs">
+                          {(userOverrides[selectedUserId] || []).length} Assigned
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* Organization Subscribed Features Notice */}
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
