@@ -88,6 +88,18 @@ function clearSessionAndRedirect() {
   }
 }
 
+/**
+ * Result envelope returned by `baseService.getPaginated` — the JSON body plus the
+ * `X-Total-Count` header (parsed as a number when present) advertised by the
+ * TASK-011c pagination helper on list endpoints. Existing callers that only care
+ * about the array can keep using `baseService.get<T[]>()`; only pages that want
+ * to show "showing N of M" bother with this envelope.
+ */
+export interface PaginatedResult<T> {
+  data: T;
+  total: number | null;
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
 
@@ -164,8 +176,61 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
   }
 }
 
+/**
+ * GET a paginated list endpoint, returning both the array body and the
+ * X-Total-Count header (parsed to a number) that the backend sets via
+ * TASK-011c's PaginationHelper. Callers pass their `page` / `pageSize`
+ * as normal query-string params on `endpoint`. Endpoints that don't set
+ * the header (older ones, or paths not yet migrated) return `total: null`.
+ *
+ * This is a thin wrapper around the standard GET so all the ApiError,
+ * refresh-on-401, and traceId plumbing still applies.
+ */
+async function getPaginatedRequest<T>(endpoint: string): Promise<PaginatedResult<T>> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const tenantId = typeof window !== "undefined" ? localStorage.getItem("tenantId") : null;
+  const requestId = generateRequestId();
+
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Request-Id": requestId,
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(tenantId && { "X-Tenant-ID": tenantId }),
+      },
+    });
+
+    const serverTraceId = response.headers.get("x-request-id") || requestId;
+
+    if (response.status === 401) {
+      const newToken = await tryRefreshToken();
+      if (newToken) return getPaginatedRequest<T>(endpoint);
+      clearSessionAndRedirect();
+      throw new ApiError("Session expired. Please log in again.", { traceId: serverTraceId, status: 401 });
+    }
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new ApiError(err?.message || "Something went wrong",
+        { traceId: err?.traceId || serverTraceId, status: response.status });
+    }
+
+    const totalHeader = response.headers.get("X-Total-Count") || response.headers.get("x-total-count");
+    const total = totalHeader ? Number.parseInt(totalHeader, 10) : NaN;
+    const data = (await response.json()) as T;
+    return { data, total: Number.isFinite(total) ? total : null };
+  } catch (err: any) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(err?.message || "Network error", { traceId: requestId });
+  }
+}
+
 export const baseService = {
   get: <T>(endpoint: string) => request<T>(endpoint),
+
+  /** GET a paginated list endpoint and read the X-Total-Count header (TASK-011c). */
+  getPaginated: <T>(endpoint: string) => getPaginatedRequest<T>(endpoint),
 
   post: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: "POST", body }),
