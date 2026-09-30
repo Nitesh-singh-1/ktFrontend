@@ -878,6 +878,27 @@ export interface MaintenanceLogDto {
 // 12. REPORTS & LEDGERS
 // ==========================================
 
+export interface UnbilledShipmentDto {
+  id: number;
+  shipmentNo?: string;
+  shipmentDate: string;
+  consignorPartyId?: number;
+  consignorName?: string;
+  consigneeName?: string;
+  fromLocation?: string;
+  toLocation?: string;
+  totalFreight: number;
+  grandTotal: number;
+}
+
+export interface BulkBillResultDto {
+  invoicesCreated: number;
+  shipmentsBilled: number;
+  totalAmount: number;
+  invoiceNos: string[];
+  message?: string;
+}
+
 export interface BookingRegisterReportDto {
   totalBookings: number;
   totalFreightAmount: number;
