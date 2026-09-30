@@ -3,8 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { Clock, ShieldAlert, AlertTriangle } from "lucide-react";
 
-// Build Expiry: September 30, 2026 23:59:59 (IST)
-const EXPIRY_DATE = new Date("2026-10-01T00:00:00+05:30");
+// Preview-build kill switch. Originally set for 2026-09-30 IST as a licensing hold on
+// pilot deployments; pushed to end of 2027 because the app is now in real B2B production
+// use and a client-side date lockout would hard-block every paying tenant — including any
+// enterprise customer we can't reach on the night it fires.
+//
+// TODO: rip this guard out entirely. Legitimate license enforcement belongs on the server
+// (see TenantSubscription.ExpiresAt + PlanUsageBanner from TASK-007), not a hard-coded
+// client date any user can bypass by resetting their system clock.
+const EXPIRY_DATE = new Date("2027-12-31T23:59:59+05:30");
 
 export default function BuildExpiryGuard({ children }: { children: React.ReactNode }) {
   const [isExpired, setIsExpired] = useState(false);
@@ -44,7 +51,11 @@ export default function BuildExpiryGuard({ children }: { children: React.ReactNo
               Build Validity Expired
             </h1>
             <p className="text-sm text-slate-400 leading-relaxed">
-              This preview build of <strong className="text-slate-200">K-Transport / FleetPulse TMS</strong> was licensed for testing through <strong className="text-rose-300">September 30, 2026</strong> and has reached its expiration date.
+              This preview build of <strong className="text-slate-200">K-Transport / FleetPulse TMS</strong> was licensed for testing through{" "}
+              <strong className="text-rose-300">
+                {EXPIRY_DATE.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+              </strong>{" "}
+              and has reached its expiration date.
             </p>
           </div>
 
@@ -59,7 +70,8 @@ export default function BuildExpiryGuard({ children }: { children: React.ReactNo
           </div>
 
           <p className="text-[11px] text-slate-500 font-mono">
-            Build Version: 1.0.1 • License End: 30-Sep-2026
+            Build Version: 1.0.1 • License End:{" "}
+            {EXPIRY_DATE.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
           </p>
         </div>
       </div>
@@ -72,7 +84,10 @@ export default function BuildExpiryGuard({ children }: { children: React.ReactNo
       {daysRemaining !== null && daysRemaining <= 5 && (
         <div className="fixed bottom-3 right-3 z-50 px-3.5 py-2 bg-amber-500/90 text-slate-950 font-bold text-xs rounded-xl shadow-lg border border-amber-400/50 flex items-center gap-2 backdrop-blur-xs">
           <Clock className="w-4 h-4" />
-          <span>Build validity expires in {daysRemaining} day{daysRemaining === 1 ? "" : "s"} (30 Sep 2026)</span>
+          <span>
+            Build validity expires in {daysRemaining} day{daysRemaining === 1 ? "" : "s"} (
+            {EXPIRY_DATE.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })})
+          </span>
         </div>
       )}
     </>
