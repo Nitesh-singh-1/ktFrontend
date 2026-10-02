@@ -71,6 +71,11 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       ? "TO BE BILLED (TBB)"
       : "TO PAY";
 
+  const privateMarkas = (shipment.invoiceReferences || [])
+    .map((ir) => ir.privateMarka?.trim())
+    .filter(Boolean);
+  const markaText = privateMarkas.length > 0 ? privateMarkas.join(", ") : "";
+
   const displayInvoiceDate = shipment.invoiceDate
     ? new Date(shipment.invoiceDate).toLocaleDateString("en-IN")
     : shipment.invoiceReferences && shipment.invoiceReferences.length > 0 && shipment.invoiceReferences[0].customerInvoiceDate
@@ -165,10 +170,11 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; font-size: 11px; background: #fff; border: 1px solid #ddd; padding: 6px; border-radius: 4px;">
+    <div style="display: grid; grid-template-columns: repeat(${markaText ? 4 : 3}, 1fr); gap: 8px; margin-bottom: 10px; font-size: 11px; background: #fff; border: 1px solid #ddd; padding: 6px; border-radius: 4px;">
       <div>Party Inv No: <strong>${esc(shipment.invoiceNo || "-")}</strong></div>
       <div>Inv Date: <strong>${displayInvoiceDate}</strong></div>
       <div>Declared Goods Value: <strong>₹${(shipment.goodsValue || 0).toLocaleString('en-IN')}</strong></div>
+      ${markaText ? `<div>Private Marka: <strong>${esc(markaText)}</strong></div>` : ""}
     </div>
 
     <table class="data-table">
@@ -177,7 +183,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
           <th style="width: 30px; text-align: center;">#</th>
           <th>Package / Article</th>
           <th>Description of Goods</th>
-          <th style="text-align: right; width: 70px;">Weight (KG)</th>
+          <th style="text-align: right; width: 70px;">Wt (kg)</th>
           <th style="text-align: right; width: 70px;">Rate (₹)</th>
           <th style="text-align: center; width: 50px;">Qty</th>
           <th style="text-align: right; width: 90px;">Total (₹)</th>
@@ -210,7 +216,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
     </div>
 
     <div class="signature-area">
-      <div><div class="sig-line">Consignor's Signature</div></div>
+      <div><div class="sig-line">Consignee's Signature</div></div>
       <div><div class="sig-line">Driver's Signature</div></div>
       <div><div class="sig-line">For ${esc(profile.companyName)} (Auth Sign)</div></div>
     </div>
@@ -307,14 +313,33 @@ function inr(n: number): string {
 export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): string {
   const profile = getTenantPrintProfile();
 
+  // Tenant's own GSTIN (the transporter's — e.g. "Nitesh Transports"
+  // GSTIN in the header) is printed only when the bilty is a GST tax
+  // invoice. Non-Taxable / Without-GST hides it. Consignor / consignee
+  // GSTINs are party data and stay visible whenever present.
+  const showGstin = shipment.taxTreatment !== TaxTreatment.NonTaxable;
+
   const items = shipment.items || [];
   const totalPackages = items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0) || 0;
   const totalWeight = items.reduce((sum, it) => sum + (Number(it.weight) || 0), 0);
   const packageType = items.length > 0 ? items[0].article || "-" : "-";
+  // Description column shows the human description (CargoItemsTable's
+  // "Description of Goods" field) first; falls back to article only when
+  // the operator left description blank. "Article" belongs to the
+  // Package Type column, not to the goods description column.
   const goodsDescription =
     items.length === 0
       ? "-"
-      : items.map((it) => `${it.article || it.description || "Item"} × ${it.quantity || 1}`).join(", ");
+      : items.map((it) => {
+          const text = (it.description && it.description.trim()) || it.article || "Item";
+          const qty = it.quantity || 1;
+          return qty > 1 ? `${text} × ${qty}` : text;
+        }).join(", ");
+
+  const privateMarkas = (shipment.invoiceReferences || [])
+    .map((ir) => ir.privateMarka?.trim())
+    .filter(Boolean);
+  const markaText = privateMarkas.length > 0 ? privateMarkas.join(", ") : "";
 
   const freight = shipment.totalFreight || 0;
   const hamali = pickCharge(shipment, /hamali/i);
@@ -364,7 +389,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
           ${profile.phone ? `Phone: ${esc(profile.phone)}` : ""}
           ${profile.email ? ` &nbsp;|&nbsp; ${esc(profile.email)}` : ""}
         </div>
-        ${profile.gstin ? `<div class="company-gstin">GSTIN: ${esc(profile.gstin)}${profile.panNumber ? ` &nbsp;·&nbsp; PAN: ${esc(profile.panNumber)}` : ""}</div>` : ""}
+        ${showGstin && profile.gstin ? `<div class="company-gstin">GSTIN: ${esc(profile.gstin)}${profile.panNumber ? ` &nbsp;·&nbsp; PAN: ${esc(profile.panNumber)}` : ""}</div>` : ""}
       </div>
 
       <div class="copy-meta">
@@ -400,19 +425,19 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       </div>
 
       <div class="route-box">
-        <div class="field-label">Date</div>
-        <div class="field-value">${dateStr}</div>
-        <div class="route">FROM: <span>${esc(shortLoc(shipment.fromLocation))}</span></div>
-        <div class="route">TO: <span>${esc(shortLoc(shipment.toLocation))}</span></div>
+        <div class="route-row"><span class="route-label">Date</span><span class="route-value">${dateStr}</span></div>
+        <div class="route-row"><span class="route-label">FROM</span><span class="route-value">${esc(shortLoc(shipment.fromLocation))}</span></div>
+        <div class="route-row"><span class="route-label">TO</span><span class="route-value">${esc(shortLoc(shipment.toLocation))}</span></div>
+        <div class="route-row"><span class="route-label">E-Way Bill</span><span class="route-value">${esc(shipment.ewayBillNo || "-")}</span></div>
       </div>
     </div>
 
     <div class="goods">
       <div class="th">PACKAGES</div>
       <div class="th">PACKAGE TYPE</div>
-      <div class="th">SAID TO CONTAIN / DESCRIPTION</div>
-      <div class="th">ACTUAL WT.<br>(KG)</div>
-      <div class="th">SIGNATURES</div>
+      <div class="th">DESCRIPTION OF GOODS</div>
+      <div class="th">WT (KG)</div>
+      <div class="th">CHARGES</div>
 
       <div class="td"><div class="goods-main">${totalPackages}</div></div>
       <div class="td"><div class="goods-main">${esc(packageType)}</div></div>
@@ -420,16 +445,16 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         <div class="goods-main">${esc(goodsDescription)}</div>
         <div class="goods-sub">
           ${shipment.invoiceNo ? `Invoice No: ${esc(shipment.invoiceNo)}` : ""}
-          ${shipment.ewayBillNo ? `${shipment.invoiceNo ? "<br>" : ""}E-Way Bill: ${esc(shipment.ewayBillNo)}` : ""}
+          ${markaText ? `${shipment.invoiceNo ? "<br>" : ""}Marka: ${esc(markaText)}` : ""}
         </div>
       </div>
       <div class="td"><div class="goods-main">${totalWeight}</div><div class="goods-sub">Kg</div></div>
-      <div class="td sig-cell">
-        <div class="sig-row">
-          <div class="sig-line-label">Consignor's Signature</div>
-        </div>
-        <div class="sig-row sig-row-last">
-          <div class="sig-line-label">For ${esc(profile.companyName)}<br>(Auth. Signatory)</div>
+      <div class="td charges-cell">
+        <div class="charges-inline">
+          <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
+          <div class="charge-label">Hamali</div><div class="charge-value">₹ ${inr(hamali)}</div>
+          <div class="charge-label">Other</div><div class="charge-value">₹ ${inr(otherCharges)}</div>
+          <div class="charge-label charge-total">GRAND TOTAL</div><div class="charge-value charge-total">₹ ${inr(grandTotal)}</div>
         </div>
       </div>
     </div>
@@ -443,11 +468,13 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         </div>
       </div>
 
-      <div class="charges">
-        <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
-        <div class="charge-label">Hamali</div><div class="charge-value">₹ ${inr(hamali)}</div>
-        <div class="charge-label">Other</div><div class="charge-value">₹ ${inr(otherCharges)}</div>
-        <div class="charge-label charge-total">GRAND TOTAL</div><div class="charge-value charge-total">₹ ${inr(grandTotal)}</div>
+      <div class="signatures-bottom">
+        <div class="sig-row">
+          <div class="sig-line-label">Consignee's Signature</div>
+        </div>
+        <div class="sig-row sig-row-last">
+          <div class="sig-line-label">For ${esc(profile.companyName)}<br>(Auth. Signatory)</div>
+        </div>
       </div>
     </div>
 
@@ -622,24 +649,41 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      /* Fixed height so toggling GSTIN visibility (either auto via
+         taxTreatment=NonTaxable or manually via the Print Options dialog's
+         "Print GSTIN" checkbox) does NOT shift the goods / charges rows
+         below. One line of 2.7mm leading = 2.7mm reserved. */
+      min-height: 2.7mm;
     }
     .route-box {
       padding: 1.1mm 2mm;
       overflow: hidden;
-      display: flex; flex-direction: column; gap: 0.4mm;
+      display: flex; flex-direction: column; gap: 0.6mm;
     }
-    .route {
-      font-size: 2.8mm; font-weight: 700;
-      line-height: 3.2mm;
+    .route-row {
+      display: grid;
+      grid-template-columns: 14mm 1fr;
+      align-items: baseline;
+      gap: 1.5mm;
+      font-size: 2.6mm; line-height: 3mm;
+      overflow: hidden;
+    }
+    .route-label {
+      font-size: 2.2mm; font-weight: 700;
+      text-transform: uppercase; color: #333;
+      letter-spacing: 0.1mm;
+    }
+    .route-value {
+      font-size: 2.7mm; font-weight: 700;
+      color: #111;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .route span { font-weight: 400; }
 
     /* ---------- GOODS (30mm) ---------- */
     .goods {
       flex: 0 0 30mm;
       display: grid;
-      grid-template-columns: 20mm 40mm 1fr 25mm 40mm;
+      grid-template-columns: 20mm 25mm 1fr 25mm 40mm;
       grid-template-rows: 5mm 1fr;
       border-bottom: ${B_INNER};
       overflow: hidden;
@@ -664,23 +708,51 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     .goods-main { font-size: 2.9mm; font-weight: 600; }
     .goods-sub { font-size: 2.2mm; margin-top: 0.8mm; line-height: 2.7mm; }
 
-    /* Signature cell — the rightmost goods column. Two stacked rows: consignor sig
-       on top, transporter auth sig on the bottom, each ending in a dashed line. */
-    .sig-cell {
+    /* Charges cell — now the rightmost goods column (post-swap).
+       Freight / Hamali / Other / Grand Total as a compact 2-col grid. */
+    .charges-cell {
       padding: 0 !important;
-      display: flex;
-      flex-direction: column;
+      overflow: hidden;
     }
-    .sig-row {
-      flex: 1 1 0;
+    .charges-inline {
+      display: grid;
+      grid-template-columns: 1fr 18mm;
+      grid-auto-rows: min-content;
+      font-size: 2.3mm;
+      height: 100%;
+    }
+    .charges-inline .charge-label,
+    .charges-inline .charge-value {
+      padding: 0.5mm 1.3mm;
       border-bottom: ${B_HAIR};
+      line-height: 1.2;
+    }
+    .charges-inline .charge-label { border-right: ${B_HAIR}; }
+    .charges-inline .charge-value { font-variant-numeric: tabular-nums; text-align: right; }
+    .charges-inline .charge-total {
+      font-weight: 700;
+      font-size: 2.5mm;
+      background: #f5f5f5;
+      border-bottom: 0;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+
+    /* Signatures block — now in the bottom row (post-swap). Two side-by-side
+       signature slots: consignor's and the transporter's authorised signatory. */
+    .signatures-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+    }
+    .signatures-bottom .sig-row {
+      border-right: ${B_HAIR};
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       padding: 1mm 1.5mm 0.8mm;
       overflow: hidden;
     }
-    .sig-row-last { border-bottom: 0; }
+    .signatures-bottom .sig-row-last { border-right: 0; }
     .sig-line-label {
       font-size: 2.2mm;
       font-weight: 700;

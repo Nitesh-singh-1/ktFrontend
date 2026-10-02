@@ -82,10 +82,10 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
             <tr>
               <th className="px-4 py-2.5 w-12 text-center">#</th>
               <th className="px-4 py-2.5 min-w-[140px]">Article / Package</th>
-              <th className="px-4 py-2.5 min-w-[200px]">Goods Description</th>
+              <th className="px-4 py-2.5 min-w-[200px]">Description of Goods</th>
+              <th className="px-4 py-2.5 w-24 text-right">Quantity</th>
               <th className="px-4 py-2.5 w-28 text-right">Weight (KG)</th>
               <th className="px-4 py-2.5 w-28 text-right">Rate (₹)</th>
-              <th className="px-4 py-2.5 w-24 text-right">Quantity</th>
               <th className="px-4 py-2.5 w-32 text-right">Row Total (₹)</th>
               {!disabled && <th className="px-3 py-2.5 w-14 text-center">Action</th>}
             </tr>
@@ -122,6 +122,18 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                 <td className="px-4 py-2 text-right">
                   <input
                     type="number"
+                    min="1"
+                    disabled={disabled}
+                    placeholder="1"
+                    value={item.quantity === 0 ? "" : item.quantity}
+                    onChange={(e) => handleFieldChange(index, "quantity", parseInt(e.target.value, 10) || 0)}
+                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  />
+                </td>
+
+                <td className="px-4 py-2 text-right">
+                  <input
+                    type="number"
                     step="any"
                     min="0"
                     disabled={disabled}
@@ -142,18 +154,6 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
                     value={item.rate === 0 ? "" : item.rate}
                     onChange={(e) => handleFieldChange(index, "rate", parseFloat(e.target.value) || 0)}
                     className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-                  />
-                </td>
-
-                <td className="px-4 py-2 text-right">
-                  <input
-                    type="number"
-                    min="1"
-                    disabled={disabled}
-                    placeholder="1"
-                    value={item.quantity === 0 ? "" : item.quantity}
-                    onChange={(e) => handleFieldChange(index, "quantity", parseInt(e.target.value, 10) || 0)}
-                    className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
                   />
                 </td>
 

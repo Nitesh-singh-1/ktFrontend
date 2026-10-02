@@ -10,6 +10,7 @@ import { fleetService } from "services/fleetService";
 import VehicleModal from "@/app/components/fleet/VehicleModal";
 import DriverModal from "@/app/components/fleet/DriverModal";
 import LocationModal from "@/app/components/fleet/LocationModal";
+import { cacheActiveStations } from "@/utils/print/tenantProfile";
 import {
   MapPin,
   User,
@@ -62,6 +63,14 @@ export default function FleetMasterPage() {
       setLocations(lList || []);
       setDrivers(dList || []);
       setVehicles(vList || []);
+
+      const names = (lList || [])
+        .filter((l) => l && l.isActive !== false && l.name)
+        .map((l) => {
+          const contact = l.contactNumber ? ` (Ph: ${l.contactNumber})` : "";
+          return l.code ? `${l.code} · ${l.name}${contact}` : `${l.name}${contact}`;
+        });
+      cacheActiveStations(names);
     } catch (err: any) {
       console.error("Error fetching fleet masters:", err);
       setError(err?.message || "Failed to load station and fleet masters.");
@@ -349,6 +358,7 @@ export default function FleetMasterPage() {
                           <th className="py-3 px-4">Station Code</th>
                           <th className="py-3 px-4">City</th>
                           <th className="py-3 px-4">State</th>
+                          <th className="py-3 px-4">Contact Phone</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -366,6 +376,9 @@ export default function FleetMasterPage() {
                             </td>
                             <td className="py-3.5 px-4 text-[#64748B]">
                               {l.state || "—"}
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#111827]">
+                              {l.contactNumber || "—"}
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">

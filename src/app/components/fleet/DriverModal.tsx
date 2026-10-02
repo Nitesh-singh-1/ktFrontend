@@ -272,7 +272,7 @@ export default function DriverModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialDriver ? "Update Driver" : "Save Driver"}
+                {loading ? "Saving..." : initialDriver ? "Update" : "Save"}
               </button>
             </div>
           </div>

@@ -77,6 +77,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       packageCount: 1,
       weightKg: 0,
       commodityDescription: "",
+      privateMarka: "",
       documentUrl: "",
     },
   ]);
@@ -197,6 +198,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           packageCount: ir.packageCount || 1,
           weightKg: ir.weightKg || 0,
           commodityDescription: ir.commodityDescription || "",
+          privateMarka: ir.privateMarka || "",
           documentUrl: ir.documentUrl || "",
         }))
       );
@@ -211,6 +213,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           packageCount: 1,
           weightKg: 0,
           commodityDescription: "",
+          privateMarka: "",
           documentUrl: "",
         },
       ]);

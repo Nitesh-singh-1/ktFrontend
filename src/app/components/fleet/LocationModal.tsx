@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { LocationMaster } from "@/types/shipment";
 import { fleetService } from "services/fleetService";
 import { INDIAN_STATES } from "@/utils/indianStates";
+import { validateMobile, sanitizeMobile, validatePincode, sanitizePincode } from "@/utils/validation";
 import { MapPin, X, AlertTriangle } from "lucide-react";
 
 interface LocationModalProps {
@@ -33,6 +34,7 @@ export default function LocationModal({
   const [state, setState] = useState("Bihar");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Auto-generate station code
@@ -63,6 +65,7 @@ export default function LocationModal({
         setState(initialLocation.state || "Bihar");
         setAddress(initialLocation.address || "");
         setPincode(initialLocation.pincode || "");
+        setContactNumber(initialLocation.contactNumber || "");
         setIsActive(initialLocation.isActive ?? true);
       } else {
         resetForm();
@@ -78,6 +81,7 @@ export default function LocationModal({
     setState("Bihar");
     setAddress("");
     setPincode("");
+    setContactNumber("");
     setIsActive(true);
     setError("");
   };
@@ -91,8 +95,11 @@ export default function LocationModal({
   };
 
   const handlePincodeChange = (val: string) => {
-    const digitsOnly = val.replace(/\D/g, "").slice(0, 6);
-    setPincode(digitsOnly);
+    setPincode(sanitizePincode(val));
+  };
+
+  const handleContactNumberChange = (val: string) => {
+    setContactNumber(sanitizeMobile(val));
   };
 
   if (!isOpen) return null;
@@ -106,9 +113,13 @@ export default function LocationModal({
     }
 
     if (pincode.trim()) {
-      if (pincode.trim().length !== 6 || !/^\d{6}$/.test(pincode.trim())) {
-        return "Pincode must be exactly 6 numeric digits (below 6 digits is not allowed).";
-      }
+      const pinErr = validatePincode(pincode, "Pincode");
+      if (pinErr) return pinErr;
+    }
+
+    if (contactNumber.trim()) {
+      const phoneErr = validateMobile(contactNumber, "Contact phone / mobile number");
+      if (phoneErr) return phoneErr;
     }
 
     return null;
@@ -135,6 +146,7 @@ export default function LocationModal({
         state: state.trim() || undefined,
         address: address.trim() ? toTitleCase(address.trim()) : undefined,
         pincode: pincode.trim() || undefined,
+        contactNumber: contactNumber.trim() || undefined,
         isActive,
       };
 
@@ -262,23 +274,44 @@ export default function LocationModal({
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
-                Pincode (6 Digits)
-              </label>
-              <span className="text-[10px] text-[#94A3B8] font-mono">
-                {pincode.length}/6
-              </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
+                  Pincode (6 Digits)
+                </label>
+                <span className="text-[10px] text-[#94A3B8] font-mono">
+                  {pincode.length}/6
+                </span>
+              </div>
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="800007"
+                value={pincode}
+                onChange={(e) => handlePincodeChange(e.target.value)}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+              />
             </div>
-            <input
-              type="text"
-              maxLength={6}
-              placeholder="800007"
-              value={pincode}
-              onChange={(e) => handlePincodeChange(e.target.value)}
-              className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-            />
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
+                  Contact Phone / Mobile (10 Digits)
+                </label>
+                <span className="text-[10px] text-[#94A3B8] font-mono">
+                  {contactNumber.length}/10
+                </span>
+              </div>
+              <input
+                type="tel"
+                maxLength={10}
+                placeholder="9430492601"
+                value={contactNumber}
+                onChange={(e) => handleContactNumberChange(e.target.value)}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+              />
+            </div>
           </div>
 
           {/* Footer Actions */}
@@ -306,7 +339,7 @@ export default function LocationModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialLocation ? "Update Station" : "Save Station"}
+                {loading ? "Saving..." : initialLocation ? "Update" : "Save"}
               </button>
             </div>
           </div>

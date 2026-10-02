@@ -164,6 +164,8 @@ export interface LocationMaster {
   state?: string;
   address?: string;
   pincode?: string;
+  /** Branch / station contact phone — shown on Bilty footer next to the station name. */
+  contactNumber?: string;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -176,6 +178,7 @@ export interface LocationLookupItem {
   city?: string;
   state?: string;
   pincode?: string;
+  contactNumber?: string;
 }
 
 // Invoicing Models
@@ -281,6 +284,8 @@ export interface ConsignmentInvoiceReference {
   packageCount?: number;
   weightKg?: number;
   commodityDescription?: string;
+  /** Short mark the customer has put on their packages (initials, box code, batch) for delivery-side reconciliation. */
+  privateMarka?: string;
   documentUrl?: string; // Digital copy / photo of customer paper bill
 }
 
@@ -295,6 +300,7 @@ export interface CreateConsignmentInvoiceReferenceRequest {
   packageCount?: number;
   weightKg?: number;
   commodityDescription?: string;
+  privateMarka?: string;
   documentUrl?: string; // Digital copy / photo of customer paper bill
 }
 

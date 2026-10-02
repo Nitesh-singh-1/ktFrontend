@@ -34,7 +34,10 @@ async function ensureStationsCache(): Promise<void> {
     const locations = await fleetService.getLocations();
     const names = (locations || [])
       .filter((l) => l && l.isActive !== false && l.name)
-      .map((l) => (l.code ? `${l.code} · ${l.name}` : l.name));
+      .map((l) => {
+        const contact = l.contactNumber ? ` (Ph: ${l.contactNumber})` : "";
+        return l.code ? `${l.code} · ${l.name}${contact}` : `${l.name}${contact}`;
+      });
     cacheActiveStations(names);
   } catch {
     // Non-fatal: printing still works without the station strip if the fetch fails.
