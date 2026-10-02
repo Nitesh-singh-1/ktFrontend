@@ -28,6 +28,7 @@ export default function CustomerInvoicesTable({
       packageCount: 1,
       weightKg: 0,
       commodityDescription: "",
+      privateMarka: "",
       documentUrl: "",
     };
     onChange([...invoices, newRow]);
@@ -45,6 +46,7 @@ export default function CustomerInvoicesTable({
           packageCount: 1,
           weightKg: 0,
           commodityDescription: "",
+          privateMarka: "",
           documentUrl: "",
         },
       ]);
@@ -107,7 +109,7 @@ export default function CustomerInvoicesTable({
         </div>
         <div className="flex items-center gap-3">
           <div className="text-xs px-3 py-1.5 bg-[#F7F8F8] dark:bg-slate-800 rounded-lg border border-[#E5EAEB] dark:border-slate-700">
-            <span className="text-[#64748B] dark:text-slate-400 font-medium">Total Declared Value: </span>
+            <span className="text-[#64748B] dark:text-slate-400 font-medium">Total Value: </span>
             <span className="font-bold text-[#2F8E86] font-mono">
               ₹{totalDeclaredValue.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
@@ -131,11 +133,12 @@ export default function CustomerInvoicesTable({
           <thead>
             <tr className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-300 font-semibold border-y border-[#E5EAEB] dark:border-slate-700">
               <th className="py-2.5 px-2 w-8 text-center">#</th>
-              <th className="py-2.5 px-3 min-w-[150px]">Customer Bill No *</th>
-              <th className="py-2.5 px-2.5 min-w-[125px]">Bill Date</th>
-              <th className="py-2.5 px-3 min-w-[135px]">Declared Value (₹) *</th>
+              <th className="py-2.5 px-3 min-w-[150px]">Invoice No *</th>
+              <th className="py-2.5 px-2.5 min-w-[125px]">Invoice Date</th>
+              <th className="py-2.5 px-3 min-w-[135px]">Value (₹) *</th>
               <th className="py-2.5 px-3 min-w-[145px]">E-Way Bill No</th>
               <th className="py-2.5 px-2.5 min-w-[125px]">Doc Type</th>
+              <th className="py-2.5 px-3 min-w-[130px]">Private Marka</th>
               <th className="py-2.5 px-3 min-w-[160px]">Commodity / Description</th>
               <th className="py-2.5 px-3 min-w-[140px] text-center">Bill Photo / Scan</th>
               {!disabled && <th className="py-2.5 px-2 w-10 text-center">Action</th>}
@@ -218,6 +221,19 @@ export default function CustomerInvoicesTable({
                     <option value="BillOfSupply">Bill of Supply</option>
                     <option value="JobWorkChallan">Job Work</option>
                   </select>
+                </td>
+                <td className="py-2 px-3">
+                  <input
+                    type="text"
+                    placeholder="Customer's mark on packages"
+                    maxLength={100}
+                    disabled={disabled}
+                    value={inv.privateMarka || ""}
+                    onChange={(e) =>
+                      handleFieldChange(idx, "privateMarka", e.target.value)
+                    }
+                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                  />
                 </td>
                 <td className="py-2 px-3">
                   <input

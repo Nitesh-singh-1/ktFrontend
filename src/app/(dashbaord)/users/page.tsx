@@ -396,7 +396,7 @@ export default function UsersManagementPage() {
         {/* Toast Notification */}
         {notification && (
           <div
-            className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm font-semibold animate-fadeIn ${
+            className={`fixed top-4 right-4 z-[60] p-4 rounded-xl shadow-xl flex items-center gap-3 border text-sm font-semibold animate-fadeIn ${
               notification.type === "success"
                 ? "bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/90 dark:text-emerald-200 dark:border-emerald-800"
                 : "bg-rose-50 text-rose-900 border-rose-200 dark:bg-rose-950/90 dark:text-rose-200 dark:border-rose-800"

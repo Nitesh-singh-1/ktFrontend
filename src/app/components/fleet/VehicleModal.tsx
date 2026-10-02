@@ -470,7 +470,7 @@ export default function VehicleModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialVehicle ? "Update Vehicle" : "Save Vehicle"}
+                {loading ? "Saving..." : initialVehicle ? "Update" : "Save"}
               </button>
             </div>
           </div>
