@@ -120,7 +120,7 @@ export default function TripsPage() {
           className="px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Create Manifest & Challan</span>
+          <span>Create Challan</span>
         </button>
       </div>
 

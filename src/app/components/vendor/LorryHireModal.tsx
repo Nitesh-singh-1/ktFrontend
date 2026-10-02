@@ -421,7 +421,7 @@ export default function LorryHireModal({ isOpen, onClose, onSaved }: LorryHireMo
               disabled={loading}
               className="btn-primary"
             >
-              {loading ? "Issuing Memo..." : "Issue Lorry Hire Slip"}
+              {loading ? "Saving..." : "Create"}
             </button>
           </div>
         </form>

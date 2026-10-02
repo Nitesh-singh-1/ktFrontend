@@ -225,7 +225,7 @@ export default function QuotationModal({ isOpen, onClose, onSaved, initial }: Qu
           <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Saving…" : initial ? "Update Quotation" : "Create Quotation"}
+              {loading ? "Saving…" : initial ? "Update" : "Create"}
             </button>
           </div>
         </form>

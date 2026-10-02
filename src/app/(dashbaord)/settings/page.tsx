@@ -896,7 +896,7 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
           >
-            Reset Defaults
+            Reset
           </button>
           <button
             onClick={handleSave}
@@ -906,11 +906,11 @@ export default function SettingsPage() {
             {saving ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving Matrix...</span>
+                <span>Saving...</span>
               </>
             ) : (
               <>
-                <span>Save All Changes</span>
+                <span>Save</span>
               </>
             )}
           </button>
@@ -1227,7 +1227,7 @@ export default function SettingsPage() {
                     className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Create Sub-User</span>
+                    <span>Add Sub-User</span>
                   </button>
                 </div>
               </div>
@@ -1547,7 +1547,7 @@ export default function SettingsPage() {
                           disabled={creatingUser}
                           className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
                         >
-                          {creatingUser ? "Creating..." : "Save Sub-User"}
+                          {creatingUser ? "Saving..." : "Save"}
                         </button>
                       </div>
                     </form>

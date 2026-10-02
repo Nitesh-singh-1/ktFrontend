@@ -142,7 +142,7 @@ export default function ShipmentsListPage() {
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>New Consignment</span>
+          <span>Create Bilty</span>
         </Link>
       </div>
 
@@ -258,7 +258,7 @@ export default function ShipmentsListPage() {
         emptyMessage="Try adjusting your filters or create a new consignment."
         emptyAction={
           <Link href="/shipments/create" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs">
-            <Plus className="w-3.5 h-3.5" /> Book Consignment
+            <Plus className="w-3.5 h-3.5" /> Create Bilty
           </Link>
         }
         footer={

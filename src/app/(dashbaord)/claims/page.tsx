@@ -115,7 +115,7 @@ export default function ClaimsPage() {
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Report New Claim</span>
+          <span>Add Claim</span>
         </button>
       </div>
 

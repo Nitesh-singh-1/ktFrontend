@@ -502,7 +502,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
                 <span>Processing...</span>
               </>
             ) : (
-              <span>{initialId ? "Update Bilty" : "Issue Bilty"}</span>
+              <span>{initialId ? "Update" : "Create"}</span>
             )}
           </button>
         </div>
@@ -1048,9 +1048,9 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <span>Submitting...</span>
             </>
           ) : initialId ? (
-            "Save Changes"
+            "Update"
           ) : (
-            "Issue Bilty"
+            "Create"
           )}
         </button>
       </div>

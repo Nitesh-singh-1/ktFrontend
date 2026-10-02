@@ -345,7 +345,7 @@ export default function TripDetailsModal({
                       disabled={actionLoading}
                       className="btn-primary h-9 min-w-[120px] text-xs"
                     >
-                      Save Expense Entry
+                      Save
                     </button>
                   </div>
                 </form>

@@ -533,7 +533,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialParty ? "Update Party" : "Save Master Party"}
+                {loading ? "Saving..." : initialParty ? "Update" : "Save"}
               </button>
             </div>
           </div>

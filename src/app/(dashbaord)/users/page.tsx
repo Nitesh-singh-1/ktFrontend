@@ -447,7 +447,7 @@ export default function UsersManagementPage() {
               className="px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Invite by Email</span>
+              <span>Invite</span>
             </button>
 
             <button
@@ -455,7 +455,7 @@ export default function UsersManagementPage() {
               className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add Directly</span>
+              <span>Add</span>
             </button>
           </div>
         </div>
@@ -791,7 +791,7 @@ export default function UsersManagementPage() {
                   disabled={submittingInvite}
                   className="px-4 py-2 rounded-lg bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5" /> {submittingInvite ? "Sending…" : "Send Invitation"}
+                  <Send className="w-3.5 h-3.5" /> {submittingInvite ? "Sending…" : "Invite"}
                 </button>
               </div>
             </div>
@@ -985,12 +985,12 @@ export default function UsersManagementPage() {
                     {submittingAdd ? (
                       <>
                         <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                        <span>Creating User...</span>
+                        <span>Saving...</span>
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        <span>Create User Account</span>
+                        <span>Save</span>
                       </>
                     )}
                   </button>
@@ -1102,7 +1102,7 @@ export default function UsersManagementPage() {
                     ) : (
                       <>
                         <KeyRound className="w-4 h-4" />
-                        <span>Confirm Password Reset</span>
+                        <span>Confirm</span>
                       </>
                     )}
                   </button>
@@ -1217,7 +1217,7 @@ export default function UsersManagementPage() {
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        <span>Save Changes</span>
+                        <span>Update</span>
                       </>
                     )}
                   </button>
@@ -1298,12 +1298,12 @@ export default function UsersManagementPage() {
                     {submittingPerms ? (
                       <>
                         <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                        <span>Updating Permissions...</span>
+                        <span>Updating...</span>
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        <span>Save Permissions</span>
+                        <span>Update</span>
                       </>
                     )}
                   </button>

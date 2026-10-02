@@ -857,7 +857,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                   <span>Generating LR Challan...</span>
                 </>
               ) : (
-                "Create & Issue LR / Truck Challan"
+                "Create"
               )}
             </button>
           </div>

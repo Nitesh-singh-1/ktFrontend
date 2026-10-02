@@ -105,7 +105,7 @@ export default function CustomersPage() {
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Master Party</span>
+          <span>Add Party</span>
         </button>
       </div>
 
@@ -217,7 +217,7 @@ export default function CustomersPage() {
               className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
             >
               <Plus className="w-4 h-4" />
-              <span>Create First Master Party</span>
+              <span>Add Party</span>
             </button>
           </div>
         ) : (

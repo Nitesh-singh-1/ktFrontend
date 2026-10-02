@@ -414,7 +414,7 @@ export default function ClientsManagementPage() {
             className="flex items-center gap-2 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
-            <span>Onboard New Client</span>
+            <span>Add Client</span>
           </button>
         </div>
 
@@ -1167,8 +1167,8 @@ export default function ClientsManagementPage() {
                       className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {submittingOnboard
-                        ? "Onboarding Client..."
-                        : "Complete Client Onboarding"}
+                        ? "Saving..."
+                        : "Save"}
                     </button>
                   )}
                 </div>

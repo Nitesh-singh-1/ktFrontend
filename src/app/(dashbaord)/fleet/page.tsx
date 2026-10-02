@@ -162,7 +162,7 @@ export default function FleetMasterPage() {
               className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Station / Hub</span>
+              <span>Add Station</span>
             </button>
           )}
 
@@ -346,7 +346,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Add First Station / Hub
+                      + Add Station
                     </button>
                   </div>
                 ) : (
@@ -428,7 +428,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Register First Driver
+                      + Add Driver
                     </button>
                   </div>
                 ) : (
@@ -506,7 +506,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Add First Vehicle
+                      + Add Vehicle
                     </button>
                   </div>
                 ) : (

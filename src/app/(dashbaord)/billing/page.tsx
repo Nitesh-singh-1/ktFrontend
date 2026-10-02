@@ -104,7 +104,7 @@ export default function BillingPage() {
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>New Invoice</span>
+          <span>Create Invoice</span>
         </button>
       </div>
 
@@ -207,7 +207,7 @@ export default function BillingPage() {
         emptyMessage="Generate your first freight invoice to bill customers, link consignments, and balance receipts."
         emptyAction={
           <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Generate First Invoice
+            <Plus className="w-4 h-4" /> Create Invoice
           </button>
         }
         columns={[
