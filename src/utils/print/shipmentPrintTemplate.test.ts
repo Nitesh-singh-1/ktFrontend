@@ -2,12 +2,11 @@ import { describe, expect, it } from "vitest";
 import { renderBiltyBodyDense, renderBiltyBodyStandard } from "./shipmentPrintTemplate";
 import { Shipment, TaxTreatment, PaymentTerm, ShipmentStatus } from "@/types/shipment";
 
-const mockShipmentSingleItem: Shipment = {
+const mockShipmentSingleItem = {
   id: 1,
   shipmentNo: "LR-1001",
   shipmentDate: "2026-10-03T10:00:00Z",
   createdAt: "2026-10-03T10:00:00Z",
-  updatedAt: "2026-10-03T10:00:00Z",
   status: ShipmentStatus.Booked,
   fromLocation: "Mumbai",
   toLocation: "Pune",
@@ -19,9 +18,10 @@ const mockShipmentSingleItem: Shipment = {
   invoiceReferences: [
     {
       customerInvoiceNo: "INV-999",
+      customerInvoiceDate: "2026-10-03",
       privateMarka: "PM-456",
-      itemCount: 5,
-      declaredValue: 50000,
+      packageCount: 5,
+      declaredGoodsValue: 50000,
     },
   ],
   items: [
@@ -35,9 +35,17 @@ const mockShipmentSingleItem: Shipment = {
       totalAmount: 1200,
     },
   ],
+  goodsValue: 50000,
   totalFreight: 1200,
+  totalOtherCharges: 0,
+  totalTaxAmount: 0,
   grandTotal: 1200,
-};
+  paidAmount: 0,
+  dueAmount: 1200,
+  isActive: true,
+  chargeItems: [],
+  statusHistory: [],
+} as unknown as Shipment;
 
 const mockShipmentMultiItems: Shipment = {
   ...mockShipmentSingleItem,
