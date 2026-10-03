@@ -3,6 +3,7 @@ import { fleetService } from "services/fleetService";
 import {
   generateShipmentPrintTemplate,
   generateShipmentPrintTemplateWithOptions,
+  generateMultipleShipmentsPrintTemplate,
   BiltyPrintOptions,
 } from "./shipmentPrintTemplate";
 import { openPrintWindow } from "./printHeader";
@@ -74,5 +75,61 @@ export async function printShipment(
   } catch (err: any) {
     console.error("Print shipment error:", err);
     toast.error(err?.message || "Failed to generate the print document.");
+  }
+}
+
+export async function printMultipleShipments(
+  shipmentsOrIds: (Shipment | number)[],
+  options?: BiltyPrintOptions,
+): Promise<void> {
+  try {
+    if (!shipmentsOrIds || shipmentsOrIds.length === 0) {
+      toast.error("No shipments selected for printing.");
+      return;
+    }
+
+    toast.info(`Preparing ${shipmentsOrIds.length} bilties for printing...`);
+
+    const shipments: Shipment[] = [];
+    const missingIds: number[] = [];
+
+    for (const item of shipmentsOrIds) {
+      if (typeof item === "number") {
+        missingIds.push(item);
+      } else if (item && (!item.items || item.items.length === 0) && item.id) {
+        // If it's a summary shipment without line items, fetch full details for accurate bilty rendering
+        missingIds.push(item.id);
+      } else if (item) {
+        shipments.push(item);
+      }
+    }
+
+    if (missingIds.length > 0) {
+      const fetched = await Promise.all(
+        missingIds.map((id) =>
+          shipmentService
+            .getShipmentById(id)
+            .then((res) => (res.success && res.data ? res.data : null))
+            .catch(() => null),
+        ),
+      );
+      for (const s of fetched) {
+        if (s) shipments.push(s);
+      }
+    }
+
+    if (shipments.length === 0) {
+      toast.error("Failed to load shipment details for printing.");
+      return;
+    }
+
+    await ensureStationsCache();
+
+    const effectiveOpts = options ?? loadBiltyPrintPrefs();
+    const htmlContent = generateMultipleShipmentsPrintTemplate(shipments, effectiveOpts);
+    openPrintWindow(htmlContent);
+  } catch (err: any) {
+    console.error("Print multiple shipments error:", err);
+    toast.error(err?.message || "Failed to generate the batch print document.");
   }
 }
