@@ -9,9 +9,9 @@ export default function Home() {
 
   useEffect(() => {
     if (authService.isAuthenticated()) {
-      router.replace("/dashboard");
+      router.replace("/dashboard/");
     } else {
-      router.replace("/login");
+      router.replace("/login/");
     }
   }, [router]);
 

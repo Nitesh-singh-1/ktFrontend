@@ -32,9 +32,9 @@ const LoginPage = () => {
       const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
       const redirectUrl = params?.get("redirect");
       if (redirectUrl && redirectUrl.startsWith("/")) {
-        window.location.href = redirectUrl;
+        window.location.href = redirectUrl.endsWith("/") ? redirectUrl : `${redirectUrl}/`;
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard/";
       }
     }
   }, []);
@@ -57,9 +57,9 @@ const LoginPage = () => {
         const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
         const redirectUrl = params?.get("redirect");
         if (redirectUrl && redirectUrl.startsWith("/")) {
-          window.location.href = redirectUrl;
+          window.location.href = redirectUrl.endsWith("/") ? redirectUrl : `${redirectUrl}/`;
         } else {
-          window.location.href = "/dashboard";
+          window.location.href = "/dashboard/";
         }
       } else {
         setError(res.message || "Invalid credentials. Please check your username and password.");
