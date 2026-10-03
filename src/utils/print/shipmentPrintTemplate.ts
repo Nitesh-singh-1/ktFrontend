@@ -174,7 +174,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       <div>Party Inv No: <strong>${esc(shipment.invoiceNo || "-")}</strong></div>
       <div>Inv Date: <strong>${displayInvoiceDate}</strong></div>
       <div>Declared Goods Value: <strong>₹${(shipment.goodsValue || 0).toLocaleString('en-IN')}</strong></div>
-      ${markaText ? `<div>Private Marka: <strong>${esc(markaText)}</strong></div>` : ""}
+      ${markaText ? `<div>P-Marka: <strong>${esc(markaText)}</strong></div>` : ""}
     </div>
 
     <table class="data-table">
@@ -340,38 +340,46 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
   // GSTINs are party data and stay visible whenever present.
   const showGstin = shipment.taxTreatment !== TaxTreatment.NonTaxable;
 
-  const items = shipment.items || [];
-  const totalPackages = items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0) || 0;
-  const totalWeight = items.reduce((sum, it) => sum + (Number(it.weight) || 0), 0);
-  const packageType = items.length > 0 ? items[0].article || "-" : "-";
-  // Description column shows the human description (CargoItemsTable's
-  // "Description of Goods" field) first; falls back to article only when
-  // the operator left description blank. "Article" belongs to the
-  // Package Type column, not to the goods description column.
-  const goodsDescription =
+  const items = shipment.items && shipment.items.length > 0 ? shipment.items : [];
+
+  const itemsRowsHtml =
     items.length === 0
-      ? "-"
-      : items.map((it) => {
-          const text = (it.description && it.description.trim()) || it.article || "Item";
-          const qty = it.quantity || 1;
-          return qty > 1 ? `${text} × ${qty}` : text;
-        }).join(", ");
+      ? `
+      <div class="goods-row">
+        <div class="td col-pkg">-</div>
+        <div class="td col-type">-</div>
+        <div class="td col-desc">-</div>
+        <div class="td col-wt">-</div>
+      </div>`
+      : items
+          .map(
+            (it) => `
+      <div class="goods-row">
+        <div class="td col-pkg">${Number(it.quantity) || 1}</div>
+        <div class="td col-type">${esc(it.article || "-")}</div>
+        <div class="td col-desc">${esc((it.description && it.description.trim()) || it.article || "-")}</div>
+        <div class="td col-wt">${Number(it.weight) > 0 ? Number(it.weight) : "-"}</div>
+      </div>`,
+          )
+          .join("");
 
   const privateMarkas = (shipment.invoiceReferences || [])
     .map((ir) => ir.privateMarka?.trim())
     .filter(Boolean);
   const markaText = privateMarkas.length > 0 ? privateMarkas.join(", ") : "";
 
-  const metaParts: string[] = [];
-  if (shipment.invoiceNo) metaParts.push(`Inv No: ${esc(shipment.invoiceNo)}`);
-  if (markaText) metaParts.push(`Marka: ${esc(markaText)}`);
-  const goodsMetaRow = metaParts.join(" &nbsp;·&nbsp; ");
-
   const freight = shipment.totalFreight || 0;
   const hamali = pickCharge(shipment, /hamali/i);
   // Other = totalOtherCharges - hamali (avoid double counting), floor at 0
   const otherCharges = Math.max(0, (shipment.totalOtherCharges || 0) - hamali);
   const grandTotal = shipment.grandTotal || 0;
+
+  const paymentTermLabel =
+    shipment.paymentTerm === PaymentTerm.Paid
+      ? "PAID"
+      : shipment.paymentTerm === PaymentTerm.TBB
+      ? "TBB"
+      : "TO PAY";
 
   const disclaimer = profile.printDisclaimer || "";
   const jurisdiction = "the applicable local jurisdiction";
@@ -413,7 +421,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         <div class="company-name">${esc(profile.companyName)}</div>
         <div class="company-subtitle">H.O.: ${esc(profile.address || "-")}</div>
         <div class="company-contact">
-          ${profile.phone ? `Phone: ${esc(profile.phone)}` : ""}
+          ${profile.phone ? `Phone: <strong>${esc(profile.phone)}</strong>` : ""}
           ${profile.email ? ` &nbsp;|&nbsp; Email: ${esc(profile.email)}` : ""}
         </div>
       </div>
@@ -455,31 +463,34 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         <div class="route-row"><span class="route-label">FROM</span><span class="route-value">${esc(shortLoc(shipment.fromLocation))}</span></div>
         <div class="route-row"><span class="route-label">TO</span><span class="route-value">${esc(shortLoc(shipment.toLocation))}</span></div>
         <div class="route-row"><span class="route-label">E-Way Bill</span><span class="route-value">${esc(shipment.ewayBillNo || "-")}</span></div>
+        <div class="route-row"><span class="route-label">Inv No</span><span class="route-value">${esc(shipment.invoiceNo || "-")}</span></div>
+        <div class="route-row"><span class="route-label">P-Marka</span><span class="route-value">${esc(markaText || "-")}</span></div>
       </div>
     </div>
 
     <div class="goods">
-      <div class="th">PACKAGES</div>
-      <div class="th">PACKAGE TYPE</div>
-      <div class="th">DESCRIPTION OF GOODS</div>
-      <div class="th">WT (KG)</div>
-      <div class="th">CHARGES</div>
-
-      <div class="td"><div class="goods-main">${totalPackages}</div></div>
-      <div class="td"><div class="goods-main">${esc(packageType)}</div></div>
-      <div class="td">
-        <div class="goods-flex">
-          <span class="goods-main">${esc(goodsDescription)}</span>
-          ${goodsMetaRow ? `<span class="goods-meta">${goodsMetaRow}</span>` : ""}
+      <div class="goods-items-pane">
+        <div class="goods-table-head">
+          <div class="th col-pkg">PACKAGES</div>
+          <div class="th col-type">PACKAGE TYPE</div>
+          <div class="th col-desc">DESCRIPTION OF GOODS</div>
+          <div class="th col-wt">WT (KG)</div>
+        </div>
+        <div class="goods-table-body">
+          ${itemsRowsHtml}
         </div>
       </div>
-      <div class="td"><div class="goods-main">${totalWeight > 0 ? totalWeight : "-"}</div></div>
-      <div class="td charges-cell">
-        <div class="charges-inline">
-          <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
-          <div class="charge-label">Hamali</div><div class="charge-value">₹ ${inr(hamali)}</div>
-          <div class="charge-label">Other</div><div class="charge-value">₹ ${inr(otherCharges)}</div>
-          <div class="charge-label charge-total">GRAND TOTAL</div><div class="charge-value charge-total">₹ ${inr(grandTotal)}</div>
+
+      <div class="goods-charges-pane">
+        <div class="th col-charges">CHARGES</div>
+        <div class="charges-cell">
+          <div class="charges-inline">
+            <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
+            <div class="charge-label">Hamali</div><div class="charge-value">₹ ${inr(hamali)}</div>
+            <div class="charge-label">Other</div><div class="charge-value">₹ ${inr(otherCharges)}</div>
+            <div class="charge-label charge-total">GRAND TOTAL</div><div class="charge-value charge-total">₹ ${inr(grandTotal)}</div>
+            <div class="charge-label charge-pay-type">BILL TYPE</div><div class="charge-value charge-pay-type">${esc(paymentTermLabel)}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -620,6 +631,10 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       color: #333;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .company-contact strong {
+      font-weight: 800;
+      color: #000;
+    }
 
     .copy-meta {
       border-left: ${B_INNER};
@@ -657,27 +672,27 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     .parties {
       flex: 0 0 19mm;
       display: grid;
-      grid-template-columns: 1fr 1fr 40mm;
+      grid-template-columns: 1fr 1fr 42mm;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
     .party {
-      padding: 0.9mm 2mm;
+      padding: 0.8mm 2mm;
       border-right: ${B_INNER};
       overflow: hidden;
       display: flex; flex-direction: column;
     }
     .party:last-child { border-right: 0; }
     .field-label {
-      font-size: 2.1mm; font-weight: 700;
+      font-size: 2mm; font-weight: 700;
       text-transform: uppercase; color: #333;
-      margin-bottom: 0.3mm; line-height: 1.15;
+      margin-bottom: 0.2mm; line-height: 1.1;
     }
     .field-value {
-      font-size: 2.7mm; font-weight: 600; line-height: 3mm;
+      font-size: 2.6mm; font-weight: 600; line-height: 2.9mm;
       overflow: hidden;
     }
-    .small-value { font-size: 2.3mm; font-weight: 500; line-height: 2.7mm; }
+    .small-value { font-size: 2.2mm; font-weight: 500; line-height: 2.6mm; }
     .party-addr {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -686,86 +701,116 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       color: #1f2937;
     }
     .party-meta {
-      font-size: 2.2mm;
-      line-height: 2.6mm;
+      font-size: 2.1mm;
+      line-height: 2.5mm;
       color: #374151;
-      margin-top: 0.3mm;
+      margin-top: 0.2mm;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      min-height: 2.6mm;
+      min-height: 2.5mm;
     }
     .route-box {
-      padding: 0.9mm 2mm;
+      padding: 0.5mm 1.5mm;
       overflow: hidden;
-      display: flex; flex-direction: column; gap: 0.5mm;
+      display: flex; flex-direction: column; gap: 0.1mm;
+      justify-content: space-between;
     }
     .route-row {
       display: grid;
-      grid-template-columns: 14mm 1fr;
+      grid-template-columns: 15mm 1fr;
       align-items: baseline;
-      gap: 1.5mm;
-      font-size: 2.5mm; line-height: 2.9mm;
+      gap: 1mm;
+      font-size: 2.1mm; line-height: 2.45mm;
       overflow: hidden;
     }
     .route-label {
-      font-size: 2.1mm; font-weight: 700;
+      font-size: 1.95mm; font-weight: 700;
       text-transform: uppercase; color: #333;
-      letter-spacing: 0.1mm;
+      letter-spacing: 0.05mm;
     }
     .route-value {
-      font-size: 2.6mm; font-weight: 700;
+      font-size: 2.2mm; font-weight: 700;
       color: #111;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* ---------- GOODS (22mm) ---------- */
+    /* ---------- GOODS (30mm) ---------- */
     .goods {
-      flex: 0 0 22mm;
+      flex: 0 0 30mm;
       display: grid;
-      grid-template-columns: 20mm 25mm 1fr 22mm 40mm;
-      grid-template-rows: 4.5mm 1fr;
+      grid-template-columns: 1fr 40mm;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
-    .th {
-      background: #eee;
+    .goods-items-pane {
+      display: flex;
+      flex-direction: column;
       border-right: ${B_INNER};
+      overflow: hidden;
+    }
+    .goods-table-head {
+      flex: 0 0 4.5mm;
+      display: grid;
+      grid-template-columns: 18mm 25mm 1fr 18mm;
+      border-bottom: ${B_INNER};
+      background: #eee;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .goods-table-head .th {
+      font-size: 2.1mm; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 0.3mm;
+      border-right: ${B_INNER};
+    }
+    .goods-table-head .th:last-child { border-right: 0; }
+
+    .goods-table-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      justify-content: flex-start;
+    }
+    .goods-row {
+      display: grid;
+      grid-template-columns: 18mm 25mm 1fr 18mm;
+      border-bottom: ${B_HAIR};
+      min-height: 4.8mm;
+      align-items: center;
+    }
+    .goods-row .td {
+      font-size: 2.4mm; line-height: 2.8mm;
+      padding: 0.6mm 1.2mm;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-right: ${B_HAIR};
+    }
+    .goods-row .td:last-child { border-right: 0; }
+    .goods-row .col-pkg { text-align: center; font-weight: 700; }
+    .goods-row .col-type { text-align: left; }
+    .goods-row .col-desc { text-align: left; font-weight: 600; }
+    .goods-row .col-wt { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .goods-charges-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .goods-charges-pane .col-charges {
+      flex: 0 0 4.5mm;
+      background: #eee;
       border-bottom: ${B_INNER};
       font-size: 2.1mm; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       text-align: center; padding: 0.3mm;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
-    .th:last-child { border-right: 0; }
-    .td {
-      border-right: ${B_INNER};
-      padding: 0.8mm 1.5mm;
-      font-size: 2.5mm; line-height: 2.9mm;
-      overflow: hidden;
-    }
-    .td:last-child { border-right: 0; }
-    .goods-flex {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 2mm;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    .goods-main { font-size: 2.8mm; font-weight: 600; }
-    .goods-meta {
-      font-size: 2.2mm;
-      font-weight: 600;
-      color: #222;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
 
     /* Charges cell */
     .charges-cell {
+      flex: 1;
       padding: 0 !important;
       overflow: hidden;
     }
@@ -778,16 +823,23 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     }
     .charges-inline .charge-label,
     .charges-inline .charge-value {
-      padding: 0.4mm 1.2mm;
+      padding: 0.5mm 1.2mm;
       border-bottom: ${B_HAIR};
-      line-height: 1.15;
+      line-height: 1.2;
     }
     .charges-inline .charge-label { border-right: ${B_HAIR}; }
     .charges-inline .charge-value { font-variant-numeric: tabular-nums; text-align: right; }
     .charges-inline .charge-total {
       font-weight: 700;
-      font-size: 2.4mm;
+      font-size: 2.3mm;
       background: #f5f5f5;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .charges-inline .charge-pay-type {
+      font-weight: 800;
+      font-size: 2.3mm;
+      color: #000;
+      background: #fafafa;
       border-bottom: 0;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
@@ -838,38 +890,38 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       padding-left: 3mm;
     }
 
-    /* ---------- BOTTOM (23mm) — remarks + signatures ---------- */
+    /* ---------- BOTTOM (15mm) — remarks + signatures ---------- */
     .bottom {
-      flex: 0 0 23mm;
+      flex: 0 0 15mm;
       display: grid;
       grid-template-columns: 1fr 50mm;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
     .remarks {
-      padding: 1.2mm 2.5mm;
+      padding: 0.8mm 2mm;
       border-right: ${B_INNER};
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.6mm;
+      gap: 0.3mm;
     }
     .remarks-title {
-      font-size: 2.5mm;
+      font-size: 2.2mm;
       font-weight: 800;
       color: #000;
-      line-height: 2.9mm;
+      line-height: 2.5mm;
       text-transform: uppercase;
-      letter-spacing: 0.15mm;
+      letter-spacing: 0.1mm;
     }
     .remarks-text {
-      font-size: 2.25mm;
-      line-height: 2.85mm;
+      font-size: 2mm;
+      line-height: 2.4mm;
       color: #222;
       overflow: hidden;
       display: -webkit-box;
-      -webkit-line-clamp: 5;
+      -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
     }
 
@@ -884,17 +936,17 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 1mm 1.5mm 0.8mm;
+      padding: 0.6mm 1.5mm 0.6mm;
       overflow: hidden;
     }
     .signatures-bottom .sig-row-last { border-right: 0; }
     .sig-line-label {
-      font-size: 2.2mm;
+      font-size: 2mm;
       font-weight: 700;
       color: #111;
       border-top: 0.3mm dashed #333;
-      padding-top: 0.6mm;
-      line-height: 2.6mm;
+      padding-top: 0.5mm;
+      line-height: 2.3mm;
       text-align: center;
     }
 
@@ -931,36 +983,59 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
   `;
 }
 
-// ============================================================================
-// Document assembly
-// ============================================================================
-
-function biltyDocument(shipment: Shipment, options: BiltyPrintOptions): string {
-  const { copies, layout, paper } = options;
+export function generateMultipleShipmentsPrintTemplate(
+  shipments: Shipment[],
+  options?: BiltyPrintOptions,
+): string {
+  if (!shipments || shipments.length === 0) return "";
+  const effectiveOpts = options ?? DEFAULT_BILTY_PRINT_OPTIONS;
+  const copies = effectiveOpts.copies && effectiveOpts.copies.length > 0 ? effectiveOpts.copies : DEFAULT_BILTY_COPIES;
+  const layout = effectiveOpts.layout || "3-up";
+  const paper = effectiveOpts.paper || "A4";
   const preset: BiltyPreset =
-    options.preset || getTenantBiltyPreset() || "standard";
+    effectiveOpts.preset || getTenantBiltyPreset() || "standard";
 
   const renderBody =
     preset === "dense" ? renderBiltyBodyDense : renderBiltyBodyStandard;
   const css = preset === "dense" ? biltyCssDense(paper, layout) : biltyCssStandard(paper, layout);
 
-  const copiesHtml = copies
-    .map((c) => `<div class="copy-slot">${renderBody(shipment, c)}</div>`)
-    .join("");
+  const allShipmentsHtml = shipments
+    .map((shipment) => {
+      const copiesHtml = copies
+        .map((c) => `<div class="copy-slot">${renderBody(shipment, c)}</div>`)
+        .join("");
+      return `<div class="copies-container">${copiesHtml}</div>`;
+    })
+    .join("\n");
+
+  const title =
+    shipments.length === 1
+      ? `Waybill / GR - ${esc(shipments[0].shipmentNo)}`
+      : `Waybills Batch (${shipments.length} Bilties)`;
 
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Waybill / GR - ${esc(shipment.shipmentNo)}</title>
-  <style>${css}</style>
+  <title>${title}</title>
+  <style>
+    ${css}
+    .copies-container {
+      page-break-after: always;
+    }
+    .copies-container:last-child {
+      page-break-after: auto;
+    }
+  </style>
 </head>
 <body onload="(window.__ktPrint||window.print)()">
-  <div class="copies-container">
-    ${copiesHtml}
-  </div>
+  ${allShipmentsHtml}
 </body>
 </html>`;
+}
+
+function biltyDocument(shipment: Shipment, options: BiltyPrintOptions): string {
+  return generateMultipleShipmentsPrintTemplate([shipment], options);
 }
 
 /** Reads the tenant's preferred Bilty preset from tenant_config; defaults to "standard". */
@@ -990,6 +1065,6 @@ export function generateShipmentPrintTemplateWithOptions(
   shipment: Shipment,
   options: BiltyPrintOptions,
 ): string {
-  const copies = options.copies.length > 0 ? options.copies : DEFAULT_BILTY_COPIES;
+  const copies = options.copies && options.copies.length > 0 ? options.copies : DEFAULT_BILTY_COPIES;
   return biltyDocument(shipment, { ...options, copies });
 }

@@ -17,6 +17,7 @@ interface PrintOptionsModalProps {
   onPrint: (opts: BiltyPrintOptions) => void;
   title?: string;
   subtitle?: string;
+  defaultKinds?: BiltyCopyKind[];
 }
 
 const ALL_KINDS: BiltyCopyKind[] = ["consignor", "consignee", "office", "driver"];
@@ -27,6 +28,7 @@ export default function PrintOptionsModal({
   onPrint,
   title = "Print Options",
   subtitle = "Choose which copies to print and how to lay them out.",
+  defaultKinds,
 }: PrintOptionsModalProps) {
   const [selectedKinds, setSelectedKinds] = useState<BiltyCopyKind[]>([]);
   const [layout, setLayout] = useState<BiltyPrintLayout>("3-up");
@@ -35,11 +37,15 @@ export default function PrintOptionsModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    const prefs = loadBiltyPrintPrefs();
-    setSelectedKinds(prefs.copies.map((c) => c.kind));
-    setLayout(prefs.layout);
-    setPaper(prefs.paper);
-  }, [isOpen]);
+    if (defaultKinds && defaultKinds.length > 0) {
+      setSelectedKinds(defaultKinds);
+    } else {
+      const prefs = loadBiltyPrintPrefs();
+      setSelectedKinds(prefs.copies.map((c) => c.kind));
+      setLayout(prefs.layout);
+      setPaper(prefs.paper);
+    }
+  }, [isOpen, defaultKinds]);
 
   if (!isOpen) return null;
 
@@ -47,6 +53,14 @@ export default function PrintOptionsModal({
     setSelectedKinds((prev) =>
       prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind]
     );
+  };
+
+  const setOnlyCopy = (kind: BiltyCopyKind) => {
+    setSelectedKinds([kind]);
+  };
+
+  const setAllCopies = () => {
+    setSelectedKinds(["consignor", "consignee", "office"]);
   };
 
   const handlePrint = (e: React.FormEvent) => {
@@ -87,9 +101,34 @@ export default function PrintOptionsModal({
         <form onSubmit={handlePrint} className="p-6 space-y-5">
           {/* Copies */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 mb-2 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-[#2F8E86]" /> Copies to Print
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-[#2F8E86]" /> Copies to Print
+              </label>
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setOnlyCopy("consignee")}
+                  className="px-2 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 hover:bg-[#d5e7e8] font-semibold transition cursor-pointer"
+                >
+                  Customer (Consignee)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOnlyCopy("consignor")}
+                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 font-semibold transition cursor-pointer"
+                >
+                  Consignor
+                </button>
+                <button
+                  type="button"
+                  onClick={setAllCopies}
+                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 font-semibold transition cursor-pointer"
+                >
+                  3-Copy Set
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {ALL_KINDS.map((kind) => {
                 const checked = selectedKinds.includes(kind);
