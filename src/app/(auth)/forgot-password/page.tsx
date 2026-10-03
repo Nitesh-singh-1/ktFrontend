@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
         setSuccess("Password has been reset successfully! Redirecting you to sign in...");
         setGeneratedOtpHint(null);
         setTimeout(() => {
-          router.push("/login");
+          router.push("/login/");
         }, 2000);
       } else {
         setError(res.message || "Invalid or expired verification code. Please try again.");

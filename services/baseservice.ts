@@ -119,7 +119,7 @@ function clearSessionAndRedirect() {
   sessionStorage.clear();
   const currentPath = window.location.pathname;
   if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard") && !currentPath.startsWith("/accept-invite")) {
-    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+    window.location.href = `/login/?redirect=${encodeURIComponent(currentPath)}`;
   }
 }
 

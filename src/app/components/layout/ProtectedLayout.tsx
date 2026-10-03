@@ -24,7 +24,7 @@ export default function ProtectedLayout({
     const token = localStorage.getItem("token");
 
     if (!loggedIn || !token) {
-      router.push("/login");
+      router.push("/login/");
       return;
     }
 

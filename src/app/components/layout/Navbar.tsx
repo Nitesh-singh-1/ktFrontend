@@ -63,7 +63,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
 
   const handleLogout = () => {
     authService.logout();
-    window.location.href = "/login";
+    window.location.href = "/login/";
   };
 
   const companyTitle = config?.general?.companyName || orgName || "Dashboard";

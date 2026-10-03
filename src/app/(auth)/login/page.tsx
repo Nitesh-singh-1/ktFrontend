@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -27,6 +27,18 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && authService.isAuthenticated()) {
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect");
+      if (redirectUrl && redirectUrl.startsWith("/")) {
+        window.location.href = redirectUrl.endsWith("/") ? redirectUrl : `${redirectUrl}/`;
+      } else {
+        window.location.href = "/dashboard/";
+      }
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -42,7 +54,13 @@ const LoginPage = () => {
 
       if (res.success) {
         localStorage.setItem("isLoggedIn", "true");
-        router.push("/dashboard");
+        const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = params?.get("redirect");
+        if (redirectUrl && redirectUrl.startsWith("/")) {
+          window.location.href = redirectUrl.endsWith("/") ? redirectUrl : `${redirectUrl}/`;
+        } else {
+          window.location.href = "/dashboard/";
+        }
       } else {
         setError(res.message || "Invalid credentials. Please check your username and password.");
       }
