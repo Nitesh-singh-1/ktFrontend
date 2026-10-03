@@ -226,8 +226,9 @@ function generateSingleCopy(entry: GREntryData, copyType: string): string {
         ` : ''}
       </table>
 
-      <!-- Terms and Conditions -->
-      <div class="section-header">TERMS & CONDITIONS</div>
+      <!-- GST Notice & Terms and Conditions -->
+      <div style="font-size: 11px; font-weight: bold; margin-top: 6px; margin-bottom: 3px; color: #111; text-transform: uppercase;">GST Paid by Consignee</div>
+      <div class="section-header">* TERMS &amp; CONDITION</div>
       <div class="terms-conditions-wrapper">
         <div class="terms-conditions">
           <ol>
