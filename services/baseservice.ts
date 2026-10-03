@@ -116,6 +116,7 @@ function clearSessionAndRedirect() {
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
+  localStorage.removeItem("isLoggedIn");
   sessionStorage.clear();
   const currentPath = window.location.pathname;
   if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard") && !currentPath.startsWith("/accept-invite")) {

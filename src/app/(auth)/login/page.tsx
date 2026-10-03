@@ -27,6 +27,18 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
 
+  React.useEffect(() => {
+    if (authService.isAuthenticated()) {
+      const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const redirectUrl = params?.get("redirect");
+      if (redirectUrl && redirectUrl.startsWith("/")) {
+        window.location.href = redirectUrl;
+      } else {
+        window.location.href = "/dashboard";
+      }
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -42,7 +54,13 @@ const LoginPage = () => {
 
       if (res.success) {
         localStorage.setItem("isLoggedIn", "true");
-        router.push("/dashboard");
+        const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = params?.get("redirect");
+        if (redirectUrl && redirectUrl.startsWith("/")) {
+          window.location.href = redirectUrl;
+        } else {
+          window.location.href = "/dashboard";
+        }
       } else {
         setError(res.message || "Invalid credentials. Please check your username and password.");
       }
