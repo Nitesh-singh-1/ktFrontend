@@ -198,7 +198,12 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       <div>
         <div class="info-box-title" style="font-weight: bold; margin-bottom: 6px;">ANCILLARY CHARGES BREAKDOWN</div>
         ${chargesHtml || `<div style="font-size: 11px; color: #64748b;">No extra charges attached.</div>`}
-        ${shipment.remarks ? `<div style="margin-top: 10px; font-size: 11px; background: #fff; border: 1px solid #ddd; padding: 6px; border-radius: 4px;"><strong>Remarks:</strong> ${esc(shipment.remarks)}</div>` : ""}
+        <div style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #111; text-transform: uppercase;">GST Paid by Consignee</div>
+        <div style="margin-top: 6px; font-size: 11px; font-weight: bold; color: #333; text-transform: uppercase;">* TERMS &amp; CONDITION</div>
+        <div style="margin-top: 2px; font-size: 10px; color: #555; line-height: 1.3;">
+          ${shipment.remarks ? `${esc(shipment.remarks)}<br>` : ""}
+          ${profile.printDisclaimer ? esc(profile.printDisclaimer) : `Received goods for carriage by road subject to transporter terms. Quantity, value, marks and weight are as declared by consignor. Subject to the applicable local jurisdiction.`}
+        </div>
       </div>
 
       <div class="ledger-box">
@@ -220,6 +225,11 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       <div><div class="sig-line">Driver's Signature</div></div>
       <div><div class="sig-line">For ${esc(profile.companyName)} (Auth Sign)</div></div>
     </div>
+
+    ${profile.activeStations && profile.activeStations.length > 0 ? `
+    <div style="margin-top: 10px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; color: #111;">
+      <span style="font-weight: 800; color: #000; margin-right: 6px;">STATIONS:</span> ${profile.activeStations.map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim())).filter(Boolean).map(formatStationEntry).join(" &nbsp;·&nbsp; ")}
+    </div>` : ""}
   </div>`;
 }
 
@@ -310,6 +320,17 @@ function inr(n: number): string {
   return (n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function formatStationEntry(raw: string): string {
+  const clean = raw.trim();
+  const match = clean.match(/^([^()]+?)(?:\s*\((?:Ph:\s*)?([^)]+)\))?$/i);
+  if (match && match[2]) {
+    const stationName = match[1].trim();
+    const phone = match[2].trim().replace(/^Ph:\s*/i, "");
+    return `<strong>${esc(stationName)}</strong> (<strong>${esc(phone)}</strong>)`;
+  }
+  return `<strong>${esc(clean)}</strong>`;
+}
+
 export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): string {
   const profile = getTenantPrintProfile();
 
@@ -341,6 +362,11 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     .filter(Boolean);
   const markaText = privateMarkas.length > 0 ? privateMarkas.join(", ") : "";
 
+  const metaParts: string[] = [];
+  if (shipment.invoiceNo) metaParts.push(`Inv No: ${esc(shipment.invoiceNo)}`);
+  if (markaText) metaParts.push(`Marka: ${esc(markaText)}`);
+  const goodsMetaRow = metaParts.join(" &nbsp;·&nbsp; ");
+
   const freight = shipment.totalFreight || 0;
   const hamali = pickCharge(shipment, /hamali/i);
   // Other = totalOtherCharges - hamali (avoid double counting), floor at 0
@@ -363,14 +389,14 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     return parts.length > 0 ? parts[parts.length - 1] : loc.trim();
   };
 
-  // Footer strip: list of station names pulled from tenant profile. Names only, no codes.
+  // Footer strip: list of station names pulled from tenant profile. Names and phones are bolded without "Ph:".
   const stationsRaw = profile.activeStations || [];
   const stationNames = stationsRaw
     .map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim()))
     .filter(Boolean);
   const stationsStrip =
     stationNames.length > 0
-      ? `<span class="stations-label">STATIONS:</span> ${stationNames.map(esc).join(" &nbsp;·&nbsp; ")}`
+      ? `<span class="stations-label">STATIONS:</span> ${stationNames.map(formatStationEntry).join(" &nbsp;·&nbsp; ")}`
       : `For ${esc(profile.companyName)}`;
 
   return `
@@ -378,24 +404,24 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     <div class="header">
       <div class="logo-box">
         ${profile.logoUrl
-          ? `<img src="${profile.logoUrl}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=\\'logo-circle\\'>${esc(logoInitials)}</div>'" />`
+          ? `<img src="${profile.logoUrl}" alt="Logo" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=\\'logo-circle\\'>${esc(logoInitials)}</div>'" />`
           : `<div class="logo-circle">${esc(logoInitials)}</div>`}
       </div>
 
       <div class="company">
+        ${showGstin && profile.gstin ? `<div class="company-gstin">GSTIN: ${esc(profile.gstin)}${profile.panNumber ? ` &nbsp;·&nbsp; PAN: ${esc(profile.panNumber)}` : ""}</div>` : ""}
         <div class="company-name">${esc(profile.companyName)}</div>
         <div class="company-subtitle">H.O.: ${esc(profile.address || "-")}</div>
         <div class="company-contact">
           ${profile.phone ? `Phone: ${esc(profile.phone)}` : ""}
-          ${profile.email ? ` &nbsp;|&nbsp; ${esc(profile.email)}` : ""}
+          ${profile.email ? ` &nbsp;|&nbsp; Email: ${esc(profile.email)}` : ""}
         </div>
-        ${showGstin && profile.gstin ? `<div class="company-gstin">GSTIN: ${esc(profile.gstin)}${profile.panNumber ? ` &nbsp;·&nbsp; PAN: ${esc(profile.panNumber)}` : ""}</div>` : ""}
       </div>
 
       <div class="copy-meta">
         <div class="copy-label">${esc(copyLabel)}</div>
         <div class="lr-number">
-          <div class="lr-label">LR / BILTY NO.</div>
+          <div class="lr-label">GR NO.</div>
           <div class="lr-value">${esc(shipment.shipmentNo)}</div>
         </div>
       </div>
@@ -405,7 +431,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       <div class="party">
         <div class="field-label">Consignor's Name</div>
         <div class="field-value">${esc(shipment.consignorName || "-")}</div>
-        <div class="field-label" style="margin-top:1mm;">Address</div>
+        <div class="field-label" style="margin-top:0.8mm;">Address</div>
         <div class="field-value small-value party-addr">${esc(shipment.consignorAddress || "-")}</div>
         <div class="party-meta">
           ${shipment.consignorGstNo ? `GSTIN: ${esc(shipment.consignorGstNo)}` : ""}
@@ -416,7 +442,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       <div class="party">
         <div class="field-label">Consignee's Name</div>
         <div class="field-value">${esc(shipment.consigneeName || "-")}</div>
-        <div class="field-label" style="margin-top:1mm;">Address</div>
+        <div class="field-label" style="margin-top:0.8mm;">Address</div>
         <div class="field-value small-value party-addr">${esc(shipment.consigneeAddress || "-")}</div>
         <div class="party-meta">
           ${shipment.consigneeGstNo ? `GSTIN: ${esc(shipment.consigneeGstNo)}` : ""}
@@ -442,13 +468,12 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       <div class="td"><div class="goods-main">${totalPackages}</div></div>
       <div class="td"><div class="goods-main">${esc(packageType)}</div></div>
       <div class="td">
-        <div class="goods-main">${esc(goodsDescription)}</div>
-        <div class="goods-sub">
-          ${shipment.invoiceNo ? `Invoice No: ${esc(shipment.invoiceNo)}` : ""}
-          ${markaText ? `${shipment.invoiceNo ? "<br>" : ""}Marka: ${esc(markaText)}` : ""}
+        <div class="goods-flex">
+          <span class="goods-main">${esc(goodsDescription)}</span>
+          ${goodsMetaRow ? `<span class="goods-meta">${goodsMetaRow}</span>` : ""}
         </div>
       </div>
-      <div class="td"><div class="goods-main">${totalWeight}</div><div class="goods-sub">Kg</div></div>
+      <div class="td"><div class="goods-main">${totalWeight > 0 ? totalWeight : "-"}</div></div>
       <div class="td charges-cell">
         <div class="charges-inline">
           <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
@@ -459,11 +484,19 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
       </div>
     </div>
 
+    <div class="amount-words-bar">
+      <div class="amount-words-left">
+        <span class="words-bar-label">AMOUNT IN WORDS:</span>
+        <span class="words-bar-value">${esc(numberToWords(grandTotal))}</span>
+      </div>
+      <div class="gst-paid-badge">GST PAID BY CONSIGNEE</div>
+    </div>
+
     <div class="bottom">
       <div class="remarks">
-        <div class="remarks-title">REMARKS / TERMS</div>
+        <div class="remarks-title">* TERMS &amp; CONDITION</div>
         <div class="remarks-text">
-          ${shipment.remarks ? `${esc(shipment.remarks)}<br>` : ""}
+          ${shipment.remarks ? `<strong>Remarks:</strong> ${esc(shipment.remarks)}<br>` : ""}
           ${disclaimer ? esc(disclaimer) : `Received goods for carriage by road subject to transporter terms. Quantity, value, marks and weight are as declared by consignor. Subject to ${esc(jurisdiction)}.`}
         </div>
       </div>
@@ -532,21 +565,21 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       background: #fff;
     }
 
-    /* ---------- HEADER (18mm) ---------- */
+    /* ---------- HEADER (17mm) ---------- */
     .header {
-      flex: 0 0 18mm;
+      flex: 0 0 17mm;
       display: grid;
-      grid-template-columns: 24mm 1fr 46mm;
+      grid-template-columns: 17mm 1fr 46mm;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
     .logo-box {
       border-right: ${B_INNER};
       display: flex; align-items: center; justify-content: center;
-      padding: 1.5mm;
+      padding: 0.4mm;
       overflow: hidden;
     }
-    .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .logo-circle {
       width: 14mm; height: 14mm;
       border: 0.5mm solid #333; border-radius: 50%;
@@ -554,41 +587,48 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       font-size: 6mm; font-weight: bold;
     }
     .company {
-      padding: 1.5mm 3mm;
+      position: relative;
+      padding: 1mm 2mm;
       text-align: center;
       overflow: hidden;
-      display: flex; flex-direction: column; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.3mm;
+    }
+    .company-gstin {
+      position: absolute;
+      top: 1.5mm;
+      right: 2.5mm;
+      font-size: 2.1mm; line-height: 2.4mm;
+      font-weight: 700; color: #111;
+      white-space: nowrap;
     }
     .company-name {
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 6.4mm; font-weight: 700;
-      line-height: 6.6mm;
-      letter-spacing: 0.4mm;
+      font-size: 5.6mm; font-weight: 700;
+      line-height: 6mm;
+      letter-spacing: 0.3mm;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 80%;
     }
     .company-subtitle {
-      font-size: 2.5mm; line-height: 3mm; margin-top: 0.5mm;
+      font-size: 2.3mm; line-height: 2.7mm;
+      color: #222;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .company-contact {
-      font-size: 2.2mm; line-height: 2.8mm;
+      font-size: 2.1mm; line-height: 2.5mm;
+      color: #333;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .company-gstin {
-      font-size: 2.3mm; line-height: 2.8mm;
-      font-weight: 700; color: #111;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      margin-top: 0.3mm;
     }
 
     .copy-meta {
       border-left: ${B_INNER};
       display: grid;
-      grid-template-rows: 7mm 11mm;
+      grid-template-rows: 6.5mm 10.5mm;
       overflow: hidden;
     }
     .copy-label {
-      font-size: 2.9mm; font-weight: 800;
+      font-size: 2.8mm; font-weight: 800;
       text-align: center;
       display: flex; align-items: center; justify-content: center;
       border-bottom: ${B_INNER};
@@ -598,42 +638,46 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       text-transform: uppercase;
     }
     .lr-number {
-      display: grid; grid-template-columns: 14mm 1fr;
+      display: grid; grid-template-columns: 12mm 1fr;
       align-items: center;
       overflow: hidden;
     }
-    .lr-label { font-size: 2.3mm; padding-left: 2mm; line-height: 1.15; }
+    .lr-label {
+      font-size: 2.2mm; font-weight: 700;
+      padding-left: 2mm; line-height: 1.15;
+      color: #333;
+    }
     .lr-value {
       font-size: 4.4mm; font-weight: 700;
       text-align: center; padding: 0 1mm;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* ---------- PARTIES (20mm) ---------- */
+    /* ---------- PARTIES (19mm) ---------- */
     .parties {
-      flex: 0 0 20mm;
+      flex: 0 0 19mm;
       display: grid;
       grid-template-columns: 1fr 1fr 40mm;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
     .party {
-      padding: 1.1mm 2mm;
+      padding: 0.9mm 2mm;
       border-right: ${B_INNER};
       overflow: hidden;
       display: flex; flex-direction: column;
     }
     .party:last-child { border-right: 0; }
     .field-label {
-      font-size: 2.2mm; font-weight: 700;
+      font-size: 2.1mm; font-weight: 700;
       text-transform: uppercase; color: #333;
-      margin-bottom: 0.4mm; line-height: 1.15;
+      margin-bottom: 0.3mm; line-height: 1.15;
     }
     .field-value {
-      font-size: 2.8mm; font-weight: 600; line-height: 3.1mm;
+      font-size: 2.7mm; font-weight: 600; line-height: 3mm;
       overflow: hidden;
     }
-    .small-value { font-size: 2.4mm; font-weight: 500; line-height: 2.8mm; }
+    .small-value { font-size: 2.3mm; font-weight: 500; line-height: 2.7mm; }
     .party-addr {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -642,49 +686,45 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       color: #1f2937;
     }
     .party-meta {
-      font-size: 2.3mm;
-      line-height: 2.7mm;
+      font-size: 2.2mm;
+      line-height: 2.6mm;
       color: #374151;
-      margin-top: 0.4mm;
+      margin-top: 0.3mm;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      /* Fixed height so toggling GSTIN visibility (either auto via
-         taxTreatment=NonTaxable or manually via the Print Options dialog's
-         "Print GSTIN" checkbox) does NOT shift the goods / charges rows
-         below. One line of 2.7mm leading = 2.7mm reserved. */
-      min-height: 2.7mm;
+      min-height: 2.6mm;
     }
     .route-box {
-      padding: 1.1mm 2mm;
+      padding: 0.9mm 2mm;
       overflow: hidden;
-      display: flex; flex-direction: column; gap: 0.6mm;
+      display: flex; flex-direction: column; gap: 0.5mm;
     }
     .route-row {
       display: grid;
       grid-template-columns: 14mm 1fr;
       align-items: baseline;
       gap: 1.5mm;
-      font-size: 2.6mm; line-height: 3mm;
+      font-size: 2.5mm; line-height: 2.9mm;
       overflow: hidden;
     }
     .route-label {
-      font-size: 2.2mm; font-weight: 700;
+      font-size: 2.1mm; font-weight: 700;
       text-transform: uppercase; color: #333;
       letter-spacing: 0.1mm;
     }
     .route-value {
-      font-size: 2.7mm; font-weight: 700;
+      font-size: 2.6mm; font-weight: 700;
       color: #111;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* ---------- GOODS (30mm) ---------- */
+    /* ---------- GOODS (22mm) ---------- */
     .goods {
-      flex: 0 0 30mm;
+      flex: 0 0 22mm;
       display: grid;
-      grid-template-columns: 20mm 25mm 1fr 25mm 40mm;
-      grid-template-rows: 5mm 1fr;
+      grid-template-columns: 20mm 25mm 1fr 22mm 40mm;
+      grid-template-rows: 4.5mm 1fr;
       border-bottom: ${B_INNER};
       overflow: hidden;
     }
@@ -692,24 +732,39 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       background: #eee;
       border-right: ${B_INNER};
       border-bottom: ${B_INNER};
-      font-size: 2.2mm; font-weight: 700;
+      font-size: 2.1mm; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
-      text-align: center; padding: 0.4mm;
+      text-align: center; padding: 0.3mm;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .th:last-child { border-right: 0; }
     .td {
       border-right: ${B_INNER};
-      padding: 1mm 1.5mm;
-      font-size: 2.6mm; line-height: 3mm;
+      padding: 0.8mm 1.5mm;
+      font-size: 2.5mm; line-height: 2.9mm;
       overflow: hidden;
     }
     .td:last-child { border-right: 0; }
-    .goods-main { font-size: 2.9mm; font-weight: 600; }
-    .goods-sub { font-size: 2.2mm; margin-top: 0.8mm; line-height: 2.7mm; }
+    .goods-flex {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 2mm;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .goods-main { font-size: 2.8mm; font-weight: 600; }
+    .goods-meta {
+      font-size: 2.2mm;
+      font-weight: 600;
+      color: #222;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-    /* Charges cell — now the rightmost goods column (post-swap).
-       Freight / Hamali / Other / Grand Total as a compact 2-col grid. */
+    /* Charges cell */
     .charges-cell {
       padding: 0 !important;
       overflow: hidden;
@@ -718,27 +773,107 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       display: grid;
       grid-template-columns: 1fr 18mm;
       grid-auto-rows: min-content;
-      font-size: 2.3mm;
+      font-size: 2.2mm;
       height: 100%;
     }
     .charges-inline .charge-label,
     .charges-inline .charge-value {
-      padding: 0.5mm 1.3mm;
+      padding: 0.4mm 1.2mm;
       border-bottom: ${B_HAIR};
-      line-height: 1.2;
+      line-height: 1.15;
     }
     .charges-inline .charge-label { border-right: ${B_HAIR}; }
     .charges-inline .charge-value { font-variant-numeric: tabular-nums; text-align: right; }
     .charges-inline .charge-total {
       font-weight: 700;
-      font-size: 2.5mm;
+      font-size: 2.4mm;
       background: #f5f5f5;
       border-bottom: 0;
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
 
-    /* Signatures block — now in the bottom row (post-swap). Two side-by-side
-       signature slots: consignor's and the transporter's authorised signatory. */
+    /* ---------- AMOUNT IN WORDS + GST STRIP (5mm) ---------- */
+    .amount-words-bar {
+      flex: 0 0 5mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5mm;
+      background: #fafafa;
+      border-bottom: ${B_INNER};
+      font-size: 2.3mm;
+      line-height: 2.6mm;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .amount-words-left {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5mm;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .words-bar-label {
+      font-weight: 800;
+      color: #000;
+      letter-spacing: 0.15mm;
+      flex-shrink: 0;
+    }
+    .words-bar-value {
+      font-style: italic;
+      font-weight: 600;
+      color: #111;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .gst-paid-badge {
+      font-size: 2.4mm;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: 0.2mm;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      padding-left: 3mm;
+    }
+
+    /* ---------- BOTTOM (23mm) — remarks + signatures ---------- */
+    .bottom {
+      flex: 0 0 23mm;
+      display: grid;
+      grid-template-columns: 1fr 50mm;
+      border-bottom: ${B_INNER};
+      overflow: hidden;
+    }
+    .remarks {
+      padding: 1.2mm 2.5mm;
+      border-right: ${B_INNER};
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 0.6mm;
+    }
+    .remarks-title {
+      font-size: 2.5mm;
+      font-weight: 800;
+      color: #000;
+      line-height: 2.9mm;
+      text-transform: uppercase;
+      letter-spacing: 0.15mm;
+    }
+    .remarks-text {
+      font-size: 2.25mm;
+      line-height: 2.85mm;
+      color: #222;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+    }
+
+    /* Signatures block */
     .signatures-bottom {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -763,53 +898,6 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       text-align: center;
     }
 
-    /* ---------- BOTTOM (18mm) — remarks + charges ---------- */
-    .bottom {
-      flex: 0 0 18mm;
-      display: grid;
-      grid-template-columns: 1fr 50mm;
-      border-bottom: ${B_INNER};
-      overflow: hidden;
-    }
-    .remarks {
-      padding: 1mm 2mm;
-      border-right: ${B_INNER};
-      overflow: hidden;
-    }
-    .remarks-title {
-      font-size: 2.3mm; font-weight: 700;
-      margin-bottom: 0.4mm;
-    }
-    .remarks-text {
-      font-size: 2.1mm;
-      line-height: 2.6mm;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 5;
-      -webkit-box-orient: vertical;
-    }
-    .charges {
-      display: grid;
-      grid-template-columns: 1fr 22mm;
-      grid-auto-rows: min-content;
-      font-size: 2.3mm;
-      overflow: hidden;
-    }
-    .charge-label, .charge-value {
-      padding: 0.5mm 1.3mm;
-      border-bottom: ${B_HAIR};
-      line-height: 1.2;
-    }
-    .charge-label { border-right: ${B_HAIR}; }
-    .charge-value { font-variant-numeric: tabular-nums; text-align: right; }
-    .charge-total {
-      font-weight: 700;
-      font-size: 2.5mm;
-      background: #f5f5f5;
-      border-bottom: 0;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    }
-
     /* ---------- FOOTER (7mm) — stations horizontal strip ---------- */
     .footer {
       flex: 0 0 7mm;
@@ -821,9 +909,9 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .footer-stations {
-      font-size: 2mm;
-      line-height: 2.4mm;
-      color: #1f2937;
+      font-size: 2.1mm;
+      line-height: 2.5mm;
+      color: #111;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -832,9 +920,13 @@ function biltyCssDense(paper: BiltyPaperSize, layout: BiltyPrintLayout): string 
     }
     .footer-stations .stations-label {
       font-weight: 800;
-      color: #111;
+      color: #000;
       margin-right: 1.5mm;
       letter-spacing: 0.3mm;
+    }
+    .footer-stations strong {
+      font-weight: 800;
+      color: #000;
     }
   `;
 }
