@@ -93,7 +93,15 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     subItems: [
       { key: "consignments.create", title: "New Bilty (GR Booking Entry)", desc: "Issue new consignment note with consignor/consignee", iconName: "plus" },
       { key: "consignments.all", title: "All Bilties (GR Registry)", desc: "Search, filter, edit, and print consignment bilties", iconName: "file" },
+      { key: "consignments.delivery_settlement", title: "Delivery Settlement", desc: "Settle ToPay/Paid/TBB consignments, record deductions and mark delivered", iconName: "check" },
     ],
+  },
+  {
+    key: "delivery_settlement",
+    title: "Delivery Settlement",
+    desc: "Consignment delivery settlement, ToPay freight collections & shortage deductions",
+    iconName: "check",
+    category: "Core Operations",
   },
   {
     key: "quotations",
@@ -106,6 +114,17 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     key: "trips",
     title: "LR / Truck Challan & Manifest",
     desc: "Vehicle loading memo, driver hire contract, and dispatch trips",
+    iconName: "trips",
+    category: "Fleet & Dispatch",
+    subItems: [
+      { key: "trips.all", title: "Manifest & Dispatch (Challans)", desc: "Manage loading challans, vehicle dispatch and transit", iconName: "truck" },
+      { key: "trips.settlement", title: "Trip Settlement", desc: "Driver trip settlement: advances, diesel, toll, ToPay cash, net balance", iconName: "card" },
+    ],
+  },
+  {
+    key: "trip_settlement",
+    title: "Trip Settlement",
+    desc: "Reconcile driver advances, fuel, toll, ToPay cash collections, and net driver settlement",
     iconName: "trips",
     category: "Fleet & Dispatch",
   },
@@ -130,9 +149,17 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     iconName: "billing",
     category: "Financial & Billing",
     subItems: [
+      { key: "billing.bill_book", title: "Bill Book (Consolidated Freight Bill)", desc: "Party-wise multi-Bilty consolidated billing with authentic printable Freight Bill", iconName: "file" },
       { key: "billing.invoices", title: "Freight Invoices", desc: "Create, view, and send freight tax invoices", iconName: "file" },
       { key: "billing.receipts", title: "Money Receipts (MR)", desc: "Collect customer payments and issue MR vouchers", iconName: "card" },
     ],
+  },
+  {
+    key: "bill_book",
+    title: "Bill Book (Consolidated Freight Bill)",
+    desc: "Party-wise multi-Bilty consolidated billing with authentic printable Freight Bill",
+    iconName: "billing",
+    category: "Financial & Billing",
   },
   {
     key: "master_data",

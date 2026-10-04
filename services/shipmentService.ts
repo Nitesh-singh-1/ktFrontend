@@ -62,4 +62,19 @@ export const shipmentService = {
   cancelShipment: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/shipment/${id}`);
   },
+
+  // Settle delivery (record collections, discounts, mark delivered)
+  settleDelivery: (data: {
+    shipmentIds: number[];
+    receivedAmount?: number;
+    discountAmount?: number;
+    discountReason?: string;
+    paymentMode: string;
+    paymentReference?: string;
+    deliveredTo?: string;
+    deliveryDate?: string;
+    remarks?: string;
+  }): Promise<{ success: boolean; message: string; settledCount: number; totalAmountSettled: number; totalDiscountGiven: number }> => {
+    return baseService.post<{ success: boolean; message: string; settledCount: number; totalAmountSettled: number; totalDiscountGiven: number }>("/shipment/settle-delivery", data);
+  },
 };
