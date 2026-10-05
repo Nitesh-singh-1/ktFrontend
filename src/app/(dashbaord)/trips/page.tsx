@@ -5,7 +5,7 @@ import { TripDto, TripStatus } from "@/types/tms";
 import { tripService } from "services/tripService";
 import TripModal from "@/app/components/trip/TripModal";
 import TripDetailsModal from "@/app/components/trip/TripDetailsModal";
-import { Truck, Plus, Search, AlertTriangle, Send, Flag, FileText, Eye, CheckCircle2 } from "lucide-react";
+import { Truck, Plus, Search, AlertTriangle, Send, Flag, FileText, Eye, CheckCircle2, Printer } from "lucide-react";
 import { DataTable } from "@/app/components/ui/DataTable";
 
 export default function TripsPage() {
@@ -20,6 +20,7 @@ export default function TripsPage() {
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
+  const [initialShowPrint, setInitialShowPrint] = useState(false);
 
   useEffect(() => {
     fetchTrips();
@@ -233,7 +234,15 @@ export default function TripsPage() {
             key: "tripNo",
             header: "Manifest / Challan No",
             render: (t) => (
-              <button onClick={() => setSelectedTripId(t.id)} className="font-mono font-bold text-[#2F8E86] dark:text-teal-400 hover:underline cursor-pointer whitespace-nowrap">{t.tripNo}</button>
+              <button
+                onClick={() => {
+                  setSelectedTripId(t.id);
+                  setInitialShowPrint(false);
+                }}
+                className="font-mono font-bold text-[#2F8E86] dark:text-teal-400 hover:underline cursor-pointer whitespace-nowrap"
+              >
+                {t.tripNo}
+              </button>
             ),
           },
           {
@@ -314,7 +323,24 @@ export default function TripsPage() {
                       <Flag className="w-3 h-3" /> Arrived
                     </button>
                   )}
-                  <button onClick={() => setSelectedTripId(t.id)} className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1" title="Inspect Manifest, Add Fuel/Expenses & Print Pink Challan">
+                  <button
+                    onClick={() => {
+                      setSelectedTripId(t.id);
+                      setInitialShowPrint(true);
+                    }}
+                    className="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800 font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                    title="Print Pink Truck Challan Slip"
+                  >
+                    <Printer className="w-3 h-3 text-pink-600 dark:text-pink-400" /> Print
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedTripId(t.id);
+                      setInitialShowPrint(false);
+                    }}
+                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
+                    title="Inspect Manifest, Add Fuel/Expenses & Manage Challan"
+                  >
                     <FileText className="w-3 h-3 text-[#2F8E86]" /> Details
                   </button>
                 </div>
@@ -334,9 +360,13 @@ export default function TripsPage() {
       {/* Challan Details, Expenses & Pink Challan Print Modal */}
       <TripDetailsModal
         isOpen={!!selectedTripId}
-        onClose={() => setSelectedTripId(null)}
+        onClose={() => {
+          setSelectedTripId(null);
+          setInitialShowPrint(false);
+        }}
         tripId={selectedTripId}
         onUpdated={fetchTrips}
+        initialShowPrint={initialShowPrint}
       />
     </div>
   );

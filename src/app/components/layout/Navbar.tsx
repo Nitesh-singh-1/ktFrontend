@@ -22,9 +22,7 @@ import { useAppTheme, ThemeKey } from "@/context/ThemeContext";
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {}) {
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
-  // Hydrate synchronously from the cached user so the navbar renders "SaaS Configuration"
-  // vs. "Organization Settings" correctly on first paint; /me only overrides on success.
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
   const [planTier, setPlanTier] = useState<string | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false);
 
@@ -37,6 +35,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
   const isSuperUser = ["SUPER_USER", "ADMIN", "TENANTADMIN", "TENANT_OWNER", "SUPERADMIN"].includes(role);
 
   useEffect(() => {
+    setIsPlatformAdmin(authService.isPlatformAdminSync());
     const currentUser = authService.getUser();
     setUser(currentUser);
     setOrgName(authService.getOrganizationName());

@@ -19,6 +19,7 @@ export interface DatePickerProps {
   className?: string;
   disabled?: boolean;
   align?: "left" | "right";
+  direction?: "down" | "up" | "auto";
   disableFutureDates?: boolean;
 }
 
@@ -55,9 +56,11 @@ export function DatePicker({
   className = "",
   disabled = false,
   align = "right",
+  direction = "auto",
   disableFutureDates = true,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [viewMode, setViewMode] = useState<"days" | "months" | "years">("days");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +75,27 @@ export function DatePicker({
   const initialDate = value ? new Date(value + "T00:00:00") : new Date();
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
+
+  // Determine upward opening on trigger click or direction prop
+  const handleToggleOpen = () => {
+    if (disabled) return;
+    if (!isOpen) {
+      if (direction === "up") {
+        setOpenUpward(true);
+      } else if (direction === "down") {
+        setOpenUpward(false);
+      } else if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // If less than 320px below container, open upward
+        setOpenUpward(spaceBelow < 320);
+      }
+      setViewMode("days");
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (value) {
@@ -198,9 +222,9 @@ export function DatePicker({
   ).reverse();
 
   return (
-    <div className={`relative inline-block ${className}`} ref={containerRef}>
+    <div className={`relative ${className.includes("w-") ? "" : "inline-block"} ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+        <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
           {label}
         </label>
       )}
@@ -209,23 +233,18 @@ export function DatePicker({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => {
-          if (!disabled) {
-            setIsOpen(!isOpen);
-            setViewMode("days");
-          }
-        }}
-        className={`h-9 px-3 rounded-xl border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs ${
+        onClick={handleToggleOpen}
+        className={`w-full h-10 px-3 py-2 rounded-lg border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
           isOpen
-            ? "border-[#2F8E86] ring-2 ring-[#2F8E86]/20"
+            ? "border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
             : "border-[#D9E2E3] dark:border-slate-700 hover:border-[#2F8E86]/60"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <div className="flex items-center gap-2 overflow-hidden text-left">
-          <CalendarIcon className="w-4 h-4 text-[#2F8E86] shrink-0" />
+          <CalendarIcon className="w-3.5 h-3.5 text-[#2F8E86] shrink-0" />
           <span
             className={`truncate ${
-              value ? "text-slate-900 dark:text-slate-100 font-bold" : "text-slate-400 font-medium"
+              value ? "text-[#111827] dark:text-white font-semibold" : "text-[#94A3B8] font-normal"
             }`}
           >
             {value ? formatDisplayDate(value) : placeholder}
@@ -235,7 +254,7 @@ export function DatePicker({
         {value && !disabled && (
           <div
             onClick={handleClear}
-            className="p-0.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition ml-1"
+            className="p-0.5 rounded-md text-[#94A3B8] hover:text-[#64748B] dark:hover:text-slate-200 transition ml-1"
             title="Clear date"
           >
             <X className="w-3.5 h-3.5" />
@@ -243,12 +262,14 @@ export function DatePicker({
         )}
       </button>
 
-      {/* Calendar Popover */}
+      {/* Calendar Popover (Z-index 100 with auto upward/downward smart positioning) */}
       {isOpen && (
         <div
           className={`absolute ${
             align === "left" ? "left-0" : "right-0"
-          } top-full mt-1.5 z-50 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#D9E2E3] dark:border-slate-800 p-3.5 w-[280px] animate-in fade-in zoom-in-95 duration-150`}
+          } ${
+            openUpward ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          } z-[100] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#D9E2E3] dark:border-slate-800 p-3.5 w-[280px] animate-in fade-in zoom-in-95 duration-150`}
         >
           {/* Header Navigation */}
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-800">

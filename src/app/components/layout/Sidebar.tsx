@@ -62,14 +62,12 @@ export default function Sidebar({
   const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
-  // Hydrate from the cached user (set on login/refresh) so the menu renders with the
-  // correct items on the very first paint — no flash of "regular user" menu while /me
-  // resolves. A background refresh below keeps the value fresh, but a failed /me is
-  // treated as "keep whatever we already know" instead of resetting to false, so a
-  // transient network blip can't strip the platform operator's SaaS Configuration link.
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
+  // Default to false on initial SSR/client hydration to prevent hydration mismatch;
+  // immediately updated in useEffect from authService / cached profile.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsPlatformAdmin(authService.isPlatformAdminSync());
     setUser(authService.getUser());
     setOrgName(authService.getOrganizationName());
     authService.getMyProfile()

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { MoneyReceiptDto } from "@/types/moneyReceipt";
 import { moneyReceiptService } from "services/moneyReceiptService";
+import { shipmentService } from "services/shipmentService";
 import { numberToWords } from "@/utils/numberToWords";
 import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
 import { DatePicker, CustomSelect } from "@/app/components/ui";
@@ -59,12 +60,67 @@ export default function MoneyReceiptsPage() {
         search: searchTerm || undefined,
         paymentMode: paymentModeFilter !== "ALL" ? paymentModeFilter : undefined,
       });
-      setReceipts(res || []);
+      // Ensure each receipt's baseFreight is its Bilty grand total and totalAmount is baseFreight + moneyReceiptCharge (₹10)
+      const enrichedReceipts = (res || []).map((r) => {
+        const mrCharge = r.moneyReceiptCharge !== undefined ? Number(r.moneyReceiptCharge) : 10;
+        const baseFreight = Number(r.baseFreight) || Number(r.totalAmount) || 0;
+        const totalAmount = baseFreight + mrCharge;
+        return {
+          ...r,
+          baseFreight,
+          moneyReceiptCharge: mrCharge,
+          totalAmount,
+        };
+      });
+      setReceipts(enrichedReceipts);
     } catch (err: any) {
       console.error("Fetch money receipts error:", err);
       setError(err?.message || "Failed to load money receipts.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSelectReceipt = async (r: MoneyReceiptDto) => {
+    const mrCharge = r.moneyReceiptCharge !== undefined ? Number(r.moneyReceiptCharge) : 10;
+    const baseFreight = Number(r.baseFreight) || Number(r.totalAmount) || 0;
+    setSelectedReceipt({
+      ...r,
+      baseFreight,
+      moneyReceiptCharge: mrCharge,
+      totalAmount: baseFreight + mrCharge,
+    });
+
+    if (r.shipmentId || r.shipmentNo) {
+      try {
+        let fullShipment;
+        if (r.shipmentId) {
+          const shipRes = await shipmentService.getShipmentById(r.shipmentId);
+          fullShipment = shipRes?.data;
+        } else if (r.shipmentNo) {
+          const shipRes = await shipmentService.getShipmentByNo(r.shipmentNo);
+          fullShipment = shipRes?.data;
+        }
+
+        if (fullShipment) {
+          const biltyGrandTotal = Number(fullShipment.grandTotal) || Number(fullShipment.paidAmount) || baseFreight || 0;
+          const totalAmount = biltyGrandTotal + mrCharge;
+          setSelectedReceipt({
+            ...r,
+            baseFreight: biltyGrandTotal,
+            moneyReceiptCharge: mrCharge,
+            totalAmount,
+            totalPackages: fullShipment.items?.reduce((sum, it) => sum + (it.quantity || 1), 0) || r.totalPackages,
+            totalWeightKg: fullShipment.items?.reduce((sum, it) => sum + (it.weight || 0), 0) || r.totalWeightKg,
+            fromLocation: fullShipment.fromLocation || r.fromLocation,
+            toLocation: fullShipment.toLocation || r.toLocation,
+            payerName: fullShipment.consignorName || r.payerName,
+            payerGstNo: fullShipment.consignorGstNo || r.payerGstNo,
+          });
+        }
+      } catch (e) {
+        console.warn("Could not fetch shipment details for MR", r.shipmentNo, e);
+      }
     }
   };
 
@@ -230,9 +286,10 @@ export default function MoneyReceiptsPage() {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="space-y-6 w-full max-w-7xl mx-auto pb-12">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <>
+      <div className={`space-y-6 w-full max-w-7xl mx-auto pb-12 ${selectedReceipt ? "print:hidden" : ""}`}>
+        {/* Header Banner */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-slate-800 flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs">
@@ -474,7 +531,7 @@ export default function MoneyReceiptsPage() {
                     <td className="py-3 px-4">
                       <button
                         type="button"
-                        onClick={() => setSelectedReceipt(r)}
+                        onClick={() => handleSelectReceipt(r)}
                         className="font-mono font-bold text-[#2F8E86] hover:underline cursor-pointer"
                       >
                         {r.receiptNo}
@@ -513,7 +570,7 @@ export default function MoneyReceiptsPage() {
                     <td className="py-3 px-4 text-center">
                       <button
                         type="button"
-                        onClick={() => setSelectedReceipt(r)}
+                        onClick={() => handleSelectReceipt(r)}
                         className="px-2.5 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold shadow-2xs"
                       >
                         <Printer className="w-3.5 h-3.5" />
@@ -617,15 +674,43 @@ export default function MoneyReceiptsPage() {
           </div>
         )}
       </div>
+    </div>
 
-      {/* Printable Money Receipt Modal */}
+      {/* Printable Money Receipt Modal (Single-Copy Screen Preview + Dual-Copy on A4 Print) */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 text-slate-900 space-y-4 max-h-[92vh] overflow-y-auto print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none">
-            {/* Top Toolbar */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto print:static print:p-0 print:bg-white print:backdrop-blur-none print:overflow-visible">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 text-slate-900 space-y-4 max-h-[94vh] overflow-y-auto print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none print-receipt-container">
+            <style jsx global>{`
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 3mm 5mm;
+                }
+                html, body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: #ffffff !important;
+                  height: auto !important;
+                  overflow: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                .print-receipt-container {
+                  width: 100% !important;
+                  max-width: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                  background: #ffffff !important;
+                  box-shadow: none !important;
+                  border: none !important;
+                }
+              }
+            `}</style>
+
+            {/* Top Toolbar (Hidden on Print) */}
             <div className="flex items-center justify-between border-b pb-3 print:hidden">
               <span className="font-bold text-xs text-slate-600 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-slate-500" />
+                <FileText className="w-4 h-4 text-emerald-600" />
                 <span>Print Preview: Official Transporter Money Receipt (MR)</span>
               </span>
               <div className="flex items-center gap-2">
@@ -648,160 +733,297 @@ export default function MoneyReceiptsPage() {
               </div>
             </div>
 
-            {/* Authentic Money Receipt Slip Layout */}
-            <div className="bg-[#f0fdf4] border-2 border-emerald-500 p-6 rounded-xl space-y-4 font-sans text-emerald-950">
-              {/* Receipt Header */}
-              <div className="bg-white -mx-6 -mt-6 px-6 pt-5 pb-4 rounded-t-xl border-b-2 border-slate-800">
-                <div className="flex items-start gap-3">
-                  {printProfile.logoUrl && (
-                    <div className="w-16 h-16 shrink-0 bg-white border border-slate-200 rounded-md p-1 flex items-center justify-center overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={printProfile.logoUrl}
-                        alt="Company Logo"
-                        className="max-w-full max-h-full object-contain"
-                        onError={(e) => {
-                          (e.currentTarget.parentElement as HTMLElement).style.display = "none";
-                        }}
-                      />
+            {/* Money Receipt Calculations */}
+            {(() => {
+              const basicFreight = Number(selectedReceipt.baseFreight) || Number(selectedReceipt.totalAmount) || 0;
+              const mrCharge = selectedReceipt.moneyReceiptCharge !== undefined ? Number(selectedReceipt.moneyReceiptCharge) : 10;
+              const grandTotalReceived = basicFreight + mrCharge;
+
+              return (
+                <>
+                  {/* 1. ON-SCREEN PREVIEW (Shows ONLY 1 Generic/Official Copy) */}
+                  <div className="block print:hidden bg-[#f0fdf4] border-2 border-emerald-500 p-6 rounded-xl space-y-4 font-sans text-emerald-950">
+                    {/* Header */}
+                    <div className="bg-white -mx-6 -mt-6 px-6 pt-5 pb-4 rounded-t-xl border-b-2 border-slate-800">
+                      <div className="flex items-start gap-3">
+                        {printProfile.logoUrl && (
+                          <div className="w-16 h-16 shrink-0 bg-white border border-slate-200 rounded-md p-1 flex items-center justify-center overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={printProfile.logoUrl}
+                              alt="Company Logo"
+                              className="max-w-full max-h-full object-contain"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+                            {printProfile.companyName}
+                          </h1>
+                          {printProfile.address && (
+                            <p className="text-xs font-bold text-slate-600 mt-0.5">{printProfile.address}</p>
+                          )}
+                          <p className="text-[11px] text-slate-500">
+                            Goods Transport Agency (GTA) • Freight &amp; Handling Cash Receipt
+                            {printProfile.gstin ? ` • GSTIN: ${printProfile.gstin}` : ""}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-bold tracking-widest uppercase bg-slate-800 text-white px-3 py-0.5 rounded-full">
-                      OFFICIAL MONEY RECEIPT (MR)
-                    </span>
-                    <h1 className="text-2xl font-black text-slate-900 mt-1.5 tracking-tight uppercase">
-                      {printProfile.companyName}
-                    </h1>
-                    {printProfile.address && (
-                      <p className="text-xs font-bold text-slate-600">{printProfile.address}</p>
-                    )}
-                    <p className="text-[11px] text-slate-500">
-                      Goods Transport Agency (GTA) • Freight &amp; Handling Cash Receipt
-                      {printProfile.gstin ? ` • GSTIN: ${printProfile.gstin}` : ""}
-                    </p>
+
+                    {/* Receipt Meta Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs border-b border-emerald-300 pb-3">
+                      <div>
+                        <span className="font-bold text-emerald-800">MR Number: </span>
+                        <span className="font-mono font-black text-sm">{selectedReceipt.receiptNo}</span>
+                      </div>
+                      <div>
+                        <span className="font-bold text-emerald-800">Receipt Date: </span>
+                        <span className="font-bold">{selectedReceipt.receiptDate ? formatDate(selectedReceipt.receiptDate) : "-"}</span>
+                      </div>
+                      <div>
+                        <span className="font-bold text-emerald-800">Against Bilty / GR No: </span>
+                        <span className="font-mono font-black text-sm text-blue-800">{selectedReceipt.shipmentNo}</span>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <span className="font-bold text-emerald-800">Received With Thanks From M/s: </span>
+                        <span className="font-bold text-sm">{selectedReceipt.payerName}</span>
+                        {selectedReceipt.payerGstNo && (
+                          <span className="text-[10px] text-slate-600 block">GSTIN: {selectedReceipt.payerGstNo}</span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-bold text-emerald-800">Payment Mode: </span>
+                        <span className="font-bold uppercase bg-emerald-200 px-2 py-0.5 rounded">{selectedReceipt.paymentMode}</span>
+                      </div>
+
+                      <div className="sm:col-span-3">
+                        <span className="font-bold text-emerald-800">Route &amp; Cargo: </span>
+                        <span>
+                          Carriage of <strong>{selectedReceipt.totalPackages} PKGS</strong> ({selectedReceipt.totalWeightKg} Kg) from{" "}
+                          <strong>{selectedReceipt.fromLocation || "Origin"}</strong> to{" "}
+                          <strong>{selectedReceipt.toLocation || "—"}</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Itemized Charges Table */}
+                    <div>
+                      <table className="w-full text-left text-xs border-collapse border border-emerald-400 bg-white">
+                        <thead>
+                          <tr className="bg-emerald-200 text-emerald-950 font-black">
+                            <th className="py-2 px-3 border-r border-emerald-300">Particulars / Fee Line-Item</th>
+                            <th className="py-2 px-3 text-right w-36">Amount Received (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-emerald-200">
+                          <tr>
+                            <td className="py-2 px-3 border-r border-emerald-200 font-semibold text-slate-900">
+                              Basic Freight Charges
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                              {formatCurrency(basicFreight)}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="py-2 px-3 border-r border-emerald-200 font-semibold text-slate-900">
+                              Money Receipt Charge
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                              {formatCurrency(mrCharge)}
+                            </td>
+                          </tr>
+                          <tr className="bg-emerald-100 font-black text-sm">
+                            <td className="py-2.5 px-3 border-r border-emerald-300 text-emerald-950 uppercase tracking-wide">
+                              GRAND TOTAL RECEIVED:
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono text-emerald-900 text-base font-black">
+                              {formatCurrency(grandTotalReceived)}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* In Words */}
+                    <div className="p-2.5 bg-white border border-emerald-300 rounded-lg text-xs">
+                      <span className="font-bold text-emerald-900">Rupees in Words: </span>
+                      <span className="italic font-semibold text-slate-800">
+                        {numberToWords(grandTotalReceived) || "Zero Rupees Only"}
+                      </span>
+                    </div>
+
+                    {/* Signatures */}
+                    <div className="grid grid-cols-2 pt-8 text-xs font-bold text-center">
+                      <div className="border-t border-emerald-800 mx-6 pt-1">
+                        Customer / Payer Signature
+                      </div>
+                      <div className="border-t border-emerald-800 mx-6 pt-1">
+                        For {printProfile.companyName} (Cashier / Incharge)
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Receipt Meta Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs border-b border-emerald-300 pb-3">
-                <div>
-                  <span className="font-bold text-emerald-800">MR Number: </span>
-                  <span className="font-mono font-black text-sm">{selectedReceipt.receiptNo}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-emerald-800">Receipt Date: </span>
-                  <span className="font-bold">{selectedReceipt.receiptDate ? formatDate(selectedReceipt.receiptDate) : "-"}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-emerald-800">Against Bilty / GR No: </span>
-                  <span className="font-mono font-black text-sm text-blue-800">{selectedReceipt.shipmentNo}</span>
-                </div>
+                  {/* 2. ON-PRINT LAYOUT (Prints EXACTLY 2 Clean Copies on 1 A4 Portrait Sheet) */}
+                  <div className="hidden print:flex print:flex-col print:justify-between w-full h-full space-y-2">
+                    {[1, 2].map((_, idx) => (
+                      <React.Fragment key={idx}>
+                        {idx === 1 && (
+                          /* Perforation / Cut Line */
+                          <div className="relative my-2 py-1 flex items-center justify-center">
+                            <div className="border-t-2 border-dashed border-slate-400 w-full absolute top-1/2"></div>
+                            <div className="relative bg-white px-3 text-[10px] font-mono text-slate-500 font-bold flex items-center gap-2 shadow-2xs">
+                              <span>✂</span>
+                              <span>Cut Here</span>
+                              <span>✂</span>
+                            </div>
+                          </div>
+                        )}
 
-                <div className="sm:col-span-2">
-                  <span className="font-bold text-emerald-800">Received With Thanks From M/s: </span>
-                  <span className="font-bold text-sm">{selectedReceipt.payerName}</span>
-                  {selectedReceipt.payerGstNo && (
-                    <span className="text-[10px] text-slate-600 block">GSTIN: {selectedReceipt.payerGstNo}</span>
-                  )}
-                </div>
-                <div>
-                  <span className="font-bold text-emerald-800">Payment Mode: </span>
-                  <span className="font-bold uppercase bg-emerald-200 px-2 py-0.5 rounded">{selectedReceipt.paymentMode}</span>
-                </div>
+                        <div className="bg-[#f0fdf4] border-2 border-emerald-600 rounded-xl p-3.5 space-y-2.5 font-sans text-emerald-950 text-xs shadow-xs">
+                          {/* Header */}
+                          <div className="bg-white -mx-3.5 -mt-3.5 px-3.5 pt-3 pb-2.5 rounded-t-xl border-b-2 border-emerald-700 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {printProfile.logoUrl && (
+                                <div className="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-md p-1 flex items-center justify-center overflow-hidden">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={printProfile.logoUrl}
+                                    alt="Company Logo"
+                                    className="max-w-full max-h-full object-contain"
+                                    onError={(e) => {
+                                      (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div>
+                                <h1 className="text-base font-black text-slate-900 tracking-tight uppercase leading-tight">
+                                  {printProfile.companyName}
+                                </h1>
+                                {printProfile.address && (
+                                  <p className="text-[10px] font-bold text-slate-700 mt-0.5 leading-tight">{printProfile.address}</p>
+                                )}
+                                <p className="text-[9px] text-slate-500 leading-tight">
+                                  Goods Transport Agency (GTA) • Freight Cash Receipt
+                                  {printProfile.gstin ? ` • GSTIN: ${printProfile.gstin}` : ""}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
 
-                <div className="sm:col-span-3">
-                  <span className="font-bold text-emerald-800">Route & Cargo: </span>
-                  <span>
-                    Carriage of <strong>{selectedReceipt.totalPackages} PKGS</strong> ({selectedReceipt.totalWeightKg} Kg) from <strong>{selectedReceipt.fromLocation || "Origin"}</strong> to <strong>{selectedReceipt.toLocation || "—"}</strong>
-                  </span>
-                </div>
-              </div>
+                          {/* Meta Grid */}
+                          <div className="grid grid-cols-3 gap-x-4 gap-y-1.5 text-[10.5px] border-y border-emerald-300 py-2 leading-tight">
+                            <div>
+                              <span className="font-bold text-emerald-800">MR Number: </span>
+                              <span className="font-mono font-black text-slate-900">{selectedReceipt.receiptNo}</span>
+                            </div>
+                            <div>
+                              <span className="font-bold text-emerald-800">Receipt Date: </span>
+                              <span className="font-bold text-slate-900">
+                                {selectedReceipt.receiptDate ? formatDate(selectedReceipt.receiptDate) : "-"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="font-bold text-emerald-800">Against Bilty / GR No: </span>
+                              <span className="font-mono font-black text-blue-800">{selectedReceipt.shipmentNo}</span>
+                            </div>
 
-              {/* Itemized Charges Table */}
-              <div>
-                <table className="w-full text-left text-xs border-collapse border border-emerald-400 bg-white">
-                  <thead>
-                    <tr className="bg-emerald-200 text-emerald-950 font-black">
-                      <th className="py-2 px-3 border-r border-emerald-300">Particulars / Fee Line-Item</th>
-                      <th className="py-2 px-3 text-right w-36">Amount Received (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-emerald-200">
-                    <tr>
-                      <td className="py-1.5 px-3 border-r border-emerald-200">Basic Freight Charges</td>
-                      <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.baseFreight || 0)}</td>
-                    </tr>
-                    {selectedReceipt.hamaliCharges > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">Hamali / Loading Charges</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.hamaliCharges || 0)}</td>
-                      </tr>
-                    )}
-                    {selectedReceipt.doorDeliveryCharges > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">Door Delivery (D.D. Charge)</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.doorDeliveryCharges || 0)}</td>
-                      </tr>
-                    )}
-                    {selectedReceipt.stationeryCharges > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">Stationery / Documentation (St. Char)</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.stationeryCharges || 0)}</td>
-                      </tr>
-                    )}
-                    {selectedReceipt.surcharges > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">Surcharge / Service Charge (S. Char)</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.surcharges || 0)}</td>
-                      </tr>
-                    )}
-                    {selectedReceipt.otherCharges > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">Other Ancillary Charges</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.otherCharges || 0)}</td>
-                      </tr>
-                    )}
-                    {selectedReceipt.gstAmount > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 border-r border-emerald-200">GST / Tax Amount</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-bold">{formatCurrency(selectedReceipt.gstAmount || 0)}</td>
-                      </tr>
-                    )}
-                    <tr className="bg-emerald-100 font-black text-sm">
-                      <td className="py-2 px-3 border-r border-emerald-300 text-emerald-950">
-                        GRAND TOTAL RECEIVED:
-                      </td>
-                      <td className="py-2 px-3 text-right font-mono text-emerald-900 text-base">
-                        {formatCurrency(selectedReceipt.totalAmount || 0)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                            <div className="col-span-2">
+                              <span className="font-bold text-emerald-800">Received With Thanks From M/s: </span>
+                              <span className="font-bold text-slate-900">{selectedReceipt.payerName}</span>
+                              {selectedReceipt.payerGstNo && (
+                                <span className="text-[9.5px] text-slate-600 ml-1 font-mono">({selectedReceipt.payerGstNo})</span>
+                              )}
+                            </div>
+                            <div>
+                              <span className="font-bold text-emerald-800">Payment Mode: </span>
+                              <span className="font-bold uppercase bg-emerald-200 px-2 py-0.5 rounded text-[9.5px]">
+                                {selectedReceipt.paymentMode}
+                              </span>
+                            </div>
 
-              {/* In Words */}
-              <div className="p-2.5 bg-white border border-emerald-300 rounded-lg text-xs">
-                <span className="font-bold text-emerald-900">Rupees in Words: </span>
-                <span className="italic font-semibold text-slate-800">
-                  {numberToWords(selectedReceipt.totalAmount) || "Zero Rupees Only"}
-                </span>
-              </div>
+                            <div className="col-span-3">
+                              <span className="font-bold text-emerald-800">Route &amp; Cargo: </span>
+                              <span className="text-slate-900">
+                                Carriage of <strong>{selectedReceipt.totalPackages} PKGS</strong> ({selectedReceipt.totalWeightKg} Kg) from{" "}
+                                <strong>{selectedReceipt.fromLocation || "Origin"}</strong> to{" "}
+                                <strong>{selectedReceipt.toLocation || "—"}</strong>
+                              </span>
+                            </div>
+                          </div>
 
-              {/* Signatures */}
-              <div className="grid grid-cols-2 pt-8 text-xs font-bold text-center">
-                <div className="border-t border-emerald-800 mx-6 pt-1">
-                  Customer / Payer Signature
-                </div>
-                <div className="border-t border-emerald-800 mx-6 pt-1">
-                  For {printProfile.companyName} (Cashier / Incharge)
-                </div>
-              </div>
-            </div>
+                          {/* Itemized Charges Table */}
+                          <div>
+                            <table className="w-full text-left text-[10.5px] border-collapse border border-emerald-400 bg-white leading-tight">
+                              <thead>
+                                <tr className="bg-emerald-200 text-emerald-950 font-black">
+                                  <th className="py-1.5 px-3 border-r border-emerald-300">Particulars / Fee Line-Item</th>
+                                  <th className="py-1.5 px-3 text-right w-36">Amount Received (₹)</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-emerald-200">
+                                <tr>
+                                  <td className="py-1.5 px-3 border-r border-emerald-200 font-semibold text-slate-900">
+                                    Basic Freight Charges
+                                  </td>
+                                  <td className="py-1.5 px-3 text-right font-mono font-bold text-slate-900">
+                                    {formatCurrency(basicFreight)}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1.5 px-3 border-r border-emerald-200 font-semibold text-slate-900">
+                                    Money Receipt Charge
+                                  </td>
+                                  <td className="py-1.5 px-3 text-right font-mono font-bold text-slate-900">
+                                    {formatCurrency(mrCharge)}
+                                  </td>
+                                </tr>
+                                <tr className="bg-emerald-100 font-black">
+                                  <td className="py-1.5 px-3 border-r border-emerald-300 text-emerald-950 uppercase tracking-wide">
+                                    GRAND TOTAL RECEIVED:
+                                  </td>
+                                  <td className="py-1.5 px-3 text-right font-mono text-emerald-900 text-xs font-black">
+                                    {formatCurrency(grandTotalReceived)}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* In Words */}
+                          <div className="py-1.5 px-3 bg-white border border-emerald-300 rounded text-[10px] flex items-center justify-between">
+                            <div>
+                              <span className="font-bold text-emerald-900">Rupees in Words: </span>
+                              <span className="italic font-semibold text-slate-800">
+                                {numberToWords(grandTotalReceived) || "Zero Rupees Only"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Signatures */}
+                          <div className="grid grid-cols-2 pt-4 text-[10px] font-bold text-center">
+                            <div className="border-t border-emerald-800 mx-6 pt-1 text-slate-800">
+                              Customer / Payer Signature
+                            </div>
+                            <div className="border-t border-emerald-800 mx-6 pt-1 text-slate-800">
+                              For {printProfile.companyName} (Cashier / Incharge)
+                            </div>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

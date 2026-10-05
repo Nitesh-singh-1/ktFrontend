@@ -79,4 +79,23 @@ export const tripService = {
     if (res && Array.isArray(res.data)) return res.data;
     return [];
   },
+
+  // Get Trip Settlement Financial Summary
+  getTripSettlementSummary: (tripId: number): Promise<any> => {
+    return baseService.get<any>(`/trip/${tripId}/settlement-summary`);
+  },
+
+  // Settle Trip & Driver Account
+  settleTrip: (data: {
+    tripId: number;
+    endOdometer?: number;
+    collectedToPayFreight: number;
+    settledAmount: number;
+    paymentMode: string;
+    settlementRemarks?: string;
+    settlementDate?: string;
+    additionalExpenses?: any[];
+  }): Promise<{ success: boolean; message: string; data?: any }> => {
+    return baseService.post<{ success: boolean; message: string; data?: any }>("/trip/settle", data);
+  },
 };

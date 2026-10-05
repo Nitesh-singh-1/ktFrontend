@@ -39,6 +39,10 @@ import {
   CheckSquare,
   Square,
   FileCheck2,
+  Eye,
+  CheckCircle2,
+  ShieldCheck,
+  Percent,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
 
@@ -66,6 +70,10 @@ function ReportsContent() {
   const [shipmentsToPrint, setShipmentsToPrint] = useState<Shipment[]>([]);
   const [printModalTitle, setPrintModalTitle] = useState("Print Bilty / Waybill");
   const [printModalSubtitle, setPrintModalSubtitle] = useState("Choose which copy to print for the customer.");
+
+  // Settlement Viewer Modal State
+  const [viewSettlementShipment, setViewSettlementShipment] = useState<Shipment | null>(null);
+  const [viewSettlementModalOpen, setViewSettlementModalOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -550,36 +558,54 @@ function ReportsContent() {
         "Other Charges (₹)",
         "GST Amount (₹)",
         "Grand Total (₹)",
-        "Paid Amount (₹)",
+        "Received / Collected (₹)",
+        "Deduction / Diff (₹)",
+        "Deduction Reason",
+        "Deduction Remarks",
+        "Settlement Payment Mode",
+        "Settlement Ref / UTR",
+        "Delivered To",
+        "Delivery Date",
         "Due Amount (₹)",
         "Tax Treatment",
       ],
-      rows: filteredBookingRecords.map((r) => [
-        r.shipmentNo || "-",
-        r.shipmentDate ? formatDate(r.shipmentDate) : "-",
-        paymentTermLabel(r.paymentTerm),
-        statusLabel(r.status),
-        r.consignorName || "-",
-        r.consignorGstNo || "-",
-        r.consignorMobile || "-",
-        r.consigneeName || "-",
-        r.consigneeGstNo || "-",
-        r.consigneeMobile || "-",
-        r.fromLocation || "-",
-        r.toLocation || "-",
-        r.truckNo || "-",
-        r.ewayBillNo || "-",
-        r.invoiceNo || "-",
-        r.invoiceDate ? formatDate(r.invoiceDate) : "-",
-        r.goodsValue || 0,
-        r.totalFreight || 0,
-        r.totalOtherCharges || 0,
-        r.totalTaxAmount || 0,
-        r.grandTotal || 0,
-        r.paidAmount || 0,
-        r.dueAmount || 0,
-        taxTreatmentLabel(r.taxTreatment),
-      ]),
+      rows: filteredBookingRecords.map((r) => {
+        const received = r.settledReceivedAmount ?? r.paidAmount ?? (r.isSettled ? r.grandTotal : 0);
+        const deduction = r.settledDiscountAmount ?? (r.isSettled && (r.grandTotal - received) > 0 ? (r.grandTotal - received) : 0);
+        return [
+          r.shipmentNo || "-",
+          r.shipmentDate ? formatDate(r.shipmentDate) : "-",
+          paymentTermLabel(r.paymentTerm),
+          statusLabel(r.status),
+          r.consignorName || "-",
+          r.consignorGstNo || "-",
+          r.consignorMobile || "-",
+          r.consigneeName || "-",
+          r.consigneeGstNo || "-",
+          r.consigneeMobile || "-",
+          r.fromLocation || "-",
+          r.toLocation || "-",
+          r.truckNo || "-",
+          r.ewayBillNo || "-",
+          r.invoiceNo || "-",
+          r.invoiceDate ? formatDate(r.invoiceDate) : "-",
+          r.goodsValue || 0,
+          r.totalFreight || 0,
+          r.totalOtherCharges || 0,
+          r.totalTaxAmount || 0,
+          r.grandTotal || 0,
+          received,
+          deduction,
+          r.discountReason || "-",
+          r.discountRemarks || "-",
+          r.settledPaymentMode || "-",
+          r.settlementReferenceNo || "-",
+          r.deliveredTo || "-",
+          r.deliveryDate ? formatDate(r.deliveryDate) : "-",
+          r.dueAmount || 0,
+          taxTreatmentLabel(r.taxTreatment),
+        ];
+      }),
     };
   };
 
@@ -769,13 +795,6 @@ function ReportsContent() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={handlePrint}
-            className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 font-bold rounded-xl text-xs border border-[#D9E2E3] dark:border-slate-700 transition flex items-center gap-2 shrink-0 cursor-pointer shadow-xs"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print Report</span>
-          </button>
-          <button
             onClick={handleExportCsv}
             className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
           >
@@ -869,7 +888,7 @@ function ReportsContent() {
             )}
           </div>
 
-          {/* 2 Separate Date Pickers (From Date & To Date) */}
+          {/* 2 Separate Date Pickers (From Date & To Date) with fixed width */}
           {(activeTab === "profitability" || activeTab === "gst" || activeTab === "booking") && (
             <div className="flex flex-wrap items-center gap-2 text-xs w-full lg:w-auto justify-end">
               <div className="flex items-center gap-1.5">
@@ -879,6 +898,7 @@ function ReportsContent() {
                   placeholder="From Date"
                   maxDate={toDate || new Date().toISOString().slice(0, 10)}
                   align="right"
+                  className="w-36 min-w-[140px]"
                 />
                 <span className="text-slate-400 font-semibold text-xs">to</span>
                 <DatePicker
@@ -888,32 +908,8 @@ function ReportsContent() {
                   minDate={fromDate}
                   maxDate={new Date().toISOString().slice(0, 10)}
                   align="right"
+                  className="w-36 min-w-[140px]"
                 />
-              </div>
-
-              {/* Quick Presets */}
-              <div className="hidden sm:flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={handleSetThisMonth}
-                  className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-                >
-                  This Month
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSetLastMonth}
-                  className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-                >
-                  Last Month
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSetLast30Days}
-                  className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-                >
-                  Last 30 Days
-                </button>
               </div>
 
               {(fromDate || toDate || searchQuery || billTypeFilter !== "ALL" || partyFilter !== "ALL") && (
@@ -1039,8 +1035,9 @@ function ReportsContent() {
                     <th className="py-3 px-4">Consignee (Customer / Receiver)</th>
                     <th className="py-3 px-4">Route</th>
                     <th className="py-3 px-4">Vehicle No</th>
-                    <th className="py-3 px-4 text-right">Freight</th>
                     <th className="py-3 px-4 text-right">Grand Total</th>
+                    <th className="py-3 px-4 text-right">Collected (₹)</th>
+                    <th className="py-3 px-4 text-right">Deduction / Diff</th>
                     <th className="py-3 px-4 text-right">Due</th>
                     <th className="py-3 px-4 text-center">Status</th>
                     <th className="py-3 px-4 text-center">Actions</th>
@@ -1050,6 +1047,10 @@ function ReportsContent() {
                   {paginatedBooking.length > 0 ? (
                     paginatedBooking.map((r) => {
                       const isSelected = r.id ? selectedShipmentIds.includes(r.id) : false;
+                      const isSettled = r.isSettled || r.settledReceivedAmount != null;
+                      const collected = r.settledReceivedAmount ?? (r.paidAmount || (r.isSettled ? r.grandTotal : 0));
+                      const deduction = r.settledDiscountAmount ?? (r.isSettled && (r.grandTotal - collected) > 0 ? (r.grandTotal - collected) : 0);
+
                       return (
                         <tr
                           key={r.id ?? r.shipmentNo}
@@ -1079,8 +1080,23 @@ function ReportsContent() {
                             {r.fromLocation || "—"} → {r.toLocation || "—"}
                           </td>
                           <td className="py-3 px-4 font-mono text-[#64748B] dark:text-slate-400">{r.truckNo || "—"}</td>
-                          <td className="py-3 px-4 text-right font-mono text-[#111827] dark:text-slate-200">{formatCurrency(r.totalFreight || 0)}</td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-[#2F9E8F]">{formatCurrency(r.grandTotal || 0)}</td>
+                          <td className="py-3 px-4 text-right font-mono font-bold text-[#111827] dark:text-slate-100">{formatCurrency(r.grandTotal || 0)}</td>
+                          <td className="py-3 px-4 text-right font-mono font-semibold text-[#2F8E86] dark:text-teal-400">
+                            {collected > 0 ? formatCurrency(collected) : "—"}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono text-xs">
+                            {deduction > 0 ? (
+                              <span
+                                className="inline-flex items-center gap-1 text-[#D95C5C] font-semibold cursor-help"
+                                title={`Deduction / Shortage: ₹${deduction} | Reason: ${r.discountReason || "Shortage/Allowance"}${r.discountRemarks ? ` - ${r.discountRemarks}` : ""}`}
+                              >
+                                <Percent className="w-3 h-3 text-amber-500" />
+                                <span>{formatCurrency(deduction)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
                           <td className="py-3 px-4 text-right font-mono font-semibold text-[#D95C5C]">{formatCurrency(r.dueAmount || 0)}</td>
                           <td className="py-3 px-4 text-center">
                             <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border-[#D9E2E3] dark:border-slate-700">
@@ -1088,21 +1104,45 @@ function ReportsContent() {
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center">
-                            <button
-                              onClick={() => handleInitiateRowPrint(r)}
-                              title="Print Bilty (Customer / Consignee Copy)"
-                              className="px-2.5 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold shadow-2xs"
-                            >
-                              <Printer className="w-3.5 h-3.5" />
-                              <span>Print</span>
-                            </button>
+                            <div className="flex items-center justify-center gap-1">
+                              {isSettled ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setViewSettlementShipment(r);
+                                    setViewSettlementModalOpen(true);
+                                  }}
+                                  title="View Settlement Details"
+                                  className="p-1.5 rounded-lg text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  title="Settlement not completed for this consignment"
+                                  className="p-1.5 rounded-lg text-slate-300 dark:text-slate-600 opacity-40 cursor-not-allowed"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleInitiateRowPrint(r)}
+                                title="Print Bilty (Customer / Consignee Copy)"
+                                className="p-1.5 rounded-lg text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
-                      <td colSpan={13} className="py-12 text-center text-[#64748B] dark:text-slate-400">
+                      <td colSpan={14} className="py-12 text-center text-[#64748B] dark:text-slate-400">
                         No consignment bookings found matching the selected filter criteria.
                       </td>
                     </tr>
@@ -1391,6 +1431,138 @@ function ReportsContent() {
               <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
                 {formatCurrency(gstSummary?.totalTaxCollected || 0)}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delivery Settlement Details Viewer Modal */}
+      {viewSettlementModalOpen && viewSettlementShipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E5EAEB] dark:border-slate-800 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto scrollbar-thin space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#E5EAEB] dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-teal-950/40 text-[#2F8E86] flex items-center justify-center font-bold shadow-2xs shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-[#111827] dark:text-white">
+                      Settlement Details
+                    </h3>
+                    <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30">
+                      {viewSettlementShipment.shipmentNo}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
+                    Reconciliation & delivery closure details
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewSettlementModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Financial Reconciliation Summary */}
+            <div className="p-3.5 bg-[#F7F8F8] dark:bg-slate-800/50 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Grand Total Billed:</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                  {formatCurrency(viewSettlementShipment.grandTotal || 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-emerald-700 dark:text-emerald-400 font-medium">Amount Received / Collected:</span>
+                <span className="font-mono font-bold text-[#2F8E86] dark:text-teal-400">
+                  {formatCurrency(
+                    viewSettlementShipment.settledReceivedAmount ??
+                    (viewSettlementShipment.paidAmount || (viewSettlementShipment.isSettled ? viewSettlementShipment.grandTotal : 0))
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-amber-700 dark:text-amber-400 font-medium">Deduction / Shortage Difference:</span>
+                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                  {formatCurrency(viewSettlementShipment.settledDiscountAmount || 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                <span className="text-slate-700 dark:text-slate-300 font-bold">Remaining Due:</span>
+                <span className={`font-mono font-bold ${viewSettlementShipment.dueAmount > 0 ? "text-[#D95C5C]" : "text-[#2F8E86]"}`}>
+                  {formatCurrency(viewSettlementShipment.dueAmount || 0)}
+                </span>
+              </div>
+            </div>
+
+            {/* Deduction Breakdown */}
+            {(viewSettlementShipment.settledDiscountAmount ?? 0) > 0 && (
+              <div className="p-3 bg-amber-50/70 dark:bg-amber-950/20 rounded-xl border border-amber-200/70 dark:border-amber-800/40 text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300">
+                  <Percent className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Shortage / Deduction Reason:</span>
+                </div>
+                <div className="font-semibold text-slate-800 dark:text-slate-200 pl-5">
+                  {viewSettlementShipment.discountReason || "Shortage Claim / Allowance"}
+                </div>
+                {viewSettlementShipment.discountRemarks && (
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400 pl-5 mt-0.5">
+                    <strong>Details:</strong> {viewSettlementShipment.discountRemarks}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Settlement Details Grid */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Payment Mode</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                  {viewSettlementShipment.settledPaymentMode || "CASH"}
+                </span>
+              </div>
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Ref / UTR / Cheque</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
+                  {viewSettlementShipment.settlementReferenceNo || "—"}
+                </span>
+              </div>
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Delivered To</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
+                  {viewSettlementShipment.deliveredTo || viewSettlementShipment.consigneeName || "—"}
+                </span>
+              </div>
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Delivery Date</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                  {viewSettlementShipment.deliveryDate ? formatDate(viewSettlementShipment.deliveryDate) : "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Handover Comments */}
+            {viewSettlementShipment.remarks && (
+              <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200/60 dark:border-slate-700/60 text-xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Notes / Remarks</span>
+                <p className="text-slate-700 dark:text-slate-300">{viewSettlementShipment.remarks}</p>
+              </div>
+            )}
+
+            {/* Close CTA */}
+            <div className="pt-2 border-t border-[#E5EAEB] dark:border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setViewSettlementModalOpen(false)}
+                className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

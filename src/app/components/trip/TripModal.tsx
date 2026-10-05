@@ -298,20 +298,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
               <MapPin className="w-4 h-4 text-[#2F8E86]" /> 1. Challan Details & Route (Point A → Point B)
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* Challan No */}
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] dark:text-slate-300 mb-1">
-                  Challan / LR No
-                </label>
-                <input
-                  type="text"
-                  placeholder="Auto (e.g. 195 or CHN-2026-01)"
-                  value={tripNo}
-                  onChange={(e) => setTripNo(e.target.value)}
-                  className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F8E86] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
               {/* Challan Date */}
               <div>

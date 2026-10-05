@@ -466,6 +466,12 @@ export interface TripShipmentDto {
   tripId: number;
   shipmentId: number;
   shipmentNo?: string;
+  consignorName?: string;
+  consigneeName?: string;
+  paymentTerm?: PaymentTerm;
+  paymentTermName?: string;
+  fromLocation?: string;
+  toLocation?: string;
   loadedWeight: number;
   loadedPackages: number;
   freightAmount: number;
@@ -1040,4 +1046,173 @@ export type LorryHireContract = LorryHireContractDto;
 export type PodRecord = PodRecordDto;
 export type RateCard = RateCardDto;
 export type Claim = ClaimDto;
+
+// ==========================================
+// Delivery Settlement Types
+// ==========================================
+export interface SettleDeliveryRequest {
+  shipmentIds: number[];
+  receivedAmount?: number;
+  discountAmount?: number;
+  discountReason?: string;
+  paymentMode: string;
+  paymentReference?: string;
+  deliveredTo?: string;
+  deliveryDate?: string;
+  remarks?: string;
+}
+
+export interface SettleDeliveryResponse {
+  success: boolean;
+  message: string;
+  settledCount: number;
+  totalAmountSettled: number;
+  totalDiscountGiven: number;
+}
+
+// ==========================================
+// Trip Settlement Types
+// ==========================================
+export interface TripSettlementSummaryDto {
+  tripId: number;
+  tripNo: string;
+  tripDate: string;
+  vehicleId?: number;
+  vehicleNo?: string;
+  driverId?: number;
+  driverName?: string;
+  driverMobile?: string;
+  originLocationName?: string;
+  destinationLocationName?: string;
+  status: TripStatus;
+  statusName: string;
+  startOdometer: number;
+  endOdometer: number;
+  totalKilometers: number;
+  totalShipments: number;
+  totalPackages: number;
+  totalWeightTons: number;
+  totalFreightRevenue: number;
+  totalToPayFreight: number;
+  totalPaidFreight: number;
+  totalTbbFreight: number;
+  driverAdvanceCash: number;
+  driverAdvanceFuel: number;
+  totalDriverAdvance: number;
+  collectedToPayFreight: number;
+  totalDriverAccountability: number;
+  totalExpenses: number;
+  fuelExpenses: number;
+  tollExpenses: number;
+  driverExpenses: number;
+  maintenanceExpenses: number;
+  otherExpenses: number;
+  netDriverBalance: number;
+  isSettled: boolean;
+  settledAt?: string;
+  settlementRemarks?: string;
+  shipments: TripShipmentDto[];
+  expenses: TripExpenseDto[];
+}
+
+export interface SettleTripRequest {
+  tripId: number;
+  endOdometer?: number;
+  collectedToPayFreight: number;
+  settledAmount: number;
+  paymentMode: string;
+  settlementRemarks?: string;
+  settlementDate?: string;
+  additionalExpenses?: {
+    expenseType: TripExpenseType;
+    amount: number;
+    receiptNo?: string;
+    paymentMode?: string;
+    paidTo?: string;
+    remarks?: string;
+    expenseDate?: string;
+  }[];
+}
+
+export interface TripSettlementResponse {
+  success: boolean;
+  message: string;
+  data?: TripSettlementSummaryDto;
+}
+
+// ==========================================
+// Bill Book & Consolidated Invoicing Types
+// ==========================================
+export interface UnbilledShipment {
+  id: number;
+  shipmentNo: string;
+  shipmentDate: string;
+  consignorPartyId?: number;
+  consignorName?: string;
+  consignorGstNo?: string;
+  consignorMobile?: string;
+  consignorAddress?: string;
+  consigneePartyId?: number;
+  consigneeName?: string;
+  consigneeGstNo?: string;
+  consigneeMobile?: string;
+  consigneeAddress?: string;
+  fromLocation?: string;
+  toLocation?: string;
+  totalPackages: number;
+  totalWeightKg: number;
+  rate: number;
+  goodsValue: number;
+  totalFreight: number;
+  totalOtherCharges: number;
+  totalTaxAmount: number;
+  grandTotal: number;
+  paidAmount: number;
+  dueAmount: number;
+  paymentTerm: PaymentTerm;
+  paymentTermName?: string;
+  status: ShipmentStatus;
+  statusName?: string;
+  customerInvoiceNo?: string;
+  ewayBillNo?: string;
+  remarks?: string;
+  deliveryDate?: string;
+  deliveryDateFormatted?: string;
+}
+
+export interface PartyUnbilledSummary {
+  partyId?: number;
+  partyName: string;
+  partyGstNo?: string;
+  partyAddress?: string;
+  unbilledCount: number;
+  totalUnbilledAmount: number;
+}
+
+export interface CreateBillBookRequest {
+  invoiceNo?: string;
+  partyId?: number;
+  partyName: string;
+  partyGstNo?: string;
+  partyAddress?: string;
+  billingMonth?: string;
+  invoiceDate: string;
+  dueDate?: string;
+  shipmentIds: number[];
+  taxRate?: number;
+  discount?: number;
+  otherCharges?: number;
+  paidAmount?: number;
+  paymentMode?: string;
+  remarks?: string;
+  preparedBy?: string;
+  checkedBy?: string;
+}
+
+export interface BillBookInvoiceResponse {
+  success: boolean;
+  message: string;
+  data?: InvoiceDto;
+}
+
 

@@ -35,15 +35,33 @@ export const sidebarItems: SidebarItem[] = [
         icon: "fileText",
         path: "/shipments",
       },
+      {
+        id: "consignments.delivery_settlement",
+        title: "Delivery Settlement",
+        icon: "fileText",
+        path: "/delivery-settlement",
+      },
     ],
   },
   {
     id: "trips",
-    title: "Manifest & Dispatch (Challans)",
+    title: "Manifest & Dispatch",
     icon: "truck",
-    path: "/trips",
     moduleKey: "challanManagement",
-    badge: "Step 4 & 5",
+    children: [
+      {
+        id: "trips.all",
+        title: "Manifest & Dispatch (Challans)",
+        icon: "truck",
+        path: "/trips",
+      },
+      {
+        id: "trips.settlement",
+        title: "Trip Settlement",
+        icon: "fileText",
+        path: "/trip-settlement",
+      },
+    ],
   },
   {
     id: "pod",
@@ -58,6 +76,13 @@ export const sidebarItems: SidebarItem[] = [
     icon: "fileText",
     moduleKey: "gstBilling",
     children: [
+      {
+        id: "billing.bill_book",
+        title: "Bill Book (Consolidated)",
+        icon: "fileText",
+        path: "/bill-book",
+        badge: "Freight Bill",
+      },
       {
         id: "billing.invoices",
         title: "Freight Invoices",
