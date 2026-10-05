@@ -84,10 +84,12 @@ export default function CustomSelect({
     setIsOpen(false);
   };
 
+  const isFullWidth = className.includes("w-full") || className.includes("w-");
+
   return (
-    <div className={`relative inline-block ${className}`} ref={containerRef}>
+    <div className={`relative ${isFullWidth ? "w-full" : "inline-block"} ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+        <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
           {label}
         </label>
       )}
@@ -97,9 +99,9 @@ export default function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`h-9.5 px-3 rounded-xl border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs ${
+        className={`w-full h-10 px-3.5 py-2 rounded-lg border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
           isOpen
-            ? "border-[#2F8E86] ring-2 ring-[#2F8E86]/20"
+            ? "border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
             : "border-[#D9E2E3] dark:border-slate-700 hover:border-[#2F8E86]/60"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >

@@ -220,7 +220,7 @@ export default function BillBookPage() {
       0
     );
     const subTotal = activeSelectedShipments.reduce(
-      (sum, s) => sum + (s.totalFreight > 0 ? s.totalFreight : s.grandTotal || 0),
+      (sum, s) => sum + (s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0),
       0
     );
 
@@ -507,7 +507,7 @@ export default function BillBookPage() {
               <div className="max-h-[460px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
                 {unbilledShipments.map((s) => {
                   const isChecked = selectedShipmentIds.includes(s.id);
-                  const freight = s.totalFreight > 0 ? s.totalFreight : s.grandTotal || 0;
+                  const biltyAmount = s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
 
                   return (
                     <div
@@ -559,7 +559,7 @@ export default function BillBookPage() {
 
                       <div className="text-right">
                         <div className="font-mono font-bold text-sm text-gray-900 dark:text-gray-100">
-                          {formatCurrency(freight)}
+                          {formatCurrency(biltyAmount)}
                         </div>
                         {s.remarks && (
                           <div className="text-[11px] text-gray-400 truncate max-w-xs">
@@ -591,33 +591,18 @@ export default function BillBookPage() {
               </span>
             </div>
 
-            {/* Bill No & Date */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Bill No (Auto/Custom)
-                </label>
-                <input
-                  type="text"
-                  value={invoiceNo}
-                  onChange={(e) => setInvoiceNo(e.target.value)}
-                  placeholder="Auto-generated if blank"
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Bill Date *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={invoiceDate}
-                  onChange={(e) => setInvoiceDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
-                />
-              </div>
+            {/* Bill Date */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Bill Date *
+              </label>
+              <input
+                type="date"
+                required
+                value={invoiceDate}
+                onChange={(e) => setInvoiceDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
+              />
             </div>
 
             {/* Billing Month & Payment Term Due Date */}
@@ -1045,7 +1030,7 @@ export default function BillBookPage() {
                 </thead>
                 <tbody>
                   {billedShipmentsForPrint.map((s, index) => {
-                    const freight = s.totalFreight > 0 ? s.totalFreight : s.grandTotal || 0;
+                    const biltyAmount = s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
                     return (
                       <tr key={s.id || index} className="text-center border-b border-gray-400">
                         <td className="border border-black py-1 px-1 font-mono">{index + 1}</td>
@@ -1065,7 +1050,7 @@ export default function BillBookPage() {
                         </td>
                         <td className="border border-black py-1 px-1 font-mono">{s.rate || "-"}</td>
                         <td className="border border-black py-1 px-2 text-right font-mono font-bold">
-                          {formatCurrency(freight)}
+                          {formatCurrency(biltyAmount)}
                         </td>
                         <td className="border border-black py-1 px-2"></td>
                       </tr>

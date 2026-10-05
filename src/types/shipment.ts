@@ -388,6 +388,16 @@ export interface Shipment {
   grandTotal: number;
   paidAmount: number;
   dueAmount: number;
+  isSettled?: boolean;
+  isPartialPayment?: boolean;
+  settledReceivedAmount?: number;
+  settledDiscountAmount?: number;
+  discountReason?: string;
+  discountRemarks?: string;
+  settledPaymentMode?: string;
+  settlementReferenceNo?: string;
+  deliveredTo?: string;
+  deliveryDate?: string;
   status: ShipmentStatus;
   remarks?: string;
   bookingClerk?: string;
@@ -485,8 +495,9 @@ export interface TenantOnboardingResponse {
 }
 
 export interface ShipmentFilterParams {
-  status?: ShipmentStatus | string;
-  taxTreatment?: TaxTreatment | string;
+  status?: ShipmentStatus | string | number;
+  taxTreatment?: TaxTreatment | string | number;
+  paymentTerm?: PaymentTerm | string | number;
   search?: string;
   page?: number;
   pageSize?: number;
@@ -499,4 +510,15 @@ export interface PaginatedShipmentsResponse {
   totalCount: number;
   page?: number;
   pageSize?: number;
+}
+
+export interface DeliverySettlementSummary {
+  totalConsignments: number;
+  totalConsignmentsAmount: number;
+  pendingDeliveriesCount: number;
+  pendingDeliveriesAmount: number;
+  toPayCollectiblesCount: number;
+  toPayCollectiblesAmount: number;
+  deliveredAndSettledCount: number;
+  deliveredAndSettledAmount: number;
 }

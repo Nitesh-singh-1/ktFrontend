@@ -53,9 +53,6 @@ interface UnifiedShipmentFormProps {
 const TAX_TREATMENT_OPTIONS = [
   { value: TaxTreatment.GST_Regular, label: "GST Regular (Tax Invoice)", icon: Building2, desc: "Standard 5%/12%/18% GST" },
   { value: TaxTreatment.NonTaxable, label: "Non-Taxable / Without GST", icon: FileText, desc: "Direct Non-GST Consignment" },
-  { value: TaxTreatment.GST_RCM, label: "GST RCM (Reverse Charge)", icon: RefreshCw, desc: "Tax payable by recipient" },
-  { value: TaxTreatment.Exempt, label: "Exempt Goods", icon: Shield, desc: "Exempted commodities" },
-  { value: TaxTreatment.CustomTax, label: "Custom Tax Rate", icon: SlidersHorizontal, desc: "Custom defined tax rate" },
 ];
 
 export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedShipmentFormProps) {
@@ -529,21 +526,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <span>1. Bilty Booking & Route Details (Point A → Point B)</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Shipment No */}
-          <div>
-            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-              Bilty / GR No
-            </label>
-            <input
-              type="text"
-              placeholder="Auto-generated (e.g. 14911)"
-              value={shipmentNo}
-              onChange={(e) => setShipmentNo(e.target.value)}
-              className="w-full px-3 py-2 bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F8E86] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
-            />
-            <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Leave blank for auto-sequencing</span>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           {/* Shipment Date */}
           <div>
@@ -899,34 +882,6 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       {/* SECTION 4: Cargo Items Table */}
       <CargoItemsTable items={items} onChange={handleItemsChange} />
 
-      {/* Automated Rate Card Engine */}
-      <div className="bg-[#E7F1F2]/60 dark:bg-slate-800/40 border border-[#D9E2E3] dark:border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-[#2F8E86]" />
-            <span className="text-xs font-bold text-[#111827] dark:text-white">Automated Route Tariff & Rate Card Engine</span>
-          </div>
-          <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-0.5">
-            Auto-estimate freight rates based on origin, destination, cargo weight, and customer contracts.
-          </p>
-          {calcResult && (
-            <p className="text-[11px] font-mono font-bold text-[#2F9E8F] mt-1 flex items-center gap-1">
-              <Check className="w-3.5 h-3.5" /> {calcResult}
-            </p>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={handleAutoCalculateTariff}
-          disabled={calcLoading}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          <span>{calcLoading ? "Calculating..." : "Auto-Calculate Tariff"}</span>
-        </button>
-      </div>
-
       {/* SECTION 5: Dynamic Charges Table & Real-time Ledger */}
       <DynamicChargesTable
         totalFreight={totalFreight}
@@ -953,7 +908,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
           <span className="text-[11px] text-[#64748B] font-medium">Controls GST calculation on Transporter Freight</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {TAX_TREATMENT_OPTIONS.map((opt) => {
             const isSelected = taxTreatment === opt.value;
             const Icon = opt.icon;

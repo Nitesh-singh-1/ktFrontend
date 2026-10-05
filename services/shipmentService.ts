@@ -23,6 +23,9 @@ export const shipmentService = {
     if (params?.taxTreatment !== undefined && params?.taxTreatment !== "") {
       query.append("taxTreatment", params.taxTreatment.toString());
     }
+    if (params?.paymentTerm !== undefined && params?.paymentTerm !== "" && params?.paymentTerm !== "ALL") {
+      query.append("paymentTerm", params.paymentTerm.toString());
+    }
     if (params?.search) {
       query.append("search", params.search.trim());
     }
@@ -69,12 +72,19 @@ export const shipmentService = {
     receivedAmount?: number;
     discountAmount?: number;
     discountReason?: string;
+    discountRemarks?: string;
     paymentMode: string;
+    isPartialPayment?: boolean;
     paymentReference?: string;
     deliveredTo?: string;
     deliveryDate?: string;
     remarks?: string;
   }): Promise<{ success: boolean; message: string; settledCount: number; totalAmountSettled: number; totalDiscountGiven: number }> => {
     return baseService.post<{ success: boolean; message: string; settledCount: number; totalAmountSettled: number; totalDiscountGiven: number }>("/shipment/settle-delivery", data);
+  },
+
+  // Get live overall delivery settlement summary metrics
+  getDeliverySettlementSummary: (): Promise<{ success: boolean; data?: import("@/types/shipment").DeliverySettlementSummary; message?: string }> => {
+    return baseService.get<{ success: boolean; data?: import("@/types/shipment").DeliverySettlementSummary; message?: string }>("/shipment/delivery-settlement-summary");
   },
 };

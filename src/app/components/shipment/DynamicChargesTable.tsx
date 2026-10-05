@@ -253,8 +253,7 @@ export default function DynamicChargesTable({
                 <tr>
                   <th className="px-4 py-2 w-12 text-center">#</th>
                   <th className="px-4 py-2">Charge Description / Fee Type</th>
-                  <th className="px-4 py-2 w-36 text-right">Amount (₹)</th>
-                  <th className="px-4 py-2 w-28 text-center">Is Taxable?</th>
+                  <th className="px-4 py-2 w-44 text-right">Amount (₹)</th>
                   {!disabled && <th className="px-3 py-2 w-12 text-center">Action</th>}
                 </tr>
               </thead>
@@ -284,15 +283,6 @@ export default function DynamicChargesTable({
                           handleFieldChange(idx, "amount", parseFloat(clean) || 0);
                         }}
                         className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
-                      />
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      <input
-                        type="checkbox"
-                        disabled={disabled}
-                        checked={charge.isTaxable || false}
-                        onChange={(e) => handleFieldChange(idx, "isTaxable", e.target.checked)}
-                        className="w-4 h-4 rounded text-[#2F8E86] focus:ring-[#2F8E86] border-[#D9E2E3]"
                       />
                     </td>
                     {!disabled && (
