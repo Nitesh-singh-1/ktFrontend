@@ -5,6 +5,7 @@ import UpdateNotification from "./components/layout/UpdateNotification";
 import BuildExpiryGuard from "./components/layout/BuildExpiryGuard";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { SweetAlertProvider } from "@/app/components/ui/SweetAlert";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +32,12 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased`}>
         <ThemeProvider>
           <ToastProvider>
-            <BuildExpiryGuard>
-              {children}
-            </BuildExpiryGuard>
-            <UpdateNotification />
+            <SweetAlertProvider>
+              <BuildExpiryGuard>
+                {children}
+              </BuildExpiryGuard>
+              <UpdateNotification />
+            </SweetAlertProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>

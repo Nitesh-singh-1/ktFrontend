@@ -75,29 +75,6 @@ export default function Sidebar({
       .catch(() => { /* keep cached value */ });
   }, []);
 
-  // Menu items reserved for the platform operator; hidden from tenant admins/users.
-  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
-  // Items that shouldn't appear in the authenticated nav at all:
-  // - system.forgot_password: a pre-auth flow, meaningless once signed in.
-  // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
-  //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
-  const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
-
-  const filterMenu = (items: any[]): any[] =>
-    (items || [])
-      .filter((it) => !HIDDEN_IDS.has(it.id))
-      .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
-      .map((it) => {
-        const title =
-          it.id === "system.settings"
-            ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
-            : it.title;
-        const children = it.children ? filterMenu(it.children) : it.children;
-        return { ...it, title, children };
-      })
-      // Drop parent groups that became empty after filtering (no children left and no own route).
-      .filter((it) => it.path || !it.children || it.children.length > 0);
-
   // Auto-expand menu containing the active page
   useEffect(() => {
     if (!pathname) return;
@@ -111,6 +88,9 @@ export default function Sidebar({
 
   let companyName = orgName || "K-Transport";
   let dynamicMenu: (DynamicMenuItem | SidebarItem)[] = [];
+  // Permissive fallback when Sidebar is rendered outside a NavigationProvider
+  // (tests / storybook). Matches pre-TASK-039 behaviour so the sidebar still renders.
+  let hasPermission: (key?: string) => boolean = () => true;
 
   try {
     const configCtx = useTenantConfig();
@@ -126,9 +106,39 @@ export default function Sidebar({
     if (navCtx?.menu && navCtx.menu.length > 0) {
       dynamicMenu = navCtx.menu;
     }
+    if (navCtx?.hasPermission) {
+      hasPermission = navCtx.hasPermission;
+    }
   } catch {
     // Context fallback
   }
+
+  // Menu items reserved for the platform operator; hidden from tenant admins/users.
+  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
+  // Items that shouldn't appear in the authenticated nav at all:
+  // - system.forgot_password: a pre-auth flow, meaningless once signed in.
+  // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
+  //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
+  const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
+
+  const filterMenu = (items: any[]): any[] =>
+    (items || [])
+      .filter((it) => !HIDDEN_IDS.has(it.id))
+      .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
+      // Granular per-child/leaf permission filter. A child with `permissionKey` only
+      // renders if the user holds it; a child without a key is treated as public to
+      // its parent module (parent-level moduleKey still gates module visibility).
+      .filter((it) => !it.permissionKey || hasPermission(it.permissionKey))
+      .map((it) => {
+        const title =
+          it.id === "system.settings"
+            ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
+            : it.title;
+        const children = it.children ? filterMenu(it.children) : it.children;
+        return { ...it, title, children };
+      })
+      // Drop parent groups that became empty after filtering (no children left and no own route).
+      .filter((it) => it.path || !it.children || it.children.length > 0);
 
   // Fallback to static sidebar items if dynamic menu is not populated, then apply role-based filtering.
   const displayItems = filterMenu(dynamicMenu.length > 0 ? dynamicMenu : sidebarItems);

@@ -11,6 +11,7 @@ import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
 import { numberToWords } from "@/utils/numberToWords";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
 import { toast } from "@/context/ToastContext";
+import { sweetAlert } from "@/app/components/ui/SweetAlert";
 import {
   BookOpen,
   Search,
@@ -32,8 +33,9 @@ import {
   Receipt,
   Download,
 } from "lucide-react";
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 
-export default function BillBookPage() {
+function BillBookContent() {
   const [parties, setParties] = useState<PartyUnbilledSummary[]>([]);
   const [selectedParty, setSelectedParty] = useState<string>("");
   const [unbilledShipments, setUnbilledShipments] = useState<UnbilledShipment[]>([]);
@@ -93,7 +95,10 @@ export default function BillBookPage() {
       setHistoryInvoices(res || []);
     } catch (err: any) {
       console.error("Load history invoices error:", err);
-      toast.error("Failed to load invoice history.");
+      sweetAlert.error({
+        title: "Failed to load history",
+        message: err?.message || "Failed to load invoice history.",
+      });
     } finally {
       setLoadingHistory(false);
     }
@@ -105,27 +110,31 @@ export default function BillBookPage() {
       if (!inv) return;
       setGeneratedInvoice(inv as any);
 
-      // Map invoice items to printable bilty structure
+      // Map invoice items to printable bilty structure. Prefer the extended
+      // per-item API fields (shipmentDate / toLocation / deliveryDate /
+      // totalWeightKg / chargeItems) when present, falling back to the legacy
+      // description-regex parse for older invoices that pre-date the extension.
       const printItems = (inv.items || []).map((item: any, idx: number) => {
-        let toLoc = "Destination";
-        let wt = 0;
+        let toLocFallback = "Destination";
+        let wtFallback = 0;
         if (item.description) {
           const routeMatch = item.description.match(/to\s+([^|]+)/i);
-          if (routeMatch) toLoc = routeMatch[1].trim();
+          if (routeMatch) toLocFallback = routeMatch[1].trim();
           const wtMatch = item.description.match(/Wt:\s*([0-9.]+)/i);
-          if (wtMatch) wt = parseFloat(wtMatch[1]) || 0;
+          if (wtMatch) wtFallback = parseFloat(wtMatch[1]) || 0;
         }
         return {
           id: item.shipmentId || idx,
           shipmentNo: item.shipmentNo || `GR-${idx + 1}`,
-          shipmentDate: inv.invoiceDate,
+          shipmentDate: item.shipmentDate ?? inv.invoiceDate,
           totalPackages: item.quantity || 1,
-          totalWeightKg: wt,
-          toLocation: toLoc,
-          deliveryDate: null,
+          totalWeightKg: item.totalWeightKg ?? wtFallback,
+          toLocation: item.toLocation ?? toLocFallback,
+          deliveryDate: item.deliveryDate ?? null,
           rate: item.rate,
           totalFreight: item.amount || item.totalAmount,
           grandTotal: item.totalAmount || item.amount,
+          chargeItems: item.chargeItems ?? undefined,
         };
       });
 
@@ -150,7 +159,10 @@ export default function BillBookPage() {
       setIsPrintModalOpen(true);
     } catch (err: any) {
       console.error("View invoice error:", err);
-      toast.error("Failed to load invoice print preview.");
+      sweetAlert.error({
+        title: "Failed to open invoice",
+        message: err?.message || "Failed to load invoice print preview.",
+      });
     }
   };
 
@@ -164,7 +176,10 @@ export default function BillBookPage() {
       }
     } catch (err: any) {
       console.error("Load unbilled parties error:", err);
-      toast.error(err?.message || "Failed to load unbilled parties list.");
+      sweetAlert.error({
+        title: "Failed to load parties",
+        message: err?.message || "Failed to load unbilled parties list.",
+      });
     } finally {
       setLoadingParties(false);
     }
@@ -181,7 +196,10 @@ export default function BillBookPage() {
       setSelectedShipmentIds((shipments || []).map((s) => s.id));
     } catch (err: any) {
       console.error("Load unbilled shipments error:", err);
-      toast.error(err?.message || "Failed to load party bilties.");
+      sweetAlert.error({
+        title: "Failed to load bilties",
+        message: err?.message || "Failed to load party bilties.",
+      });
     } finally {
       setLoadingShipments(false);
     }
@@ -254,6 +272,41 @@ export default function BillBookPage() {
     return { pkgTotal, wtTotal };
   }, [billedShipmentsForPrint]);
 
+  // Dynamic per-charge column set — one column per distinct chargeName that
+  // appears on ANY of the selected bilties. Alphabetical for deterministic
+  // print layout. A bilty with no entry for a given charge shows a blank cell.
+  const dynamicChargeCols = useMemo(() => {
+    const names = new Set<string>();
+    billedShipmentsForPrint.forEach((s) =>
+      (s.chargeItems ?? []).forEach((c) => {
+        if (c?.chargeName) names.add(c.chargeName);
+      })
+    );
+    return Array.from(names).sort();
+  }, [billedShipmentsForPrint]);
+
+  // Per-charge-column totals for the tfoot row (blank cells count as 0).
+  const dynamicChargeTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    dynamicChargeCols.forEach((name) => {
+      totals[name] = billedShipmentsForPrint.reduce((sum, s) => {
+        const match = s.chargeItems?.find((c) => c.chargeName === name);
+        return sum + (match ? Number(match.amount) || 0 : 0);
+      }, 0);
+    });
+    return totals;
+  }, [dynamicChargeCols, billedShipmentsForPrint]);
+
+  // Qty × Rate column total.
+  const qtyRateTotal = useMemo(
+    () =>
+      billedShipmentsForPrint.reduce(
+        (sum, s) => sum + (Number(s.rate) || 0) * (Number(s.totalPackages) || 1),
+        0
+      ),
+    [billedShipmentsForPrint]
+  );
+
   // Selected Party Metadata
   const currentPartyInfo = useMemo(() => {
     return (
@@ -314,11 +367,17 @@ export default function BillBookPage() {
         setUnbilledShipments([]);
         setSelectedShipmentIds([]);
       } else {
-        toast.error(res?.message || "Failed to generate Freight Bill.");
+        sweetAlert.error({
+          title: "Failed to generate bill",
+          message: res?.message || "Failed to generate Freight Bill.",
+        });
       }
     } catch (err: any) {
       console.error("Generate Bill Book error:", err);
-      toast.error(err?.message || "Error generating bill book freight invoice.");
+      sweetAlert.error({
+        title: "Error generating bill",
+        message: err?.message || "Error generating bill book freight invoice.",
+      });
     } finally {
       setGenerating(false);
     }
@@ -1011,9 +1070,10 @@ export default function BillBookPage() {
                 )}
               </div>
 
-              {/* Table with Required Columns:
-                  1. Sl, 2. Date, 3. GrNo, 4. Pkg, 5. Destination, 6. Wt, 7. D.Date, 8. Rate, 9. Amount, 10. Remark */}
-              <table className="w-full border-collapse border border-black text-xs font-sans mb-3">
+              {/* Fixed cols: Sl, Date, GrNo, Pkg, Destination, Wt, D.Date, Rate, Qty×Rate.
+                  Dynamic cols: one per distinct chargeName across selected bilties.
+                  Fixed-right cols: Amount (₹), Remark. */}
+              <table className="w-full border-collapse border border-black text-xs font-sans mb-3 table-fixed">
                 <thead>
                   <tr className="bg-gray-100 border-b border-black text-center font-bold">
                     <th className="border border-black py-1.5 px-1 w-8">Sl.</th>
@@ -1024,6 +1084,15 @@ export default function BillBookPage() {
                     <th className="border border-black py-1.5 px-1 w-14">Wt (Kg)</th>
                     <th className="border border-black py-1.5 px-2 w-20">D.Date</th>
                     <th className="border border-black py-1.5 px-2 w-14">Rate</th>
+                    <th className="border border-black py-1.5 px-2 w-16 min-w-[64px]">Qty×Rate</th>
+                    {dynamicChargeCols.map((name) => (
+                      <th
+                        key={name}
+                        className="border border-black py-1.5 px-1 w-16 min-w-[64px]"
+                      >
+                        {name}
+                      </th>
+                    ))}
                     <th className="border border-black py-1.5 px-2 w-24 text-right">Amount (₹)</th>
                     <th className="border border-black py-1.5 px-2 w-20">Remark</th>
                   </tr>
@@ -1031,6 +1100,9 @@ export default function BillBookPage() {
                 <tbody>
                   {billedShipmentsForPrint.map((s, index) => {
                     const biltyAmount = s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
+                    const qty = Number(s.totalPackages) || 1;
+                    const rate = Number(s.rate) || 0;
+                    const qtyRate = qty * rate;
                     return (
                       <tr key={s.id || index} className="text-center border-b border-gray-400">
                         <td className="border border-black py-1 px-1 font-mono">{index + 1}</td>
@@ -1040,8 +1112,8 @@ export default function BillBookPage() {
                         <td className="border border-black py-1 px-1 font-mono font-bold">
                           {s.shipmentNo}
                         </td>
-                        <td className="border border-black py-1 px-1 font-mono">{s.totalPackages || 1}</td>
-                        <td className="border border-black py-1 px-2 text-left truncate max-w-[120px]">
+                        <td className="border border-black py-1 px-1 font-mono">{qty}</td>
+                        <td className="border border-black py-1 px-2 text-left truncate">
                           {s.toLocation || "Destination"}
                         </td>
                         <td className="border border-black py-1 px-1 font-mono">{s.totalWeightKg || 0}</td>
@@ -1049,10 +1121,24 @@ export default function BillBookPage() {
                           {s.deliveryDate ? formatDate(s.deliveryDate) : "-"}
                         </td>
                         <td className="border border-black py-1 px-1 font-mono">{s.rate || "-"}</td>
+                        <td className="border border-black py-1 px-1 font-mono">
+                          {qtyRate > 0 ? qtyRate : "-"}
+                        </td>
+                        {dynamicChargeCols.map((name) => {
+                          const match = s.chargeItems?.find((c) => c.chargeName === name);
+                          return (
+                            <td
+                              key={name}
+                              className="border border-black py-1 px-1 font-mono"
+                            >
+                              {match ? match.amount : ""}
+                            </td>
+                          );
+                        })}
                         <td className="border border-black py-1 px-2 text-right font-mono font-bold">
                           {formatCurrency(biltyAmount)}
                         </td>
-                        <td className="border border-black py-1 px-2"></td>
+                        <td className="border border-black py-1 px-2 truncate">{s.remarks || ""}</td>
                       </tr>
                     );
                   })}
@@ -1070,6 +1156,17 @@ export default function BillBookPage() {
                       {printTotals.wtTotal}
                     </td>
                     <td colSpan={2} className="border border-black py-1.5 px-1"></td>
+                    <td className="border border-black py-1.5 px-1 font-mono text-center">
+                      {qtyRateTotal > 0 ? qtyRateTotal : ""}
+                    </td>
+                    {dynamicChargeCols.map((name) => (
+                      <td
+                        key={name}
+                        className="border border-black py-1.5 px-1 font-mono text-center"
+                      >
+                        {dynamicChargeTotals[name] > 0 ? dynamicChargeTotals[name] : ""}
+                      </td>
+                    ))}
                     <td className="border border-black py-1.5 px-2 text-right font-mono text-sm whitespace-nowrap">
                       {formatCurrency(generatedInvoice.grandTotal)}
                     </td>
@@ -1116,5 +1213,13 @@ export default function BillBookPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BillBookPage() {
+  return (
+    <PagePermissionGuard permission="billing.bill_book" moduleName="Bill Book (Consolidated Freight Bill)">
+      <BillBookContent />
+    </PagePermissionGuard>
   );
 }

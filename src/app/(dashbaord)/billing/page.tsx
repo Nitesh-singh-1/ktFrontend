@@ -8,8 +8,9 @@ import PaymentRecordModal from "@/app/components/invoice/PaymentRecordModal";
 import InvoiceDetailsModal from "@/app/components/invoice/InvoiceDetailsModal";
 import { Plus, Search, AlertTriangle, FileText, Receipt, X, CreditCard, Eye, Ban } from "lucide-react";
 import { DataTable } from "@/app/components/ui/DataTable";
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 
-export default function BillingPage() {
+function BillingContent() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -311,5 +312,13 @@ export default function BillingPage() {
         onRecordPayment={(inv) => setSelectedForPayment(inv)}
       />
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <PagePermissionGuard permission="billing.invoices" moduleName="Freight Invoices">
+      <BillingContent />
+    </PagePermissionGuard>
   );
 }

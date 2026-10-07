@@ -147,9 +147,31 @@ export const authService = {
     return user ? JSON.parse(user) : null;
   },
 
-  isAuthenticated: () => {
+  /**
+   * TASK-039: read the JWT `exp` claim (seconds-since-epoch) and return it in
+   * milliseconds. Returns `null` when there's no token or the token has no
+   * decodable `exp`. Reused by both the heartbeat and `isAuthenticated` so the
+   * two never drift on how they define "expired".
+   */
+  getTokenExpiryMs: (): number | null => {
+    if (typeof window === "undefined") return null;
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    const decoded = parseJwt(token);
+    const expSec = decoded?.exp;
+    return typeof expSec === "number" ? expSec * 1000 : null;
+  },
+
+  isAuthenticated: (): boolean => {
     if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("token") || localStorage.getItem("isLoggedIn") === "true";
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+    // TASK-039: also require the token's `exp` to be in the future. The old check
+    // of just presence let a stale token keep the client "authenticated" even
+    // after it would be rejected on the next API call.
+    const exp = authService.getTokenExpiryMs();
+    if (exp != null && Date.now() >= exp) return false;
+    return true;
   },
 
   requestPasswordResetCode: async (payload: { username: string; mobile: string }): Promise<{ success: boolean; message?: string; verificationCode?: string; expiresInSeconds?: number }> => {

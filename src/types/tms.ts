@@ -565,6 +565,14 @@ export interface InvoiceItemDto {
   taxRate: number;
   taxAmount: number;
   totalAmount: number;
+  // TASK-038: extended per-item snapshot of the originating bilty so the
+  // Bill Book history preview shows the ORIGINAL bilty date/route/weight,
+  // and the print can render dynamic per-charge columns. All nullable for legacy rows.
+  shipmentDate?: string | null;
+  toLocation?: string | null;
+  deliveryDate?: string | null;
+  totalWeightKg?: number | null;
+  chargeItems?: Array<{ chargeName: string; amount: number }> | null;
 }
 
 export interface InvoiceDto {
@@ -1178,6 +1186,8 @@ export interface UnbilledShipment {
   remarks?: string;
   deliveryDate?: string;
   deliveryDateFormatted?: string;
+  // TASK-038: per-charge breakdown for the Bill Book print preview's dynamic columns.
+  chargeItems?: Array<{ chargeName: string; amount: number }>;
 }
 
 export interface PartyUnbilledSummary {

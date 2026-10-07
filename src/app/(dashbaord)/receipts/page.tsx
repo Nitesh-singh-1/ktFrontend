@@ -23,10 +23,11 @@ import {
   ChevronsRight,
   Download,
 } from "lucide-react";
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
 import { toast } from "@/context/ToastContext";
 
-export default function MoneyReceiptsPage() {
+function MoneyReceiptsContent() {
   const [receipts, setReceipts] = useState<MoneyReceiptDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1025,5 +1026,13 @@ export default function MoneyReceiptsPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function MoneyReceiptsPage() {
+  return (
+    <PagePermissionGuard permission="billing.receipts" moduleName="Money Receipts">
+      <MoneyReceiptsContent />
+    </PagePermissionGuard>
   );
 }

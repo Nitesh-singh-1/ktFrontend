@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Input from "@/app/components/ui/Input";
 import Card from "@/app/components/ui/Card";
 import ChallanDetailsTable from "@/app/components/challan/ChallanDetailsTable";
+import { sweetAlert } from "@/app/components/ui/SweetAlert";
 import { ChallanDetailRow } from "@/types/challan";
 import { apiService } from "../../../../../services/apiservice";
 
@@ -80,7 +81,10 @@ function ChallanEntryContent() {
       }
     } catch (error: any) {
       console.error("Error fetching challan data:", error);
-      alert(error.message || "Failed to fetch challan data");
+      sweetAlert.error({
+        title: "Failed to load challan",
+        message: error?.message || "Failed to fetch challan data",
+      });
     } finally {
       setLoading(false);
     }
@@ -103,7 +107,10 @@ function ChallanEntryContent() {
 
   const deleteRow = (index: number) => {
     if (rows.length === 1) {
-      alert("At least one consignment row is required");
+      sweetAlert.warning({
+        title: "Cannot remove row",
+        message: "At least one consignment row is required.",
+      });
       return;
     }
     const updated = rows.filter((_, i) => i !== index);
@@ -127,20 +134,23 @@ function ChallanEntryContent() {
   };
 
   const validateForm = () => {
+    const warn = (message: string) =>
+      sweetAlert.warning({ title: "Validation", message });
+
     if (!form.challanNo.trim()) {
-      alert("Challan Number is required");
+      warn("Challan Number is required.");
       return false;
     }
     if (!form.lorryNo.trim()) {
-      alert("Lorry Number is required");
+      warn("Lorry Number is required.");
       return false;
     }
     if (!form.driverName.trim()) {
-      alert("Driver Name is required");
+      warn("Driver Name is required.");
       return false;
     }
     if (!form.toLocation.trim()) {
-      alert("To Location is required");
+      warn("To Location is required.");
       return false;
     }
 
@@ -148,23 +158,23 @@ function ChallanEntryContent() {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       if (!row.billNo.trim()) {
-        alert(`Bill No is required in row ${i + 1}`);
+        warn(`Bill No is required in row ${i + 1}.`);
         return false;
       }
       if (row.quantity <= 0) {
-        alert(`Quantity must be greater than 0 in row ${i + 1}`);
+        warn(`Quantity must be greater than 0 in row ${i + 1}.`);
         return false;
       }
       if (!row.destination.trim()) {
-        alert(`Destination is required in row ${i + 1}`);
+        warn(`Destination is required in row ${i + 1}.`);
         return false;
       }
       if (row.freightAmount <= 0) {
-        alert(`Freight Amount must be greater than 0 in row ${i + 1}`);
+        warn(`Freight Amount must be greater than 0 in row ${i + 1}.`);
         return false;
       }
       if (!row.billTypeId || row.billTypeId === 0) {
-        alert(`Bill Type is required in row ${i + 1}`);
+        warn(`Bill Type is required in row ${i + 1}.`);
         return false;
       }
     }
@@ -210,12 +220,20 @@ function ChallanEntryContent() {
       }
       
       if (response.success) {
-        alert(editId ? "Challan updated successfully!" : "Challan saved successfully!");
+        sweetAlert.success({
+          title: editId ? "Challan updated" : "Challan saved",
+          message: editId
+            ? "The challan was updated successfully."
+            : "The challan was saved successfully.",
+        });
       }
-      
+
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Something went wrong.");
+      sweetAlert.error({
+        title: "Something went wrong",
+        message: error?.message || "An unexpected error occurred while saving the challan.",
+      });
     } finally {
       setLoading(false);
     }
