@@ -120,7 +120,9 @@ function clearSessionAndRedirect() {
   sessionStorage.clear();
   const currentPath = window.location.pathname;
   if (!currentPath.startsWith("/login") && !currentPath.startsWith("/register") && !currentPath.startsWith("/onboard") && !currentPath.startsWith("/accept-invite")) {
-    window.location.href = `/login/?redirect=${encodeURIComponent(currentPath)}`;
+    // TASK-039: include reason=session_expired so the login page can surface a
+    // friendly "Your session expired. Please sign in again." banner above the form.
+    window.location.href = `/login/?reason=session_expired&redirect=${encodeURIComponent(currentPath)}`;
   }
 }
 
@@ -165,7 +167,16 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
 
     // 401 Unauthorized: try a one-time silent refresh, then retry; otherwise sign out.
     if (response.status === 401) {
-      const isAuthFlow = endpoint.includes("/auth/refresh") || endpoint.includes("/auth/login") || endpoint.includes("/auth/logout");
+      // TASK-039: exclude every /auth/* flow where a 401 means "credentials are wrong",
+      // not "session expired" — looping these through refresh+logout would ping-pong the
+      // user back to /login with a confusing banner on top of their actual auth error.
+      const isAuthFlow =
+        endpoint.includes("/auth/login") ||
+        endpoint.includes("/auth/register") ||
+        endpoint.includes("/auth/refresh") ||
+        endpoint.includes("/auth/logout") ||
+        endpoint.includes("/auth/forgot-password") ||
+        endpoint.includes("/auth/accept-invite");
       if (!isRetry && !isAuthFlow && typeof window !== "undefined") {
         const newToken = await tryRefreshToken();
         if (newToken) {

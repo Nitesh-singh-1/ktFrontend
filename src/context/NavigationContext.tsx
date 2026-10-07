@@ -229,7 +229,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const hasPermission = (permissionKey?: string): boolean => {
     if (!permissionKey) return true;
-    if (permissions.length === 0) return true; // Default permissive until permissions load
+    if (isLoading) return false; // deny during load; consumers use isLoading to show spinner
     if (permissions.includes("*") || permissions.includes("admin")) return true;
     return permissions.some((p) => p.toLowerCase() === permissionKey.toLowerCase());
   };

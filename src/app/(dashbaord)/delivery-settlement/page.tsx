@@ -9,6 +9,8 @@ import { toast } from "@/context/ToastContext";
 import { DatePicker } from "@/app/components/ui/DatePicker";
 import { DataTable } from "@/app/components/ui/DataTable";
 import CustomSelect from "@/app/components/ui/CustomSelect";
+import TablePagination from "@/app/components/ui/TablePagination";
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 import {
   CheckCircle2,
   Search,
@@ -65,7 +67,7 @@ const DEDUCTION_REASON_OPTIONS = [
   { label: "Other Reason (Specify in Remarks)", value: "Other" },
 ];
 
-export default function DeliverySettlementPage() {
+function DeliverySettlementContent() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -742,32 +744,12 @@ export default function DeliverySettlementPage() {
         emptyMessage="All consignments matching your filter have been settled or no records exist."
         footer={
           totalPages > 1 ? (
-            <div className="px-5 py-3 bg-[#F7F8F8] dark:bg-slate-800/60 flex items-center justify-between">
-              <div className="text-xs text-[#64748B] dark:text-slate-400">
-                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#25776F] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
-                >
-                  Previous
-                </button>
-                <span className="text-xs font-semibold px-2 text-[#111827] dark:text-slate-300">
-                  {page} / {totalPages}
-                </span>
-                <button
-                  type="button"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3 py-1 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-xs font-semibold text-[#25776F] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              onPageChange={setPage}
+            />
           ) : undefined
         }
         columns={[
@@ -1200,5 +1182,13 @@ export default function DeliverySettlementPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DeliverySettlementPage() {
+  return (
+    <PagePermissionGuard permission="delivery_settlement" moduleName="Delivery Settlement">
+      <DeliverySettlementContent />
+    </PagePermissionGuard>
   );
 }

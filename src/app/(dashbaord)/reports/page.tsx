@@ -52,7 +52,7 @@ type BillTypeFilter = "ALL" | "PAID" | "TO_PAY" | "TBB";
 
 function ReportsContent() {
   const searchParams = useSearchParams();
-  const { menu } = useNavigation();
+  const { menu, hasPermission, permissions } = useNavigation();
 
   const [activeTab, setActiveTab] = useState<ReportTab>("booking");
   const [loading, setLoading] = useState(false);
@@ -683,12 +683,29 @@ function ReportsContent() {
   };
 
   const reportTabs = [
-    { id: "booking", label: "Booking Register", icon: Package },
-    { id: "vendorLedger", label: "Vendor Payables", icon: Handshake },
-    { id: "partyLedger", label: "Customer Outstanding", icon: Building2 },
-    { id: "profitability", label: "Trip Profitability", icon: TrendingUp },
-    { id: "gst", label: "GST Tax Compliance", icon: Landmark },
+    { id: "booking", label: "Booking Register", icon: Package, permissionKey: "reports.booking_register" },
+    { id: "vendorLedger", label: "Vendor Payables", icon: Handshake, permissionKey: "reports.vendor_payables" },
+    { id: "partyLedger", label: "Customer Outstanding", icon: Building2, permissionKey: "reports.party_ledger" },
+    { id: "profitability", label: "Trip Profitability", icon: TrendingUp, permissionKey: "reports.trip_profitability" },
+    { id: "gst", label: "GST Tax Compliance", icon: Landmark, permissionKey: "reports.gst_summary" },
   ];
+
+  // Filter tabs by per-report permissions. Memoized on `permissions` so the list
+  // recomputes when NavigationContext finishes loading the user's grants.
+  const visibleReportTabs = useMemo(
+    () => reportTabs.filter((t) => hasPermission(t.permissionKey)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [permissions],
+  );
+
+  // If the current activeTab filters out (e.g. permission revoked at runtime, or
+  // the user navigated in with a saved tab they no longer have), fall back to the
+  // first visible one so the page never renders a tab panel with no header.
+  useEffect(() => {
+    if (visibleReportTabs.length > 0 && !visibleReportTabs.find((t) => t.id === activeTab)) {
+      setActiveTab(visibleReportTabs[0].id as ReportTab);
+    }
+  }, [visibleReportTabs, activeTab]);
 
   // Render pagination footer control
   const renderPagination = () => {
@@ -807,26 +824,32 @@ function ReportsContent() {
       {/* Report Switcher Tabs & Filter Toolbar */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs space-y-4">
         {/* Horizontal Navigation Tabs */}
-        <div className="flex items-center gap-2 w-full overflow-x-auto pb-1 scrollbar-thin">
-          {reportTabs.map((tab) => {
-            const isSelected = activeTab === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as ReportTab)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                  isSelected
-                    ? "bg-[#2F8E86] text-white shadow-xs"
-                    : "bg-[#F7F8F8] dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] border border-[#E5EAEB] dark:border-slate-700"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {visibleReportTabs.length === 0 ? (
+          <div className="flex items-center justify-center py-6 px-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-dashed border-[#D9E2E3] dark:border-slate-700 text-xs text-[#64748B] dark:text-slate-400 font-medium">
+            No reports available for your role. Ask your administrator to grant one of the <code className="mx-1 font-mono text-[#25776F]">reports.*</code> permissions.
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 w-full overflow-x-auto pb-1 scrollbar-thin">
+            {visibleReportTabs.map((tab) => {
+              const isSelected = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as ReportTab)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                    isSelected
+                      ? "bg-[#2F8E86] text-white shadow-xs"
+                      : "bg-[#F7F8F8] dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] border border-[#E5EAEB] dark:border-slate-700"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Filter Controls Bar with CustomSelect & DateRangePicker */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E5EAEB] dark:border-slate-800">

@@ -12,6 +12,7 @@ import {
   AlertCircle,
   ShieldCheck,
   Check,
+  Clock,
 } from "lucide-react";
 import { authService } from "../../../../services/authService";
 import BrandLogo from "@/app/components/ui/BrandLogo";
@@ -26,6 +27,16 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
+  // TASK-039: when the 401 interceptor or heartbeat kicks the user out, we land
+  // here with ?reason=session_expired. Surface a soft, dismissible banner above
+  // the form so the user understands why.
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reason = new URLSearchParams(window.location.search).get("reason");
+    if (reason === "session_expired") setSessionExpired(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && authService.isAuthenticated()) {
@@ -104,6 +115,28 @@ const LoginPage = () => {
               Sign in to manage your transportation operations.
             </p>
           </div>
+
+          {/* TASK-039 session-expired banner — amber, soft, dismissible */}
+          {sessionExpired && (
+            <div
+              role="status"
+              className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900"
+            >
+              <Clock className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" aria-hidden="true" />
+              <div className="flex-1 text-xs sm:text-sm leading-relaxed">
+                <span className="font-semibold">Your session expired.</span>{" "}
+                Please sign in again to continue.
+              </div>
+              <button
+                type="button"
+                aria-label="Dismiss session expired notice"
+                onClick={() => setSessionExpired(false)}
+                className="text-amber-600 hover:text-amber-800 text-xs font-bold px-1 cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">

@@ -7,6 +7,19 @@ import PlanUsageBanner from "../components/layout/PlanUsageBanner";
 import { TenantConfigProvider } from "@/context/TenantConfigContext";
 import { NavigationProvider } from "@/context/NavigationContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { useSessionHeartbeat } from "@/hooks/useSessionHeartbeat";
+
+/**
+ * TASK-039: mount the session heartbeat exactly once per authenticated layout
+ * so a 30s interval can monitor the JWT `exp` claim and preemptively refresh
+ * (or auto-logout) even when the user is idle and no API traffic is firing.
+ * Rendered as a zero-DOM wrapper so it can sit *inside* NavigationProvider but
+ * not disturb the existing dashboard-shell layout tree.
+ */
+function SessionWatcher({ children }: { children: React.ReactNode }) {
+  useSessionHeartbeat();
+  return <>{children}</>;
+}
 
 export default function DashboardLayout({
   children,
@@ -20,6 +33,7 @@ export default function DashboardLayout({
     <ThemeProvider>
       <TenantConfigProvider>
         <NavigationProvider>
+         <SessionWatcher>
           <div className="flex min-h-screen bg-[#F7F8F8] dark:bg-slate-950 text-[#111827] dark:text-slate-100 font-sans antialiased">
             {/* Sidebar (fixed rail on desktop, slide-in drawer on mobile) */}
             <div className="print:hidden">
@@ -52,6 +66,7 @@ export default function DashboardLayout({
               </main>
             </div>
           </div>
+         </SessionWatcher>
         </NavigationProvider>
       </TenantConfigProvider>
     </ThemeProvider>
