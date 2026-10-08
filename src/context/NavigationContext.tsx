@@ -7,193 +7,23 @@ interface NavigationContextType {
   menu: DynamicMenuItem[];
   permissions: string[];
   isLoading: boolean;
+  error: boolean;
   hasPermission: (permissionKey?: string) => boolean;
   isReportEnabled: (reportKey: string) => boolean;
   refreshNavigation: () => Promise<void>;
 }
 
-const defaultStaticMenu: DynamicMenuItem[] = [
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    path: "/dashboard",
-    icon: "home",
-    permissionKey: "dashboard.view",
-  },
-  {
-    id: "consignments",
-    title: "Consignments (GR)",
-    icon: "package",
-    permissionKey: "consignments.module",
-    children: [
-      {
-        id: "consignments.all",
-        title: "All Shipments",
-        path: "/shipments",
-        icon: "fileText",
-        permissionKey: "consignments.view",
-      },
-      {
-        id: "consignments.create",
-        title: "New Consignment",
-        path: "/shipments/create",
-        icon: "package",
-        permissionKey: "consignments.create",
-      },
-    ],
-  },
-  {
-    id: "trips",
-    title: "Trip Manifests",
-    path: "/trips",
-    icon: "truck",
-    permissionKey: "trips.view",
-  },
-  {
-    id: "pod",
-    title: "POD & Deliveries",
-    path: "/pod",
-    icon: "fileText",
-    permissionKey: "pod.view",
-  },
-  {
-    id: "master_data",
-    title: "Master Data",
-    icon: "cog",
-    permissionKey: "masterdata.module",
-    children: [
-      {
-        id: "master_data.parties",
-        title: "Party Directory",
-        path: "/customers",
-        icon: "fileText",
-        permissionKey: "parties.view",
-      },
-      {
-        id: "master_data.fleet",
-        title: "Fleet & Stations",
-        path: "/fleet",
-        icon: "truck",
-        permissionKey: "fleet.view",
-      },
-    ],
-  },
-  {
-    id: "vendors",
-    title: "Market Vendors & Hire",
-    path: "/vendors",
-    icon: "truck",
-    permissionKey: "vendors.view",
-  },
-  {
-    id: "billing",
-    title: "Billing & Invoices",
-    path: "/billing",
-    icon: "fileText",
-    permissionKey: "billing.view",
-  },
-  {
-    id: "claims",
-    title: "Damage & Claims",
-    path: "/claims",
-    icon: "info",
-    permissionKey: "claims.view",
-  },
-  {
-    id: "reports",
-    title: "Reports & Analytics",
-    path: "/reports",
-    icon: "barChart",
-    permissionKey: "reports.view",
-    children: [
-      {
-        id: "reports.booking_register",
-        title: "Booking Register",
-        path: "/reports?tab=booking_register",
-        icon: "fileText",
-        permissionKey: "reports.booking_register",
-      },
-      {
-        id: "reports.tax_summary",
-        title: "GST Tax Summary",
-        path: "/reports?tab=tax_summary",
-        icon: "fileText",
-        permissionKey: "reports.tax_summary",
-      },
-      {
-        id: "reports.party_outstanding",
-        title: "Customer Outstanding",
-        path: "/reports?tab=party_outstanding",
-        icon: "fileText",
-        permissionKey: "reports.party_outstanding",
-      },
-      {
-        id: "reports.trip_profitability",
-        title: "Trip Profitability",
-        path: "/reports?tab=trip_profitability",
-        icon: "fileText",
-        permissionKey: "reports.trip_profitability",
-      },
-      {
-        id: "reports.vendor_payables",
-        title: "Vendor Payables",
-        path: "/reports?tab=vendor_payables",
-        icon: "fileText",
-        permissionKey: "reports.vendor_payables",
-      },
-    ],
-  },
-  {
-    id: "tracking",
-    title: "Live Tracker",
-    path: "/tracking",
-    icon: "info",
-    permissionKey: "tracking.view",
-  },
-  {
-    id: "clients",
-    title: "Client Management",
-    path: "/clients",
-    icon: "lock",
-    permissionKey: "saas.tenants.manage",
-    badge: "SaaS",
-  },
-  {
-    id: "system",
-    title: "System & Settings",
-    icon: "settings",
-    children: [
-      {
-        id: "system.settings",
-        title: "SaaS Configuration",
-        path: "/settings",
-        icon: "settings",
-        permissionKey: "settings.manage",
-      },
-      {
-        id: "system.onboard",
-        title: "Tenant Onboarding",
-        path: "/onboard",
-        icon: "info",
-        permissionKey: "tenant.onboard",
-      },
-      {
-        id: "system.forgot_password",
-        title: "Forgot Password",
-        path: "/forgot-password",
-        icon: "lock",
-        permissionKey: "auth.password_reset",
-      },
-    ],
-  },
-];
+// TASK-045 Phase 3: `defaultStaticMenu` removed. The API is now authoritative;
+// when it fails, the Sidebar renderer detects `error: true` + empty `menu` and
+// renders the minimal fallback from `src/app/config/sidebar.ts`.
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [menu, setMenu] = useState<DynamicMenuItem[]>(defaultStaticMenu);
+  const [menu, setMenu] = useState<DynamicMenuItem[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
 
   const fetchNavigation = useCallback(async () => {
     try {
@@ -211,13 +41,19 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (menuRes.status === "fulfilled" && menuRes.value && menuRes.value.length > 0) {
         setMenu(menuRes.value);
+        setError(false);
+      } else {
+        setMenu([]);
+        setError(true);
       }
 
       if (permsRes.status === "fulfilled" && permsRes.value) {
         setPermissions(permsRes.value);
       }
     } catch (err) {
-      console.warn("Navigation API failed, using configuration defaults:", err);
+      console.warn("Navigation API failed, using fallback sidebar:", err);
+      setMenu([]);
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -227,6 +63,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     fetchNavigation();
   }, [fetchNavigation]);
 
+  // Phase 2 (TASK-042) onward: `permissions` contains action-split keys emitted by the
+  // backend (e.g. `billing.bill_book.view`, `.create`, `.edit`, `.delete`). Callers must
+  // pass the full action-split key; exact-match comparison below is unchanged.
   const hasPermission = (permissionKey?: string): boolean => {
     if (!permissionKey) return true;
     if (isLoading) return false; // deny during load; consumers use isLoading to show spinner
@@ -248,6 +87,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         menu,
         permissions,
         isLoading,
+        error,
         hasPermission,
         isReportEnabled,
         refreshNavigation: fetchNavigation,

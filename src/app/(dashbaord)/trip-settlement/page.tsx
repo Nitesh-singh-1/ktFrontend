@@ -1104,7 +1104,7 @@ function TripSettlementContent() {
 
 export default function TripSettlementPage() {
   return (
-    <PagePermissionGuard permission="trip_settlement" moduleName="Trip Settlement">
+    <PagePermissionGuard permission="trip_settlement.view" moduleName="Trip Settlement">
       <TripSettlementContent />
     </PagePermissionGuard>
   );

@@ -317,7 +317,7 @@ function BillingContent() {
 
 export default function BillingPage() {
   return (
-    <PagePermissionGuard permission="billing.invoices" moduleName="Freight Invoices">
+    <PagePermissionGuard permission="billing.invoices.view" moduleName="Freight Invoices">
       <BillingContent />
     </PagePermissionGuard>
   );

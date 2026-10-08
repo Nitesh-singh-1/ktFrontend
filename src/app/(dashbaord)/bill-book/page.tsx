@@ -1218,7 +1218,7 @@ function BillBookContent() {
 
 export default function BillBookPage() {
   return (
-    <PagePermissionGuard permission="billing.bill_book" moduleName="Bill Book (Consolidated Freight Bill)">
+    <PagePermissionGuard permission="billing.bill_book.view" moduleName="Bill Book (Consolidated Freight Bill)">
       <BillBookContent />
     </PagePermissionGuard>
   );

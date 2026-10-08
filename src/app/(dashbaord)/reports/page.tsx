@@ -685,9 +685,9 @@ function ReportsContent() {
   const reportTabs = [
     { id: "booking", label: "Booking Register", icon: Package, permissionKey: "reports.booking_register" },
     { id: "vendorLedger", label: "Vendor Payables", icon: Handshake, permissionKey: "reports.vendor_payables" },
-    { id: "partyLedger", label: "Customer Outstanding", icon: Building2, permissionKey: "reports.party_ledger" },
+    { id: "partyLedger", label: "Customer Outstanding", icon: Building2, permissionKey: "reports.party_outstanding" },
     { id: "profitability", label: "Trip Profitability", icon: TrendingUp, permissionKey: "reports.trip_profitability" },
-    { id: "gst", label: "GST Tax Compliance", icon: Landmark, permissionKey: "reports.gst_summary" },
+    { id: "gst", label: "GST Tax Compliance", icon: Landmark, permissionKey: "reports.tax_summary" },
   ];
 
   // Filter tabs by per-report permissions. Memoized on `permissions` so the list
