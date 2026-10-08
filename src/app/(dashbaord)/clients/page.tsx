@@ -221,12 +221,10 @@ export default function ClientsManagementPage() {
         ...clientEntitlements,
         enabledMenuKeys: [
           "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
+          "bilty",
+          "consignments",
+          "trips",
+          "reports",
           "system",
           "system.settings",
         ],
@@ -241,12 +239,10 @@ export default function ClientsManagementPage() {
         ...clientEntitlements,
         enabledMenuKeys: [
           "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
+          "bilty",
+          "consignments",
+          "trips",
+          "billing",
           "reports",
           "system",
           "system.settings",
@@ -254,7 +250,7 @@ export default function ClientsManagementPage() {
         reports: clientEntitlements.reports.map((r) => ({
           ...r,
           isEnabled:
-            r.reportKey === "tax_summary" || r.reportKey === "party_outstanding",
+            r.reportKey === "tax_summary" || r.reportKey === "party_outstanding" || r.reportKey === "booking_register",
         })),
       });
       showToast("success", "Applied: Billing + Tax Reports Preset");
@@ -262,15 +258,8 @@ export default function ClientsManagementPage() {
       setClientEntitlements({
         ...clientEntitlements,
         enabledMenuKeys: [
-          "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
-          "reports",
-          "system",
+          ...ALL_MODULE_CODES.map((m) => m.code),
+          "consignments",
           "system.settings",
         ],
         reports: clientEntitlements.reports.map((r) => ({
@@ -285,10 +274,17 @@ export default function ClientsManagementPage() {
   const toggleClientMenuKey = (key: string) => {
     if (!clientEntitlements) return;
     const current = new Set(clientEntitlements.enabledMenuKeys);
-    if (current.has(key)) {
-      current.delete(key);
+    const canonicalKey = key === "gr" ? "bilty" : key === "challan" ? "trips" : key;
+    const aliases = canonicalKey === "bilty" ? ["bilty", "consignments", "gr"] : canonicalKey === "trips" ? ["trips", "challan"] : [canonicalKey];
+    const isCurrentlyEnabled = aliases.some((a) => current.has(a));
+
+    if (isCurrentlyEnabled) {
+      aliases.forEach((a) => current.delete(a));
     } else {
-      current.add(key);
+      current.add(canonicalKey);
+      if (canonicalKey === "bilty") {
+        current.add("consignments");
+      }
     }
     setClientEntitlements({
       ...clientEntitlements,
@@ -772,46 +768,40 @@ export default function ClientsManagementPage() {
                     {/* Core Modules Toggles */}
                     <div>
                       <h3 className="text-sm font-semibold text-[#111827] mb-3">
-                        Core Operations Modules
+                        Subscribed Functional Modules
                       </h3>
-                      <div className="space-y-2.5">
-                        {/* GR Module */}
-                        <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-[#111827] text-sm">
-                              Module A: Goods Receipt (GR) & Consignments
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {ALL_MODULE_CODES.filter((m) => m.code !== "dashboard" && m.code !== "system").map((mod) => {
+                          const isChecked =
+                            clientEntitlements.enabledMenuKeys.includes(mod.code) ||
+                            (mod.code === "bilty" && (clientEntitlements.enabledMenuKeys.includes("consignments") || clientEntitlements.enabledMenuKeys.includes("gr"))) ||
+                            (mod.code === "trips" && clientEntitlements.enabledMenuKeys.includes("challan"));
+                          return (
+                            <div
+                              key={mod.code}
+                              className={`p-3 rounded-xl border transition-all flex items-center justify-between ${
+                                isChecked
+                                  ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#111827]"
+                                  : "bg-[#F7F8F8] border-[#E5EAEB] text-[#94A3B8]"
+                              }`}
+                            >
+                              <div>
+                                <div className="font-semibold text-xs text-[#111827]">
+                                  {mod.label}
+                                </div>
+                                <div className="text-[11px] text-[#64748B]">
+                                  Code: {mod.code}
+                                </div>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleClientMenuKey(mod.code)}
+                                className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
+                              />
                             </div>
-                            <div className="text-xs text-[#64748B]">
-                              Create GR, Print Bilty, View Consignment Register
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={clientEntitlements.enabledMenuKeys.includes("gr")}
-                            onChange={() => toggleClientMenuKey("gr")}
-                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
-                          />
-                        </div>
-
-                        {/* Challan Module */}
-                        <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-[#111827] text-sm">
-                              Module A: Loading Challan & Dispatch
-                            </div>
-                            <div className="text-xs text-[#64748B]">
-                              Create Challan, Lorry Hire contracts, Dispatch list
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={clientEntitlements.enabledMenuKeys.includes(
-                              "challan"
-                            )}
-                            onChange={() => toggleClientMenuKey("challan")}
-                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
-                          />
-                        </div>
+                          );
+                        })}
                       </div>
                     </div>
 

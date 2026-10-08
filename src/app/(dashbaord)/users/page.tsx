@@ -32,25 +32,291 @@ import {
   Mail,
   Send,
   Copy,
+  Printer,
+  Download,
+  AlertTriangle,
+  SlidersHorizontal,
+  Info,
+  CheckSquare,
+  Square,
+  FileText,
 } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
 import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
 import { useUsernameAvailability } from "@/utils/useUsernameAvailability";
 
-// Available system features for granular user assignment
-const SYSTEM_MODULES = [
-  { key: "dashboard", label: "Dashboard & Analytics", category: "Core" },
-  { key: "consignments", label: "Consignments (GR / LR Booking)", category: "Operations" },
-  { key: "trips", label: "Manifests & Vehicle Dispatch", category: "Operations" },
-  { key: "pod", label: "POD & Delivery Management", category: "Operations" },
-  { key: "billing", label: "Invoicing & Money Receipts", category: "Accounts" },
-  { key: "customers", label: "Party Master & Customers", category: "Masters" },
-  { key: "fleet", label: "Fleet & Stations Registry", category: "Masters" },
-  { key: "vendors", label: "Market Vendors & Lorry Hire", category: "Operations" },
-  { key: "claims", label: "Damage & Cargo Claims", category: "Operations" },
-  { key: "reports", label: "Reports & Business Ledgers", category: "Accounts" },
-  { key: "tracking", label: "Live GPS Tracker", category: "Operations" },
+export interface RbacAction {
+  id: "view" | "create" | "edit" | "delete" | "print" | "approve" | "export";
+  label: string;
+  keys: string[];
+  danger?: boolean;
+}
+
+export interface RbacModule {
+  key: string;
+  label: string;
+  category: "Core" | "Operations" | "Masters" | "Accounts" | "Administration";
+  description: string;
+  actions: RbacAction[];
+}
+
+export const RBAC_MODULES: RbacModule[] = [
+  {
+    key: "consignments",
+    label: "Consignments (GR / LR / Bilty)",
+    category: "Operations",
+    description: "Create, view, edit, print, and cancel consignment notes / bilty.",
+    actions: [
+      { id: "view", label: "View", keys: ["consignments.view", "consignments.create.view", "consignments.all.view"] },
+      { id: "create", label: "Create Bilty", keys: ["consignments.create.create"] },
+      { id: "edit", label: "Edit Bilty", keys: ["consignments.create.edit", "consignments.all.edit"] },
+      { id: "print", label: "Print Bilty", keys: ["consignments.create.print", "consignments.all.print"] },
+      { id: "delete", label: "Delete / Cancel Bilty", keys: ["consignments.create.delete", "consignments.all.delete"], danger: true },
+    ],
+  },
+  {
+    key: "trips",
+    label: "Trips & Manifests (Challan)",
+    category: "Operations",
+    description: "Trip creation, vehicle loading, dispatch, arrival, and manifest printing.",
+    actions: [
+      { id: "view", label: "View", keys: ["trips.view"] },
+      { id: "create", label: "Create Manifest", keys: ["trips.create"] },
+      { id: "edit", label: "Dispatch / Arrive / Edit", keys: ["trips.edit"] },
+      { id: "print", label: "Print Manifest", keys: ["trips.print"] },
+      { id: "delete", label: "Cancel Trip", keys: ["trips.delete"], danger: true },
+    ],
+  },
+  {
+    key: "delivery_settlement",
+    label: "Delivery Settlement",
+    category: "Operations",
+    description: "Settlement of delivered consignments and delivery payment collection.",
+    actions: [
+      { id: "view", label: "View", keys: ["delivery_settlement.view"] },
+      { id: "create", label: "Create Settlement", keys: ["delivery_settlement.create"] },
+      { id: "edit", label: "Edit Settlement", keys: ["delivery_settlement.edit"] },
+    ],
+  },
+  {
+    key: "trip_settlement",
+    label: "Trip Settlement",
+    category: "Operations",
+    description: "Lorry hire balance settlement, diesel advances, and driver deductions.",
+    actions: [
+      { id: "view", label: "View", keys: ["trip_settlement.view"] },
+      { id: "create", label: "Create Settlement", keys: ["trip_settlement.create"] },
+      { id: "edit", label: "Edit Settlement", keys: ["trip_settlement.edit"] },
+    ],
+  },
+  {
+    key: "pod",
+    label: "POD & Delivery Status",
+    category: "Operations",
+    description: "Proof of delivery document upload, verification, and status updates.",
+    actions: [
+      { id: "view", label: "View", keys: ["pod.view"] },
+      { id: "create", label: "Upload POD", keys: ["pod.create"] },
+      { id: "edit", label: "Verify & Update POD", keys: ["pod.edit"] },
+    ],
+  },
+  {
+    key: "billing",
+    label: "Invoicing & Money Receipts",
+    category: "Accounts",
+    description: "Customer freight invoices, bill books, and payment collection receipts.",
+    actions: [
+      { id: "view", label: "View", keys: ["billing.view", "billing.invoices.view", "billing.bill_book.view", "billing.receipts.view"] },
+      { id: "create", label: "Create Invoice", keys: ["billing.invoices.create", "billing.bill_book.create", "billing.receipts.create"] },
+      { id: "edit", label: "Edit Invoice", keys: ["billing.invoices.edit", "billing.bill_book.edit", "billing.receipts.edit"] },
+      { id: "print", label: "Print Invoice", keys: ["billing.invoices.print", "billing.bill_book.print", "billing.receipts.print"] },
+      { id: "delete", label: "Cancel Invoice", keys: ["billing.invoices.delete", "billing.bill_book.delete", "billing.receipts.delete"], danger: true },
+    ],
+  },
+  {
+    key: "master_data.parties",
+    label: "Party Master & Customers",
+    category: "Masters",
+    description: "Consignor, consignee, and billing party profiles with GST details.",
+    actions: [
+      { id: "view", label: "View", keys: ["master_data.parties.view"] },
+      { id: "create", label: "Create Party", keys: ["master_data.parties.create"] },
+      { id: "edit", label: "Edit Party", keys: ["master_data.parties.edit"] },
+      { id: "delete", label: "Delete Party", keys: ["master_data.parties.delete"], danger: true },
+    ],
+  },
+  {
+    key: "master_data.fleet",
+    label: "Fleet & Stations Registry",
+    category: "Masters",
+    description: "Own/market vehicles, drivers, station hubs, and compliance documents.",
+    actions: [
+      { id: "view", label: "View", keys: ["master_data.fleet.view", "master_data.compliance.view"] },
+      { id: "create", label: "Add Vehicle / Station", keys: ["master_data.fleet.create"] },
+      { id: "edit", label: "Edit Vehicle / Station", keys: ["master_data.fleet.edit"] },
+      { id: "delete", label: "Delete Vehicle / Station", keys: ["master_data.fleet.delete"], danger: true },
+    ],
+  },
+  {
+    key: "master_data.rates",
+    label: "Freight Rate Cards",
+    category: "Masters",
+    description: "Party-specific freight rates, station matrices, and minimum charges.",
+    actions: [
+      { id: "view", label: "View", keys: ["master_data.rates.view"] },
+      { id: "create", label: "Create Rate Card", keys: ["master_data.rates.create"] },
+      { id: "edit", label: "Edit Rate Card", keys: ["master_data.rates.edit"] },
+      { id: "delete", label: "Delete Rate Card", keys: ["master_data.rates.delete"], danger: true },
+    ],
+  },
+  {
+    key: "vendors",
+    label: "Market Vendors & Lorry Hire",
+    category: "Operations",
+    description: "Third-party vehicle suppliers, broker contacts, and vendor rate contracts.",
+    actions: [
+      { id: "view", label: "View", keys: ["vendors.view"] },
+      { id: "create", label: "Add Vendor", keys: ["vendors.create"] },
+      { id: "edit", label: "Edit Vendor", keys: ["vendors.edit"] },
+      { id: "delete", label: "Delete Vendor", keys: ["vendors.delete"], danger: true },
+    ],
+  },
+  {
+    key: "quotations",
+    label: "Price Quotations",
+    category: "Operations",
+    description: "Customer rate estimates, approval workflows, and quotation printouts.",
+    actions: [
+      { id: "view", label: "View", keys: ["quotations.view"] },
+      { id: "create", label: "Create Quotation", keys: ["quotations.create"] },
+      { id: "edit", label: "Edit Quotation", keys: ["quotations.edit"] },
+      { id: "approve", label: "Approve Quotation", keys: ["quotations.approve"] },
+      { id: "delete", label: "Delete Quotation", keys: ["quotations.delete"], danger: true },
+    ],
+  },
+  {
+    key: "claims",
+    label: "Damage & Cargo Claims",
+    category: "Operations",
+    description: "Transit damage claims, loss assessments, and customer settlements.",
+    actions: [
+      { id: "view", label: "View", keys: ["claims.view"] },
+      { id: "create", label: "File Claim", keys: ["claims.create"] },
+      { id: "edit", label: "Edit Claim", keys: ["claims.edit"] },
+      { id: "approve", label: "Approve Claim", keys: ["claims.approve"] },
+    ],
+  },
+  {
+    key: "reports",
+    label: "Reports & Business Ledgers",
+    category: "Accounts",
+    description: "Booking register, trip profitability, party ledger, and tax summaries.",
+    actions: [
+      { id: "view", label: "View Reports", keys: ["reports.view", "reports.booking_register.view", "reports.tax_summary.view", "reports.party_outstanding.view", "reports.trip_profitability.view", "reports.vendor_payables.view"] },
+      { id: "export", label: "Export Excel / CSV", keys: ["reports.booking_register.export", "reports.tax_summary.export", "reports.party_outstanding.export", "reports.trip_profitability.export", "reports.vendor_payables.export"] },
+    ],
+  },
+  {
+    key: "tracking",
+    label: "Live GPS Tracker",
+    category: "Operations",
+    description: "Vehicle location tracking and real-time transit telemetry.",
+    actions: [
+      { id: "view", label: "View Tracking", keys: ["tracking.view"] },
+    ],
+  },
+  {
+    key: "dashboard",
+    label: "Dashboard & Analytics",
+    category: "Core",
+    description: "Overview KPIs, daily booking statistics, and operational metrics.",
+    actions: [
+      { id: "view", label: "View Dashboard", keys: ["dashboard.view", "analytics.view"] },
+    ],
+  },
+  {
+    key: "system.users",
+    label: "User & Role Administration",
+    category: "Administration",
+    description: "Create sub-user logins, assign permissions, and reset user passwords.",
+    actions: [
+      { id: "view", label: "View Users", keys: ["system.users.view"] },
+      { id: "create", label: "Add / Invite User", keys: ["system.users.create"] },
+      { id: "edit", label: "Edit User & Perms", keys: ["system.users.edit"] },
+      { id: "delete", label: "Deactivate User", keys: ["system.users.delete"], danger: true },
+    ],
+  },
 ];
+
+export const PERMISSION_PRESETS = [
+  {
+    name: "Operator (Entry & Print)",
+    description: "Can create & view Bilty/Trips, but NO edit or delete (Protects from data manipulation)",
+    badge: "Anti-Tamper",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300",
+    getKeys: () => [
+      "dashboard.view", "analytics.view",
+      "consignments.view", "consignments.create.view", "consignments.all.view", "consignments.create.create", "consignments.create.print", "consignments.all.print",
+      "trips.view", "trips.create", "trips.print",
+      "pod.view", "pod.create",
+      "master_data.parties.view",
+      "master_data.fleet.view",
+      "master_data.rates.view",
+      "tracking.view"
+    ],
+  },
+  {
+    name: "Accounts & Billing",
+    description: "Invoicing, money receipts, delivery & trip settlements, ledgers & tax reports",
+    badge: "Financial",
+    badgeColor: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300",
+    getKeys: () => [
+      "dashboard.view", "analytics.view",
+      "consignments.view", "consignments.create.view", "consignments.all.view",
+      "trips.view",
+      "delivery_settlement.view", "delivery_settlement.create", "delivery_settlement.edit",
+      "trip_settlement.view", "trip_settlement.create", "trip_settlement.edit",
+      "billing.view", "billing.invoices.view", "billing.bill_book.view", "billing.receipts.view",
+      "billing.invoices.create", "billing.bill_book.create", "billing.receipts.create",
+      "billing.invoices.edit", "billing.bill_book.edit", "billing.receipts.edit",
+      "billing.invoices.print", "billing.bill_book.print", "billing.receipts.print",
+      "master_data.parties.view",
+      "reports.view", "reports.booking_register.view", "reports.tax_summary.view", "reports.party_outstanding.view", "reports.trip_profitability.view", "reports.vendor_payables.view",
+      "reports.booking_register.export", "reports.tax_summary.export", "reports.party_outstanding.export", "reports.trip_profitability.export", "reports.vendor_payables.export",
+    ],
+  },
+  {
+    name: "Read-Only / Auditor",
+    description: "View and verify all operational and financial records without modification rights",
+    badge: "Read-Only",
+    badgeColor: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300",
+    getKeys: () => RBAC_MODULES.flatMap(m => m.actions.filter(a => a.id === "view").flatMap(a => a.keys)),
+  },
+  {
+    name: "Full Control (Manager)",
+    description: "All view, create, edit, delete, print, and export actions across all modules",
+    badge: "Full Access",
+    badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300",
+    getKeys: () => RBAC_MODULES.flatMap(m => m.actions.flatMap(a => a.keys)),
+  },
+];
+
+export const expandAssignedToActions = (features: string[] = []): string[] => {
+  const result = new Set<string>();
+  for (const f of features) {
+    if (!f) continue;
+    const mod = RBAC_MODULES.find(m => m.key === f || m.key.toLowerCase() === f.toLowerCase());
+    if (mod) {
+      mod.actions.forEach(a => a.keys.forEach(k => result.add(k)));
+    } else {
+      result.add(f);
+    }
+  }
+  return Array.from(result);
+};
+
+// Available system features for coarse reference
+const SYSTEM_MODULES = RBAC_MODULES.map(m => ({ key: m.key, label: m.label, category: m.category }));
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<SubUserDetails[]>([]);
@@ -130,7 +396,7 @@ export default function UsersManagementPage() {
       "trips",
       "pod",
       "billing",
-      "customers",
+      "master_data.parties",
     ],
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
@@ -156,6 +422,8 @@ export default function UsersManagementPage() {
 
   // Edit Permissions State
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
+  const [permSearchQuery, setPermSearchQuery] = useState("");
+  const [permCategoryFilter, setPermCategoryFilter] = useState("all");
   const [submittingPerms, setSubmittingPerms] = useState(false);
 
   useEffect(() => {
@@ -244,7 +512,7 @@ export default function UsersManagementPage() {
             "trips",
             "pod",
             "billing",
-            "customers",
+            "master_data.parties",
           ],
         });
         loadUsers();
@@ -689,7 +957,9 @@ export default function UsersManagementPage() {
                         <button
                           onClick={() => {
                             setSelectedUser(u);
-                            setSelectedPerms(u.assignedFeatures || []);
+                            setSelectedPerms(expandAssignedToActions(u.assignedFeatures || []));
+                            setPermSearchQuery("");
+                            setPermCategoryFilter("all");
                             setShowPermModal(true);
                           }}
                           className="text-xs font-semibold text-[#2F8E86] hover:text-[#25776F] dark:text-teal-400 hover:underline flex items-center gap-1 cursor-pointer"
@@ -1227,22 +1497,27 @@ export default function UsersManagementPage() {
           </div>
         )}
 
-        {/* MODAL 4: EDIT PERMISSIONS */}
+        {/* MODAL 4: EDIT PERMISSIONS WITH GRANULAR ACTION RBAC */}
         {showPermModal && selectedUser && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
               {/* Header */}
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#2F8E86] dark:text-teal-400 flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-slate-800 text-[#2F8E86] dark:text-teal-400 flex items-center justify-center shadow-xs">
+                    <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                      Granular Module Permissions
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Custom feature overrides for @{selectedUser.username}
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        Granular Action & Module Permissions
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E7F1F2] text-[#25776F] dark:bg-slate-800 dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700">
+                        @{selectedUser.username}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Configure granular action rights (View, Create, Edit, Delete, Print) for this user.
                     </p>
                   </div>
                 </div>
@@ -1250,63 +1525,251 @@ export default function UsersManagementPage() {
                   onClick={() => setShowPermModal(false)}
                   className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Body */}
-              <form onSubmit={handlePermsSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-[#D9E2E3] dark:border-slate-700">
-                  {SYSTEM_MODULES.map((mod) => {
-                    const isChecked = selectedPerms.includes(mod.key);
-                    return (
-                      <label
-                        key={mod.key}
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedPerms([...selectedPerms, mod.key]);
-                            } else {
-                              setSelectedPerms(selectedPerms.filter((k) => k !== mod.key));
-                            }
-                          }}
-                          className="w-4 h-4 rounded text-[#2F8E86] focus:ring-[#2F8E86] border-slate-300"
-                        />
-                        <span>{mod.label}</span>
-                      </label>
-                    );
-                  })}
+              {/* Security Banner: Anti-Tamper Protection */}
+              <div className="px-5 py-3 bg-amber-50/70 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Anti-Tampering Protection: </span>
+                  Leaving &quot;Delete / Cancel&quot; or &quot;Edit&quot; unchecked prevents operators from manipulating or erasing booked Bilty & Manifest data.
+                </div>
+              </div>
+
+              {/* Quick Preset Buttons & Search Bar */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/60 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#2F8E86]" />
+                    <span>Quick Permission Presets:</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allKeys = RBAC_MODULES.flatMap((m) => m.actions.flatMap((a) => a.keys));
+                        setSelectedPerms(allKeys);
+                      }}
+                      className="text-[11px] font-semibold text-[#2F8E86] hover:underline cursor-pointer"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-slate-300">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPerms([])}
+                      className="text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setShowPermModal(false)}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingPerms}
-                    className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
-                  >
-                    {submittingPerms ? (
-                      <>
-                        <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
-                        <span>Updating Permissions...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>Save Permissions</span>
-                      </>
-                    )}
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {PERMISSION_PRESETS.map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => setSelectedPerms(preset.getKeys())}
+                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#2F8E86] dark:hover:border-teal-500 text-left transition shadow-2xs group cursor-pointer flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#2F8E86] dark:group-hover:text-teal-400">
+                            {preset.name}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${preset.badgeColor}`}>
+                            {preset.badge}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2">
+                          {preset.description}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Filter and Search */}
+                <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                  <div className="relative flex-1">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search modules or actions (e.g. Bilty, Delete, Rate, Print)..."
+                      value={permSearchQuery}
+                      onChange={(e) => setPermSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#2F8E86]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+                    {["all", "Operations", "Accounts", "Masters", "Core", "Administration"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setPermCategoryFilter(cat)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap cursor-pointer ${
+                          permCategoryFilter === cat
+                            ? "bg-[#2F8E86] text-white"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-[#D9E2E3] dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        {cat === "all" ? "All Categories" : cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Body: Module & Action Cards */}
+              <form onSubmit={handlePermsSubmit} className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
+                {RBAC_MODULES.filter((mod) => {
+                  const matchesCat = permCategoryFilter === "all" || mod.category === permCategoryFilter;
+                  const q = permSearchQuery.toLowerCase().trim();
+                  const matchesQuery =
+                    !q ||
+                    mod.label.toLowerCase().includes(q) ||
+                    mod.description.toLowerCase().includes(q) ||
+                    mod.actions.some((a) => a.label.toLowerCase().includes(q) || a.keys.some((k) => k.includes(q)));
+                  return matchesCat && matchesQuery;
+                }).map((mod) => {
+                  const allModKeys = mod.actions.flatMap((a) => a.keys);
+                  const isAllChecked = allModKeys.every((k) => selectedPerms.includes(k));
+                  const isSomeChecked = allModKeys.some((k) => selectedPerms.includes(k));
+
+                  return (
+                    <div
+                      key={mod.key}
+                      className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 shadow-2xs space-y-2.5"
+                    >
+                      {/* Module Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-700/60">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                              {mod.label}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                              {mod.category}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            {mod.description}
+                          </p>
+                        </div>
+
+                        {/* Module Toggle All */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isAllChecked) {
+                              setSelectedPerms(selectedPerms.filter((k) => !allModKeys.includes(k) && k !== mod.key));
+                            } else {
+                              const toAdd = allModKeys.filter((k) => !selectedPerms.includes(k));
+                              setSelectedPerms([...selectedPerms, ...toAdd]);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer self-start sm:self-auto ${
+                            isAllChecked
+                              ? "bg-teal-50 text-[#25776F] border border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800"
+                              : isSomeChecked
+                              ? "bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600"
+                              : "bg-slate-50 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-100"
+                          }`}
+                        >
+                          {isAllChecked ? (
+                            <CheckSquare className="w-3.5 h-3.5 text-[#2F8E86]" />
+                          ) : isSomeChecked ? (
+                            <div className="w-3.5 h-3.5 rounded bg-[#2F8E86] flex items-center justify-center text-white text-[9px] font-black">
+                              -
+                            </div>
+                          ) : (
+                            <Square className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                          <span>{isAllChecked ? "All Actions Granted" : isSomeChecked ? "Partial Rights" : "Grant All"}</span>
+                        </button>
+                      </div>
+
+                      {/* Action Chips Grid */}
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {mod.actions.map((act) => {
+                          const isActChecked = act.keys.every((k) => selectedPerms.includes(k));
+                          return (
+                            <label
+                              key={act.id}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium cursor-pointer transition select-none ${
+                                isActChecked
+                                  ? act.danger
+                                    ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800 font-bold"
+                                    : "bg-[#E7F1F2] text-[#25776F] border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800 font-bold"
+                                  : "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isActChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const toAdd = act.keys.filter((k) => !selectedPerms.includes(k));
+                                    setSelectedPerms([...selectedPerms, ...toAdd]);
+                                  } else {
+                                    setSelectedPerms(selectedPerms.filter((k) => !act.keys.includes(k) && k !== mod.key));
+                                  }
+                                }}
+                                className={`w-3.5 h-3.5 rounded ${
+                                  act.danger
+                                    ? "text-rose-600 focus:ring-rose-500 border-rose-300"
+                                    : "text-[#2F8E86] focus:ring-[#2F8E86] border-slate-300"
+                                }`}
+                              />
+                              <span>{act.label}</span>
+                              {act.danger && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold">
+                                  High Risk
+                                </span>
+                              )}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Footer Controls */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{selectedPerms.length}</span> individual permission actions active for @{selectedUser.username}
+                  </div>
+
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowPermModal(false)}
+                      className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingPerms}
+                      className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {submittingPerms ? (
+                        <>
+                          <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
+                          <span>Updating Permissions...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>Save Permissions</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
