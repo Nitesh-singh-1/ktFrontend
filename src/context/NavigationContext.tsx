@@ -112,8 +112,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // 4. Legacy and shorthand aliases:
     const aliasMap: Record<string, string[]> = {
       "parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
-      "fleet.view": ["master_data.fleet.view", "master_data.fleet", "master_data.compliance.view", "fleet.view"],
+      "master_data.parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
+      "fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.compliance.view": ["master_data.compliance.view", "master_data.compliance"],
+      "master_data.tyres.view": ["master_data.tyres.view", "master_data.tyres"],
+      "master_data.spares.view": ["master_data.spares.view", "master_data.spares"],
+      "master_data.loans.view": ["master_data.loans.view", "master_data.loans"],
       "rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
+      "master_data.rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
       "users.manage": ["system.users.view", "system.users.create", "system.users.edit", "system.users.delete", "users.manage"],
       "settings.manage": ["system.settings.view", "system.settings.edit", "settings.manage"],
       "saas.tenants.manage": ["system.clients.view", "system.clients", "saas.tenants.manage"],
