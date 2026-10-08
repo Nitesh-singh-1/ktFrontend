@@ -91,6 +91,8 @@ export default function Sidebar({
   // Permissive fallback when Sidebar is rendered outside a NavigationProvider
   // (tests / storybook). Matches pre-TASK-039 behaviour so the sidebar still renders.
   let hasPermission: (key?: string) => boolean = () => true;
+  let navIsLoading = false;
+  let navHasError = false;
 
   try {
     const configCtx = useTenantConfig();
@@ -109,9 +111,16 @@ export default function Sidebar({
     if (navCtx?.hasPermission) {
       hasPermission = navCtx.hasPermission;
     }
+    navIsLoading = !!navCtx?.isLoading;
+    navHasError = !!navCtx?.error;
   } catch {
     // Context fallback
   }
+
+  // TASK-045: fallback mode activates when the API-driven menu is empty, loading
+  // has settled, and the context flagged an error. We render the trimmed static
+  // `sidebarItems` plus an amber "Menu offline" banner.
+  const isFallbackMode = !navIsLoading && dynamicMenu.length === 0 && navHasError;
 
   // Menu items reserved for the platform operator; hidden from tenant admins/users.
   const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
@@ -140,8 +149,12 @@ export default function Sidebar({
       // Drop parent groups that became empty after filtering (no children left and no own route).
       .filter((it) => it.path || !it.children || it.children.length > 0);
 
-  // Fallback to static sidebar items if dynamic menu is not populated, then apply role-based filtering.
-  const displayItems = filterMenu(dynamicMenu.length > 0 ? dynamicMenu : sidebarItems);
+  // Fallback to the trimmed static sidebar items only when the API-driven menu
+  // is empty AND the context reported an error (TASK-045). Otherwise render
+  // whatever the API returned, even if it's briefly empty during load.
+  const displayItems = filterMenu(
+    dynamicMenu.length > 0 ? dynamicMenu : isFallbackMode ? sidebarItems : []
+  );
 
   const handleLogout = () => {
     authService.logout();
@@ -184,6 +197,21 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      {/* TASK-045: Fallback banner when the API-driven menu is unavailable. */}
+      {isFallbackMode && expanded && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-3 py-2 text-xs font-medium">
+          Menu offline —{" "}
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="underline hover:no-underline cursor-pointer"
+          >
+            refresh
+          </button>{" "}
+          to reconnect
+        </div>
+      )}
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">

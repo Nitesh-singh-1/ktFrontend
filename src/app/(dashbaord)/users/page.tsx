@@ -391,7 +391,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <PagePermissionGuard permission="users.manage" moduleName="User & Role Management">
+    <PagePermissionGuard permission="system.users.view" moduleName="User & Role Management">
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
         {/* Toast Notification */}
         {notification && (

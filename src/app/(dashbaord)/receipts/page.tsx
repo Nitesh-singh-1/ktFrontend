@@ -1031,7 +1031,7 @@ function MoneyReceiptsContent() {
 
 export default function MoneyReceiptsPage() {
   return (
-    <PagePermissionGuard permission="billing.receipts" moduleName="Money Receipts">
+    <PagePermissionGuard permission="billing.receipts.view" moduleName="Money Receipts">
       <MoneyReceiptsContent />
     </PagePermissionGuard>
   );

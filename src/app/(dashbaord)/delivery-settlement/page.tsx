@@ -1187,7 +1187,7 @@ function DeliverySettlementContent() {
 
 export default function DeliverySettlementPage() {
   return (
-    <PagePermissionGuard permission="delivery_settlement" moduleName="Delivery Settlement">
+    <PagePermissionGuard permission="delivery_settlement.view" moduleName="Delivery Settlement">
       <DeliverySettlementContent />
     </PagePermissionGuard>
   );

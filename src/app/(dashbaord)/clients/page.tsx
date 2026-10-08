@@ -372,7 +372,7 @@ export default function ClientsManagementPage() {
 
   return (
     <PagePermissionGuard
-      permission="saas.tenants.manage"
+      permission="saas.tenants.manage.view"
       moduleName="Client Management & SaaS Onboarding"
       platformOnly
     >
