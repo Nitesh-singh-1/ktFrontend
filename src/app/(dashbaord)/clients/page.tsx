@@ -6,6 +6,7 @@ import {
   TenantAdminListItem,
   TenantOnboardingPayload,
   TenantUser,
+  SystemRoleTemplate,
 } from "../../../../services/tenantService";
 import {
   TenantMenuEntitlements,
@@ -63,6 +64,31 @@ export default function ClientsManagementPage() {
   });
   const [submittingOnboard, setSubmittingOnboard] = useState(false);
 
+  // TASK-046 Phase 1 — role picker + module checkboxes for the admin wizard.
+  const [systemRoles, setSystemRoles] = useState<SystemRoleTemplate[]>([]);
+  const ALL_MODULE_CODES: { code: string; label: string }[] = [
+    { code: "dashboard", label: "Dashboard" },
+    { code: "bilty", label: "Bilty / Consignments" },
+    { code: "pod", label: "Proof of Delivery" },
+    { code: "trips", label: "Trips & Manifests" },
+    { code: "billing", label: "Billing & Invoicing" },
+    { code: "master_data", label: "Master Data" },
+    { code: "reports", label: "Reports" },
+    { code: "vendors", label: "Vendors & Lorry Hire" },
+    { code: "claims", label: "Claims" },
+    { code: "quotations", label: "Quotations" },
+    { code: "tracking", label: "Live Tracking" },
+    { code: "analytics", label: "Analytics" },
+    { code: "trip_settlement", label: "Trip Settlement" },
+    { code: "delivery_settlement", label: "Delivery Settlement" },
+    { code: "system", label: "System" },
+  ];
+  const PLAN_DEFAULT_MODULES: Record<string, string[]> = {
+    Starter: ["dashboard", "bilty", "reports"],
+    Professional: ["dashboard", "bilty", "pod", "billing", "reports"],
+    Enterprise: ALL_MODULE_CODES.map((m) => m.code),
+  };
+
   // Module Entitlement Drawer/Modal State
   const [selectedClient, setSelectedClient] =
     useState<TenantAdminListItem | null>(null);
@@ -82,6 +108,11 @@ export default function ClientsManagementPage() {
 
   useEffect(() => {
     loadClients();
+    // TASK-046 Phase 1: fetch system role templates once on page mount.
+    tenantService
+      .getSystemRoleTemplates()
+      .then((rows) => setSystemRoles(rows || []))
+      .catch(() => setSystemRoles([]));
   }, []);
 
   const handleOpenUsers = async (client: TenantAdminListItem) => {
@@ -308,7 +339,18 @@ export default function ClientsManagementPage() {
 
     try {
       setSubmittingOnboard(true);
-      const res = await tenantService.onboardTenant(onboardForm);
+      // TASK-046 Phase 1: platform admin uses the new /api/admin/tenants path
+      // that respects adminRoleCode + explicit enabledModuleCodes. Fall back to
+      // the public endpoint if the admin-only one 403s (not expected here).
+      const adminPayload: TenantOnboardingPayload = {
+        ...onboardForm,
+        adminRoleCode: onboardForm.adminRoleCode || "admin",
+        enabledModuleCodes:
+          onboardForm.enabledModuleCodes && onboardForm.enabledModuleCodes.length > 0
+            ? onboardForm.enabledModuleCodes
+            : PLAN_DEFAULT_MODULES[onboardForm.planTier || "Starter"] || [],
+      };
+      const res = await tenantService.onboardTenantByAdmin(adminPayload);
       if (res.success) {
         await sweetAlert.success(
           "Client onboarded",
@@ -1024,6 +1066,8 @@ export default function ClientsManagementPage() {
                                           "trip_profitability",
                                           "vendor_payables",
                                         ],
+                                  // TASK-046 Phase 1: pre-select the plan's default modules on tier change.
+                                  enabledModuleCodes: PLAN_DEFAULT_MODULES[tier] || [],
                                 })
                               }
                               className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
@@ -1042,6 +1086,78 @@ export default function ClientsManagementPage() {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+
+                      {/* TASK-046 Phase 1 — Admin role picker */}
+                      <div>
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
+                          Admin User's Role
+                        </label>
+                        <select
+                          value={onboardForm.adminRoleCode || "admin"}
+                          onChange={(e) =>
+                            setOnboardForm({
+                              ...onboardForm,
+                              adminRoleCode: e.target.value,
+                            })
+                          }
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:border-[#2F8E86] focus:outline-none"
+                        >
+                          {(systemRoles.length > 0
+                            ? systemRoles
+                            : [{ code: "admin", name: "Administrator", description: "" }]
+                          ).map((r) => (
+                            <option key={r.code} value={r.code}>
+                              {r.name} ({r.code})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="mt-1 text-[11px] text-[#64748B]">
+                          Platform admin may pick any seeded system role. Default is "admin".
+                        </p>
+                      </div>
+
+                      {/* TASK-046 Phase 1 — Module checkboxes (writes tenant_modules). */}
+                      <div>
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
+                          Enabled Modules
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {ALL_MODULE_CODES.map((mod) => {
+                            const current = new Set(
+                              onboardForm.enabledModuleCodes ||
+                                PLAN_DEFAULT_MODULES[onboardForm.planTier || "Starter"] ||
+                                []
+                            );
+                            const isChecked = current.has(mod.code);
+                            return (
+                              <label
+                                key={mod.code}
+                                className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer text-xs ${
+                                  isChecked
+                                    ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#25776F] font-semibold"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B]"
+                                }`}
+                              >
+                                <span>{mod.label}</span>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const next = new Set(current);
+                                    if (next.has(mod.code)) next.delete(mod.code);
+                                    else next.add(mod.code);
+                                    setOnboardForm({
+                                      ...onboardForm,
+                                      enabledModuleCodes: Array.from(next),
+                                    });
+                                  }}
+                                  className="w-4 h-4 accent-[#2F8E86] rounded"
+                                />
+                              </label>
+                            );
+                          })}
                         </div>
                       </div>
 
