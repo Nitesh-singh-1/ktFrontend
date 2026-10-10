@@ -54,6 +54,7 @@ export default function ProtectedLayout({
   const isSaaSConfigRoute = 
     pathname?.startsWith("/settings") || 
     pathname?.startsWith("/clients") || 
+    pathname?.startsWith("/menu-catalog") || 
     pathname?.startsWith("/onboard");
 
   const isRestrictedForSubUser = isSaaSConfigRoute && !isSuperUser;
