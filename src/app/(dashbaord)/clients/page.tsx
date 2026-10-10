@@ -7,11 +7,18 @@ import {
   TenantOnboardingPayload,
   TenantUser,
   SystemRoleTemplate,
+  UpdateTenantEntitlementsPayload,
 } from "../../../../services/tenantService";
 import {
   TenantMenuEntitlements,
   ReportEntitlementItem,
+  navigationService,
 } from "../../../../services/navigationService";
+import {
+  ALL_MODULE_CODES,
+  ALL_MODULE_CODE_LIST,
+  PRESET_MODULE_CODES,
+} from "@/app/config/moduleCatalog";
 import {
   PackageIcon,
   TruckIcon,
@@ -49,44 +56,21 @@ export default function ClientsManagementPage() {
     adminFullName: "",
     adminMobile: "",
     planTier: "Starter",
-    enabledModules: [
-      "dashboard",
-      "gr",
-      "gr.list",
-      "gr.entry",
-      "challan",
-      "challan.list",
-      "challan.entry",
-      "system",
-      "system.settings",
-    ],
+    // TASK-049 — canonical module codes only. Legacy aliases (`gr`, `challan`,
+    // `gr.list`, …) are deleted; preset expansion lives in PLAN_DEFAULT_MODULES.
+    enabledModules: ["dashboard", "bilty", "trips", "system"],
     enabledReportKeys: [],
   });
   const [submittingOnboard, setSubmittingOnboard] = useState(false);
 
   // TASK-046 Phase 1 — role picker + module checkboxes for the admin wizard.
   const [systemRoles, setSystemRoles] = useState<SystemRoleTemplate[]>([]);
-  const ALL_MODULE_CODES: { code: string; label: string }[] = [
-    { code: "dashboard", label: "Dashboard" },
-    { code: "bilty", label: "Bilty / Consignments" },
-    { code: "pod", label: "Proof of Delivery" },
-    { code: "trips", label: "Trips & Manifests" },
-    { code: "billing", label: "Billing & Invoicing" },
-    { code: "master_data", label: "Master Data" },
-    { code: "reports", label: "Reports" },
-    { code: "vendors", label: "Vendors & Lorry Hire" },
-    { code: "claims", label: "Claims" },
-    { code: "quotations", label: "Quotations" },
-    { code: "tracking", label: "Live Tracking" },
-    { code: "analytics", label: "Analytics" },
-    { code: "trip_settlement", label: "Trip Settlement" },
-    { code: "delivery_settlement", label: "Delivery Settlement" },
-    { code: "system", label: "System" },
-  ];
+  // TASK-049b — canonical catalog + presets now live in
+  // `src/app/config/moduleCatalog.ts` so /settings reuses them.
   const PLAN_DEFAULT_MODULES: Record<string, string[]> = {
     Starter: ["dashboard", "bilty", "reports"],
     Professional: ["dashboard", "bilty", "pod", "billing", "reports"],
-    Enterprise: ALL_MODULE_CODES.map((m) => m.code),
+    Enterprise: ALL_MODULE_CODE_LIST,
   };
 
   // Module Entitlement Drawer/Modal State
@@ -94,6 +78,11 @@ export default function ClientsManagementPage() {
     useState<TenantAdminListItem | null>(null);
   const [clientEntitlements, setClientEntitlements] =
     useState<TenantMenuEntitlements | null>(null);
+  // TASK-049 — editing state tracks canonical module codes (NOT dotted strings).
+  // Initialized from the GET response's `moduleCodes` with a backwards-compat
+  // fallback to `enabledMenuKeys` filtered to recognized codes. All toggles and
+  // presets write to this Set; the PUT payload is `Array.from(moduleCodes)`.
+  const [moduleCodes, setModuleCodes] = useState<Set<string>>(new Set());
   const [loadingEntitlements, setLoadingEntitlements] = useState(false);
   const [savingEntitlements, setSavingEntitlements] = useState(false);
 
@@ -184,6 +173,15 @@ export default function ClientsManagementPage() {
       setLoadingEntitlements(true);
       const entitlements = await tenantService.getEntitlements(client.id);
       setClientEntitlements(entitlements);
+      // TASK-049 — prefer the backend's new `moduleCodes`; during the one-release
+      // transition the legacy `enabledMenuKeys` is still populated, so filter it
+      // to the canonical catalog as a fallback.
+      const knownCodes = new Set(ALL_MODULE_CODES.map((m) => m.code));
+      const seed =
+        entitlements.moduleCodes && entitlements.moduleCodes.length > 0
+          ? entitlements.moduleCodes
+          : (entitlements.enabledMenuKeys || []).filter((k) => knownCodes.has(k));
+      setModuleCodes(new Set(seed));
     } catch (err: any) {
       showToast("error", "Failed to load entitlements for this client.");
     } finally {
@@ -195,17 +193,32 @@ export default function ClientsManagementPage() {
     if (!selectedClient || !clientEntitlements) return;
     try {
       setSavingEntitlements(true);
-      await tenantService.updateEntitlements(
-        selectedClient.id,
-        clientEntitlements
-      );
+      // TASK-049 — send the new canonical shape. `moduleCodes` IS the input;
+      // the backend derives everything (tenant_modules writes, admin-role
+      // reseed, legacy enabled_feature_keys) from this one list. No more
+      // dotted-key strings. No more gr/challan aliases.
+      const payload: UpdateTenantEntitlementsPayload = {
+        moduleCodes: Array.from(moduleCodes),
+        reports: clientEntitlements.reports,
+      };
+      await tenantService.updateEntitlements(selectedClient.id, payload);
       showToast(
         "success",
         `Module permissions updated successfully for ${selectedClient.name}!`
       );
       setSelectedClient(null);
       setClientEntitlements(null);
+      setModuleCodes(new Set());
       loadClients();
+      // TASK-048: Platform-admin assign/revoke must flip the sidebar immediately
+      // without a hard refresh. This re-pulls /api/navigation/menu, which the
+      // backend resolves from tenant_entitlement_subscriptions — the global
+      // menu_items catalog is NEVER mutated by this flow.
+      try {
+        await navigationService.refreshMenu();
+      } catch {
+        // Non-fatal: the sidebar will refresh on next route transition.
+      }
     } catch (err: any) {
       showToast("error", err.message || "Failed to update entitlements.");
     } finally {
@@ -213,82 +226,50 @@ export default function ClientsManagementPage() {
     }
   };
 
+  // TASK-049b — presets are centralised in `src/app/config/moduleCatalog.ts`.
+  // The three variants used by this /clients drawer are a subset of the full
+  // preset map; the /settings page uses the full set.
+
   const applyPresetToClient = (presetType: "starter" | "tax_reports" | "enterprise") => {
     if (!clientEntitlements) return;
+
+    setModuleCodes(new Set(PRESET_MODULE_CODES[presetType]));
 
     if (presetType === "starter") {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          "dashboard",
-          "bilty",
-          "consignments",
-          "trips",
-          "reports",
-          "system",
-          "system.settings",
-        ],
-        reports: clientEntitlements.reports.map((r) => ({
-          ...r,
-          isEnabled: false,
-        })),
+        reports: clientEntitlements.reports.map((r) => ({ ...r, isEnabled: false })),
       });
       showToast("success", "Applied: Bill-Making Only Preset");
     } else if (presetType === "tax_reports") {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          "dashboard",
-          "bilty",
-          "consignments",
-          "trips",
-          "billing",
-          "reports",
-          "system",
-          "system.settings",
-        ],
         reports: clientEntitlements.reports.map((r) => ({
           ...r,
           isEnabled:
-            r.reportKey === "tax_summary" || r.reportKey === "party_outstanding" || r.reportKey === "booking_register",
+            r.reportKey === "tax_summary" ||
+            r.reportKey === "party_outstanding" ||
+            r.reportKey === "booking_register",
         })),
       });
       showToast("success", "Applied: Billing + Tax Reports Preset");
-    } else if (presetType === "enterprise") {
+    } else {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          ...ALL_MODULE_CODES.map((m) => m.code),
-          "consignments",
-          "system.settings",
-        ],
-        reports: clientEntitlements.reports.map((r) => ({
-          ...r,
-          isEnabled: true,
-        })),
+        reports: clientEntitlements.reports.map((r) => ({ ...r, isEnabled: true })),
       });
       showToast("success", "Applied: Full Enterprise Preset");
     }
   };
 
-  const toggleClientMenuKey = (key: string) => {
-    if (!clientEntitlements) return;
-    const current = new Set(clientEntitlements.enabledMenuKeys);
-    const canonicalKey = key === "gr" ? "bilty" : key === "challan" ? "trips" : key;
-    const aliases = canonicalKey === "bilty" ? ["bilty", "consignments", "gr"] : canonicalKey === "trips" ? ["trips", "challan"] : [canonicalKey];
-    const isCurrentlyEnabled = aliases.some((a) => current.has(a));
-
-    if (isCurrentlyEnabled) {
-      aliases.forEach((a) => current.delete(a));
-    } else {
-      current.add(canonicalKey);
-      if (canonicalKey === "bilty") {
-        current.add("consignments");
-      }
-    }
-    setClientEntitlements({
-      ...clientEntitlements,
-      enabledMenuKeys: Array.from(current),
+  // TASK-049 — toggle one canonical module code. No alias normalization, no
+  // parent/child magic. The checkbox value is literally `moduleCodes.has(code)`.
+  const toggleClientMenuKey = (code: string) => {
+    setModuleCodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
     });
   };
 
@@ -297,20 +278,16 @@ export default function ClientsManagementPage() {
     const updated = clientEntitlements.reports.map((r) =>
       r.reportKey === reportKey ? { ...r, isEnabled: !r.isEnabled } : r
     );
+    setClientEntitlements({ ...clientEntitlements, reports: updated });
 
-    // If at least one report is enabled, ensure 'reports' menu key is present
+    // If at least one report is enabled, ensure the `reports` module is granted
+    // so the sidebar can even render the parent group.
     const hasAnyReport = updated.some((r) => r.isEnabled);
-    const keys = new Set(clientEntitlements.enabledMenuKeys);
-    if (hasAnyReport) {
-      keys.add("reports");
-    } else {
-      keys.delete("reports");
-    }
-
-    setClientEntitlements({
-      ...clientEntitlements,
-      enabledMenuKeys: Array.from(keys),
-      reports: updated,
+    setModuleCodes((prev) => {
+      const next = new Set(prev);
+      if (hasAnyReport) next.add("reports");
+      else next.delete("reports");
+      return next;
     });
   };
 
@@ -362,17 +339,8 @@ export default function ClientsManagementPage() {
           adminFullName: "",
           adminMobile: "",
           planTier: "Starter",
-          enabledModules: [
-            "dashboard",
-            "gr",
-            "gr.list",
-            "gr.entry",
-            "challan",
-            "challan.list",
-            "challan.entry",
-            "system",
-            "system.settings",
-          ],
+          // TASK-049 — canonical module codes only; see comment at initial state.
+          enabledModules: ["dashboard", "bilty", "trips", "system"],
           enabledReportKeys: [],
         });
         loadClients();
@@ -709,6 +677,7 @@ export default function ClientsManagementPage() {
                   onClick={() => {
                     setSelectedClient(null);
                     setClientEntitlements(null);
+                    setModuleCodes(new Set());
                   }}
                   className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg hover:bg-[#F7F8F8] cursor-pointer"
                 >
@@ -772,14 +741,14 @@ export default function ClientsManagementPage() {
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {ALL_MODULE_CODES.filter((m) => m.code !== "dashboard" && m.code !== "system").map((mod) => {
-                          const isChecked =
-                            clientEntitlements.enabledMenuKeys.includes(mod.code) ||
-                            (mod.code === "bilty" && (clientEntitlements.enabledMenuKeys.includes("consignments") || clientEntitlements.enabledMenuKeys.includes("gr"))) ||
-                            (mod.code === "trips" && clientEntitlements.enabledMenuKeys.includes("challan"));
+                          // TASK-049 — checkbox state = pure membership in the
+                          // canonical moduleCodes Set. No alias checks.
+                          const isChecked = moduleCodes.has(mod.code);
                           return (
                             <div
                               key={mod.code}
-                              className={`p-3 rounded-xl border transition-all flex items-center justify-between ${
+                              onClick={() => toggleClientMenuKey(mod.code)}
+                              className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer select-none ${
                                 isChecked
                                   ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#111827]"
                                   : "bg-[#F7F8F8] border-[#E5EAEB] text-[#94A3B8]"
@@ -796,7 +765,10 @@ export default function ClientsManagementPage() {
                               <input
                                 type="checkbox"
                                 checked={isChecked}
-                                onChange={() => toggleClientMenuKey(mod.code)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleClientMenuKey(mod.code);
+                                }}
                                 className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
                               />
                             </div>
@@ -824,7 +796,8 @@ export default function ClientsManagementPage() {
                         {clientEntitlements.reports.map((rep) => (
                           <div
                             key={rep.reportKey}
-                            className={`p-3 rounded-xl border transition-all flex items-center justify-between ${
+                            onClick={() => toggleClientReport(rep.reportKey)}
+                            className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer select-none ${
                               rep.isEnabled
                                 ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#111827]"
                                 : "bg-[#F7F8F8] border-[#E5EAEB] text-[#94A3B8] opacity-75"
@@ -841,7 +814,10 @@ export default function ClientsManagementPage() {
                             <input
                               type="checkbox"
                               checked={rep.isEnabled}
-                              onChange={() => toggleClientReport(rep.reportKey)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleClientReport(rep.reportKey);
+                              }}
                               className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
                             />
                           </div>
@@ -859,6 +835,7 @@ export default function ClientsManagementPage() {
                   onClick={() => {
                     setSelectedClient(null);
                     setClientEntitlements(null);
+                    setModuleCodes(new Set());
                   }}
                   className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#64748B] text-xs font-bold rounded-xl border border-[#D9E2E3] transition-colors cursor-pointer"
                 >

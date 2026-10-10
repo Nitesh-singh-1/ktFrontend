@@ -1,7 +1,15 @@
 import { baseService } from "./baseservice";
 import { authService } from "./authService";
 import { TenantOnboardingRequest, TenantOnboardingResponse } from "@/types/shipment";
-import { TenantMenuEntitlements } from "./navigationService";
+import {
+  TenantMenuEntitlements,
+  UpdateTenantEntitlementsPayload,
+} from "./navigationService";
+
+// TASK-049b — `UpdateTenantEntitlementsPayload` is now defined in
+// `./navigationService.ts` so both navigationService and tenantService can
+// share one source of truth. Re-exported here for existing importers.
+export type { UpdateTenantEntitlementsPayload };
 
 export interface TenantAdminListItem {
   id: string;
@@ -126,8 +134,8 @@ export const tenantService = {
   getEntitlements: (id: string) =>
     baseService.get<TenantMenuEntitlements>(`/tenant/${id}/entitlements`),
 
-  // Update menu entitlements for a tenant
-  updateEntitlements: (id: string, data: TenantMenuEntitlements) =>
+  // Update menu entitlements for a tenant (TASK-049: moduleCodes payload shape).
+  updateEntitlements: (id: string, data: UpdateTenantEntitlementsPayload) =>
     baseService.put<TenantMenuEntitlements>(`/tenant/${id}/entitlements`, data),
 
   // Platform-operator: list a tenant's users

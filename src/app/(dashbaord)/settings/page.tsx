@@ -12,7 +12,15 @@ import {
   TenantMenuEntitlements,
   TenantListItem,
   TenantUserItem,
+  UpdateTenantEntitlementsPayload,
 } from "../../../../services/navigationService";
+import {
+  ALL_MODULE_CODES,
+  ALL_MODULE_CODE_LIST,
+  ALL_MODULE_CODE_SET,
+  MENU_KEY_TO_MODULE_CODE,
+  PRESET_MODULE_CODES,
+} from "@/app/config/moduleCatalog";
 import { userService, SubUserDetails } from "../../../../services/userService";
 import { authService } from "../../../../services/authService";
 import { downloadTenantExport } from "../../../../services/exportService";
@@ -93,7 +101,6 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     subItems: [
       { key: "consignments.create", title: "New Bilty (GR Booking Entry)", desc: "Issue new consignment note with consignor/consignee", iconName: "plus" },
       { key: "consignments.all", title: "All Bilties (GR Registry)", desc: "Search, filter, edit, and print consignment bilties", iconName: "file" },
-      { key: "consignments.delivery_settlement", title: "Delivery Settlement", desc: "Settle ToPay/Paid/TBB consignments, record deductions and mark delivered", iconName: "check" },
     ],
   },
   {
@@ -118,7 +125,6 @@ export const fullMenuCatalog: MenuItemDefinition[] = [
     category: "Fleet & Dispatch",
     subItems: [
       { key: "trips.all", title: "Manifest & Dispatch (Challans)", desc: "Manage loading challans, vehicle dispatch and transit", iconName: "truck" },
-      { key: "trips.settlement", title: "Trip Settlement", desc: "Driver trip settlement: advances, diesel, toll, ToPay cash, net balance", iconName: "card" },
     ],
   },
   {
@@ -239,11 +245,16 @@ export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
   switch (keyOrName) {
     case "dashboard":
       return <LayoutDashboard className={className} />;
+    case "bilty":
     case "consignments":
       return <Package className={className} />;
+    case "delivery_settlement":
+      return <FileCheck className={className} />;
     case "trips":
     case "truck":
       return <Truck className={className} />;
+    case "trip_settlement":
+      return <CreditCard className={className} />;
     case "pod":
       return <FileCheck className={className} />;
     case "billing":
@@ -369,42 +380,23 @@ export default function SettingsPage() {
     viewer: ["dashboard", "consignments.all", "analytics", "reports", "system"],
   });
 
+  // TASK-049b — authoritative selected-modules state is a Set of canonical
+  // module codes (matches backend `modules.code` 1:1). All toggles, presets
+  // and the "menus" matrix read/write this Set; the PUT payload is
+  // `Array.from(moduleCodes)`. The legacy dotted `enabledMenuKeys` array on
+  // `menuEntitlements` is only used as a read-only fallback seed during the
+  // one-release transition window (filtered through ALL_MODULE_CODE_SET).
+  // TODO: Phase B — drop the fallback seed once backend always returns
+  // `moduleCodes`, and remove `enabledMenuKeys` from `TenantMenuEntitlements`.
+  const [moduleCodes, setModuleCodes] = useState<Set<string>>(
+    new Set(PRESET_MODULE_CODES.enterprise)
+  );
+
   const [menuEntitlements, setMenuEntitlements] = useState<TenantMenuEntitlements>({
     tenantId: "",
     planTier: "Enterprise",
-    enabledMenuKeys: [
-      "dashboard",
-      "consignments",
-      "consignments.create",
-      "consignments.all",
-      "quotations",
-      "trips",
-      "empty_trips",
-      "pod",
-      "billing",
-      "billing.invoices",
-      "billing.receipts",
-      "master_data",
-      "master_data.parties",
-      "master_data.fleet",
-      "master_data.compliance",
-      "master_data.tyres",
-      "master_data.spares",
-      "master_data.loans",
-      "master_data.driverledger",
-      "master_data.vehicleclaims",
-      "master_data.rates",
-      "master_data.vendorrates",
-      "vendors",
-      "claims",
-      "analytics",
-      "reports",
-      "tracking",
-      "clients",
-      "system",
-      "system.settings",
-      "system.onboard",
-    ],
+    moduleCodes: ALL_MODULE_CODE_LIST,
+    enabledMenuKeys: ALL_MODULE_CODE_LIST,
     reports: [
       { reportKey: "booking_register", title: "Consignment Booking Register", description: "Comprehensive log of all booked goods receipts", category: "Operational", path: "/reports?tab=booking_register", isEnabled: true },
       { reportKey: "tax_summary", title: "GST & Tax Summary Report", description: "Taxable amounts, CGST, SGST, IGST, and RCM breakdowns", category: "Financial", path: "/reports?tab=tax_summary", isEnabled: true },
@@ -552,18 +544,18 @@ export default function SettingsPage() {
           if (menuRes.value.tenantId) {
             setSelectedTenantId(menuRes.value.tenantId);
           }
-          if (menuRes.value.userOverridesJson) {
-            try {
-              const parsedUsers = JSON.parse(menuRes.value.userOverridesJson);
-              if (parsedUsers) setUserOverrides(parsedUsers);
-            } catch {}
-          }
-          if (menuRes.value.roleOverridesJson) {
-            try {
-              const parsedRoles = JSON.parse(menuRes.value.roleOverridesJson);
-              if (parsedRoles) setRoleOverrides(parsedRoles);
-            } catch {}
-          }
+          // TASK-049b — seed moduleCodes Set from the canonical response field.
+          // Fallback (one-release transition only): filter legacy
+          // `enabledMenuKeys` through ALL_MODULE_CODE_SET so only exact
+          // module-code matches survive. TODO: Phase B — delete fallback.
+          const seedCodes =
+            menuRes.value.moduleCodes && menuRes.value.moduleCodes.length > 0
+              ? menuRes.value.moduleCodes
+              : (menuRes.value.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
+          setModuleCodes(new Set(seedCodes));
+          // NOTE: `roleOverridesJson` / `userOverridesJson` DTO fields were
+          // removed in TASK-049b. The frontend keeps the local defaults for
+          // the override maps and sends them as objects on save.
         }
 
         if (tenantsRes.status === "fulfilled" && tenantsRes.value && tenantsRes.value.length > 0) {
@@ -601,16 +593,12 @@ export default function SettingsPage() {
       setLoading(true);
       const res = await navigationService.getMenuEntitlementsForTenant(tenantId);
       setMenuEntitlements(res);
-      if (res.userOverridesJson) {
-        try {
-          setUserOverrides(JSON.parse(res.userOverridesJson));
-        } catch {}
-      }
-      if (res.roleOverridesJson) {
-        try {
-          setRoleOverrides(JSON.parse(res.roleOverridesJson));
-        } catch {}
-      }
+      // TASK-049b — same canonical-with-fallback seed as the initial load.
+      const seedCodes =
+        res.moduleCodes && res.moduleCodes.length > 0
+          ? res.moduleCodes
+          : (res.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
+      setModuleCodes(new Set(seedCodes));
     } catch (err: any) {
       console.error("Error fetching entitlements for tenant:", err);
     } finally {
@@ -618,13 +606,14 @@ export default function SettingsPage() {
     }
   };
 
-  // Subscription Plan Presets
+  // TASK-049b — Subscription Plan Presets rewritten to canonical module code
+  // sets. Preset == pre-selected moduleCodes before admin clicks save; the
+  // backend infers nothing. Report defaults are a UI concern only.
   const applyStarterPlan = () => {
-    const starterKeys = ["dashboard", "consignments", "consignments.create", "consignments.all", "system"];
+    setModuleCodes(new Set(PRESET_MODULE_CODES.starter));
     setMenuEntitlements({
       ...menuEntitlements,
       planTier: "Starter",
-      enabledMenuKeys: starterKeys,
       reports: menuEntitlements.reports.map((r) => ({
         ...r,
         isEnabled: r.reportKey === "booking_register",
@@ -633,98 +622,75 @@ export default function SettingsPage() {
   };
 
   const applyProfessionalPlan = () => {
-    const proKeys = [
-      "dashboard",
-      "consignments",
-      "consignments.create",
-      "consignments.all",
-      "quotations",
-      "trips",
-      "empty_trips",
-      "pod",
-      "billing",
-      "billing.invoices",
-      "billing.receipts",
-      "master_data",
-      "master_data.parties",
-      "master_data.fleet",
-      "master_data.compliance",
-      "master_data.tyres",
-      "master_data.spares",
-      "master_data.loans",
-      "master_data.driverledger",
-      "master_data.vehicleclaims",
-      "master_data.rates",
-      "master_data.vendorrates",
-      "analytics",
-      "reports",
-      "system",
-      "system.settings",
-    ];
+    setModuleCodes(new Set(PRESET_MODULE_CODES.professional));
     setMenuEntitlements({
       ...menuEntitlements,
       planTier: "Professional",
-      enabledMenuKeys: proKeys,
       reports: menuEntitlements.reports.map((r) => ({
         ...r,
-        isEnabled: r.reportKey === "booking_register" || r.reportKey === "tax_summary" || r.reportKey === "party_outstanding",
+        isEnabled:
+          r.reportKey === "booking_register" ||
+          r.reportKey === "tax_summary" ||
+          r.reportKey === "party_outstanding",
       })),
     });
   };
 
   const applyEnterprisePlan = () => {
-    const allKeys = fullMenuCatalog.flatMap((m) => [m.key, ...(m.subItems ? m.subItems.map((s) => s.key) : [])]);
+    setModuleCodes(new Set(PRESET_MODULE_CODES.enterprise));
     setMenuEntitlements({
       ...menuEntitlements,
       planTier: "Enterprise",
-      enabledMenuKeys: allKeys,
       reports: menuEntitlements.reports.map((r) => ({ ...r, isEnabled: true })),
     });
   };
 
   const applyClientAPreset = () => {
+    setModuleCodes(new Set(PRESET_MODULE_CODES.client_a));
     setMenuEntitlements({
       ...menuEntitlements,
       planTier: "Custom",
-      enabledMenuKeys: ["dashboard", "consignments", "consignments.create", "consignments.all", "trips", "billing", "billing.invoices", "system"],
       reports: menuEntitlements.reports.map((r) => ({ ...r, isEnabled: false })),
     });
   };
 
   const applyClientBPreset = () => {
+    setModuleCodes(new Set(PRESET_MODULE_CODES.client_b));
     setMenuEntitlements({
       ...menuEntitlements,
       planTier: "Custom",
-      enabledMenuKeys: [
-        "dashboard",
-        "consignments",
-        "consignments.create",
-        "consignments.all",
-        "billing",
-        "billing.invoices",
-        "billing.receipts",
-        "reports",
-        "system",
-      ],
       reports: menuEntitlements.reports.map((r) => ({
         ...r,
-        isEnabled: r.reportKey === "tax_summary" || r.reportKey === "party_outstanding" || r.reportKey === "booking_register",
+        isEnabled:
+          r.reportKey === "tax_summary" ||
+          r.reportKey === "party_outstanding" ||
+          r.reportKey === "booking_register",
       })),
     });
   };
 
-  // Toggle Menu Key in Global Matrix
-  const toggleMenuKey = (key: string) => {
-    const exists = menuEntitlements.enabledMenuKeys.includes(key);
-    const updatedKeys = exists
-      ? menuEntitlements.enabledMenuKeys.filter((k) => k !== key)
-      : [...menuEntitlements.enabledMenuKeys, key];
-    setMenuEntitlements({ ...menuEntitlements, enabledMenuKeys: updatedKeys });
+  // TASK-049b — toggle one canonical module code in the Global Matrix. No
+  // alias normalization, no parent/child magic. Checkbox value is literally
+  // `moduleCodes.has(code)`.
+  const toggleModuleCode = (code: string) => {
+    setModuleCodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  };
+
+  // Phase A helper: given a dotted menu key from the override UI, is the
+  // parent canonical module code currently enabled for the tenant?
+  const isMenuKeyAvailable = (menuKey: string): boolean => {
+    const code = MENU_KEY_TO_MODULE_CODE[menuKey];
+    return !!code && moduleCodes.has(code);
   };
 
   // Toggle Dedicated User Page
   const toggleUserPage = (userId: string, pageKey: string) => {
-    const currentPages = userOverrides[userId] || menuEntitlements.enabledMenuKeys;
+    const currentPages = userOverrides[userId] || [];
     const exists = currentPages.includes(pageKey);
     const updated = exists ? currentPages.filter((k) => k !== pageKey) : [...currentPages, pageKey];
     setUserOverrides({ ...userOverrides, [userId]: updated });
@@ -834,17 +800,37 @@ export default function SettingsPage() {
       // Entitlement changes are platform-operator only (the endpoint is locked); tenant admins skip it,
       // so saving branding never fails with a 403 from the entitlement matrix.
       if (isPlatformAdmin) {
-        const payload: TenantMenuEntitlements = {
-          ...menuEntitlements,
-          userOverridesJson: JSON.stringify(userOverrides),
-          roleOverridesJson: JSON.stringify(roleOverrides),
+        // TASK-049b — canonical payload shape. `moduleCodes` is the single
+        // source of truth; backend writes `tenant_modules` from it and
+        // reseeds admin-role permissions. NEVER send `enabledMenuKeys` or
+        // legacy dotted strings. Override maps travel as plain objects.
+        const payload: UpdateTenantEntitlementsPayload = {
+          moduleCodes: Array.from(moduleCodes),
+          reports: menuEntitlements.reports,
+          roleOverrides,
+          userOverrides,
         };
         const updatedEntitlements = selectedTenantId
           ? await navigationService.updateMenuEntitlementsForTenant(targetTenantId, payload)
           : await navigationService.updateMenuEntitlements(payload);
         setMenuEntitlements(updatedEntitlements);
+        // Re-seed moduleCodes from the fresh response so the UI reflects what
+        // the backend actually persisted.
+        const freshCodes =
+          updatedEntitlements.moduleCodes && updatedEntitlements.moduleCodes.length > 0
+            ? updatedEntitlements.moduleCodes
+            : (updatedEntitlements.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
+        setModuleCodes(new Set(freshCodes));
       }
 
+      // TASK-048/049b — push the fresh menu to the sidebar without a hard
+      // reload. `navigationService.refreshMenu()` dispatches the shared
+      // browser event; `refreshNavigation()` also re-pulls on this tab.
+      try {
+        await navigationService.refreshMenu();
+      } catch {
+        // Non-fatal: sidebar refreshes on next route transition.
+      }
       await refreshNavigation();
 
       setSaveSuccess(true);
@@ -1347,7 +1333,7 @@ export default function SettingsPage() {
                   </span>
                 </span>
                 <span className="font-bold text-[#2F8E86] dark:text-teal-400 shrink-0 ml-2">
-                  {menuEntitlements.enabledMenuKeys.length} Subscribed Features
+                  {moduleCodes.size} Subscribed Features
                 </span>
               </div>
 
@@ -1359,8 +1345,8 @@ export default function SettingsPage() {
                       menu.key !== "system" &&
                       menu.key !== "system.settings" &&
                       menu.key !== "clients" &&
-                      (menuEntitlements.enabledMenuKeys.includes(menu.key) ||
-                        (menu.subItems && menu.subItems.some((s) => menuEntitlements.enabledMenuKeys.includes(s.key))))
+                      (isMenuKeyAvailable(menu.key) ||
+                        (menu.subItems && menu.subItems.some((s) => isMenuKeyAvailable(s.key))))
                   )
                   .map((menu) => {
                     const activeUserPages = userOverrides[selectedUserId] || [];
@@ -1371,7 +1357,7 @@ export default function SettingsPage() {
                       (sub) =>
                         sub.key !== "system.settings" &&
                         sub.key !== "system.onboard" &&
-                        menuEntitlements.enabledMenuKeys.includes(sub.key)
+                        isMenuKeyAvailable(sub.key)
                     );
 
                     return (
@@ -1534,8 +1520,8 @@ export default function SettingsPage() {
                                 m.key !== "system" &&
                                 m.key !== "system.settings" &&
                                 m.key !== "clients" &&
-                                (menuEntitlements.enabledMenuKeys.includes(m.key) ||
-                                  (m.subItems && m.subItems.some((s) => menuEntitlements.enabledMenuKeys.includes(s.key))))
+                                (isMenuKeyAvailable(m.key) ||
+                                  (m.subItems && m.subItems.some((s) => isMenuKeyAvailable(s.key))))
                             )
                             .map((m) => {
                               const checked = newAssignedFeatures.includes(m.key);
@@ -1598,13 +1584,12 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#2F8E86] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-3 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700">
-                    {menuEntitlements.enabledMenuKeys.length} Modules Active
+                    {moduleCodes.size} Modules Active
                   </span>
                   <button
                     type="button"
                     onClick={() => {
-                      const allKeys = fullMenuCatalog.flatMap((m) => [m.key, ...(m.subItems ? m.subItems.map((s) => s.key) : [])]);
-                      setMenuEntitlements({ ...menuEntitlements, enabledMenuKeys: allKeys });
+                      setModuleCodes(new Set(ALL_MODULE_CODE_LIST));
                     }}
                     className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg cursor-pointer"
                   >
@@ -1613,34 +1598,29 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Categorized Menu Catalog */}
+              {/* Categorized Module Catalog */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {fullMenuCatalog.map((menu) => {
-                  const isChecked = menuEntitlements.enabledMenuKeys.includes(menu.key);
+                {ALL_MODULE_CODES.map((mod) => {
+                  const isChecked = moduleCodes.has(mod.code);
 
                   return (
                     <div
-                      key={menu.key}
-                      className={`p-4 rounded-2xl border transition-all ${
+                      key={mod.code}
+                      onClick={() => toggleModuleCode(mod.code)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                         isChecked
                           ? "bg-white dark:bg-slate-850 border-[#2F8E86]/40 dark:border-slate-700 shadow-2xs"
                           : "bg-slate-50/60 dark:bg-slate-900 border-slate-200/60 dark:border-slate-800 opacity-60"
                       }`}
                     >
-                      <div
-                        onClick={() => toggleMenuKey(menu.key)}
-                        className="flex items-center justify-between gap-3 cursor-pointer"
-                      >
+                      <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          {renderCatalogIcon(menu.key, "w-5 h-5 text-[#2F8E86] dark:text-teal-400 shrink-0")}
+                          {renderCatalogIcon(mod.code, "w-5 h-5 text-[#2F8E86] dark:text-teal-400 shrink-0")}
                           <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-white">{menu.title}</h4>
-                              <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                                {menu.category}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">{menu.desc}</p>
+                            <h4 className="text-xs font-bold text-slate-900 dark:text-white">{mod.label}</h4>
+                            <span className="text-[10px] font-mono text-slate-400 uppercase">
+                              Code: {mod.code}
+                            </span>
                           </div>
                         </div>
 
@@ -1651,40 +1631,6 @@ export default function SettingsPage() {
                           className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer shrink-0"
                         />
                       </div>
-
-                      {/* Sub-items */}
-                      {menu.subItems && menu.subItems.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                          {menu.subItems.map((sub) => {
-                            const isSubChecked = menuEntitlements.enabledMenuKeys.includes(sub.key);
-                            return (
-                              <div
-                                key={sub.key}
-                                onClick={() => toggleMenuKey(sub.key)}
-                                className={`flex items-center justify-between p-2 rounded-xl border text-xs cursor-pointer transition ${
-                                  isSubChecked
-                                    ? "bg-[#E7F1F2]/60 border-[#2F8E86]/30 text-[#111827] dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700"
-                                    : "bg-white border-slate-200 text-slate-500 dark:bg-slate-850 dark:border-slate-800"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-[#2F8E86] shrink-0")}
-                                  <div>
-                                    <span className="font-semibold">{sub.title}</span>
-                                    <span className="block text-[10px] text-slate-400">{sub.desc}</span>
-                                  </div>
-                                </div>
-                                <input
-                                  type="checkbox"
-                                  checked={isSubChecked}
-                                  onChange={() => {}}
-                                  className="w-3.5 h-3.5 accent-[#2F8E86] rounded cursor-pointer shrink-0"
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
                   );
                 })}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { navigationService, DynamicMenuItem } from "../../services/navigationService";
+import { navigationService, DynamicMenuItem, NAVIGATION_REFRESH_EVENT } from "../../services/navigationService";
 
 interface NavigationContextType {
   menu: DynamicMenuItem[];
@@ -61,6 +61,18 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   useEffect(() => {
     fetchNavigation();
+  }, [fetchNavigation]);
+
+  // TASK-048: Platform-admin assign/revoke flows call navigationService.refreshMenu(),
+  // which dispatches NAVIGATION_REFRESH_EVENT. Re-pull the menu so the sidebar
+  // reflects the new tenant_entitlement_subscriptions state without a hard reload.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => {
+      fetchNavigation();
+    };
+    window.addEventListener(NAVIGATION_REFRESH_EVENT, handler);
+    return () => window.removeEventListener(NAVIGATION_REFRESH_EVENT, handler);
   }, [fetchNavigation]);
 
   // Phase 2 (TASK-042) & TASK-047: `permissions` contains action-split keys (e.g. `consignments.view`, `billing.view`, `master_data.parties.view`).
