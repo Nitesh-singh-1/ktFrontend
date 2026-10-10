@@ -134,20 +134,26 @@ export default function Sidebar({
     (items || [])
       .filter((it) => !HIDDEN_IDS.has(it.id))
       .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
-      // Granular per-child/leaf permission filter. A child with `permissionKey` only
-      // renders if the user holds it; a child without a key is treated as public to
-      // its parent module (parent-level moduleKey still gates module visibility).
-      .filter((it) => !it.permissionKey || hasPermission(it.permissionKey))
       .map((it) => {
         const title =
           it.id === "system.settings"
             ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
             : it.title;
-        const children = it.children ? filterMenu(it.children) : it.children;
-        return { ...it, title, children };
+        const filteredChildren = it.children && it.children.length > 0 ? filterMenu(it.children) : undefined;
+        return { ...it, title, children: filteredChildren };
       })
-      // Drop parent groups that became empty after filtering (no children left and no own route).
-      .filter((it) => it.path || !it.children || it.children.length > 0);
+      // Keep item if:
+      // 1. It has filtered children remaining (parent group with visible items)
+      // 2. OR it is a navigable route / leaf item AND satisfies permission (or has no permissionKey)
+      .filter((it) => {
+        if (it.children && it.children.length > 0) {
+          return true;
+        }
+        if (!it.path && (!it.children || it.children.length === 0)) {
+          return false;
+        }
+        return !it.permissionKey || hasPermission(it.permissionKey);
+      });
 
   // Fallback to the trimmed static sidebar items only when the API-driven menu
   // is empty AND the context reported an error (TASK-045). Otherwise render

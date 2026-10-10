@@ -15,6 +15,7 @@ import StatusTransitionModal from "@/app/components/shipment/StatusTransitionMod
 import { printShipment } from "@/utils/print/printShipment";
 import PrintOptionsModal from "@/app/components/print/PrintOptionsModal";
 import { DataTable } from "@/app/components/ui/DataTable";
+import { useNavigation } from "@/context/NavigationContext";
 import {
   Plus,
   Search,
@@ -51,6 +52,7 @@ const STATUS_OPTIONS = [
 
 export default function ShipmentsListPage() {
   const router = useRouter();
+  const { hasPermission } = useNavigation();
 
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -137,13 +139,15 @@ export default function ShipmentsListPage() {
           </p>
         </div>
 
-        <Link
-          href="/shipments/create"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create Bilty</span>
-        </Link>
+        {hasPermission("consignments.create.create") && (
+          <Link
+            href="/shipments/create"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Consignment</span>
+          </Link>
+        )}
       </div>
 
       {/* Filter and Search Bar */}
@@ -257,9 +261,11 @@ export default function ShipmentsListPage() {
         emptyTitle="No consignments found"
         emptyMessage="Try adjusting your filters or create a new consignment."
         emptyAction={
-          <Link href="/shipments/create" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs">
-            <Plus className="w-3.5 h-3.5" /> Create Bilty
-          </Link>
+          hasPermission("consignments.create.create") ? (
+            <Link href="/shipments/create" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs">
+              <Plus className="w-3.5 h-3.5" /> Book Consignment
+            </Link>
+          ) : undefined
         }
         footer={
           totalPages > 1 ? (
@@ -342,10 +348,16 @@ export default function ShipmentsListPage() {
             render: (s) => (
               <div className="flex items-center justify-center gap-1.5">
                 <Link href={`/shipments/details?id=${s.id}`} className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition" title="View Details & Timeline">View</Link>
-                <button type="button" onClick={() => setSelectedForStatus(s)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition cursor-pointer" title="Update Status Stage">Status</button>
-                <button type="button" onClick={() => setPrintTarget(s)} className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer" title="Print Waybill"><Printer className="w-3.5 h-3.5" /></button>
-                <Link href={`/shipments/create?id=${s.id}`} className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-md transition" title="Edit Consignment"><Edit className="w-3.5 h-3.5" /></Link>
-                {s.status !== ShipmentStatus.Cancelled && (
+                {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
+                  <button type="button" onClick={() => setSelectedForStatus(s)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition cursor-pointer" title="Update Status Stage">Status</button>
+                )}
+                {(hasPermission("consignments.all.print") || hasPermission("consignments.create.print")) && (
+                  <button type="button" onClick={() => setPrintTarget(s)} className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer" title="Print Waybill"><Printer className="w-3.5 h-3.5" /></button>
+                )}
+                {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
+                  <Link href={`/shipments/create?id=${s.id}`} className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-md transition" title="Edit Consignment"><Edit className="w-3.5 h-3.5" /></Link>
+                )}
+                {s.status !== ShipmentStatus.Cancelled && (hasPermission("consignments.all.delete") || hasPermission("consignments.create.delete")) && (
                   <button type="button" onClick={() => handleCancelShipment(s.id, s.shipmentNo)} className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 rounded-md transition cursor-pointer" title="Cancel Consignment"><Trash2 className="w-3.5 h-3.5" /></button>
                 )}
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { navigationService, DynamicMenuItem } from "../../services/navigationService";
+import { navigationService, DynamicMenuItem, NAVIGATION_REFRESH_EVENT } from "../../services/navigationService";
 
 interface NavigationContextType {
   menu: DynamicMenuItem[];
@@ -63,14 +63,94 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     fetchNavigation();
   }, [fetchNavigation]);
 
-  // Phase 2 (TASK-042) onward: `permissions` contains action-split keys emitted by the
-  // backend (e.g. `billing.bill_book.view`, `.create`, `.edit`, `.delete`). Callers must
-  // pass the full action-split key; exact-match comparison below is unchanged.
+  // TASK-048: Platform-admin assign/revoke flows call navigationService.refreshMenu(),
+  // which dispatches NAVIGATION_REFRESH_EVENT. Re-pull the menu so the sidebar
+  // reflects the new tenant_entitlement_subscriptions state without a hard reload.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => {
+      fetchNavigation();
+    };
+    window.addEventListener(NAVIGATION_REFRESH_EVENT, handler);
+    return () => window.removeEventListener(NAVIGATION_REFRESH_EVENT, handler);
+  }, [fetchNavigation]);
+
+  // Phase 2 (TASK-042) & TASK-047: `permissions` contains action-split keys (e.g. `consignments.view`, `billing.view`, `master_data.parties.view`).
+  // hasPermission supports exact keys, wildcard `*`, base-feature prefixes (`consignments.create`), parent `.module` keys, and legacy aliases.
   const hasPermission = (permissionKey?: string): boolean => {
     if (!permissionKey) return true;
-    if (isLoading) return false; // deny during load; consumers use isLoading to show spinner
-    if (permissions.includes("*") || permissions.includes("admin")) return true;
-    return permissions.some((p) => p.toLowerCase() === permissionKey.toLowerCase());
+    if (isLoading) return false; // deny during initial load
+    if (permissions.includes("*")) return true;
+
+    const lowerKey = permissionKey.toLowerCase().trim();
+    if (!lowerKey) return true;
+
+    // 1. Direct exact match or wildcard prefix (e.g. "consignments.*")
+    if (
+      permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return pl === lowerKey || (pl.endsWith(".*") && lowerKey.startsWith(pl.slice(0, -2)));
+      })
+    ) {
+      return true;
+    }
+
+    // 2. Parent module key check (e.g. "consignments.module", "masterdata.module", "billing.module")
+    if (lowerKey.endsWith(".module")) {
+      const modPrefix = lowerKey.replace(".module", "");
+      const normalizedPrefix = modPrefix === "masterdata" ? "master_data" : modPrefix;
+      return permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return (
+          pl.startsWith(modPrefix + ".") ||
+          pl.startsWith(normalizedPrefix + ".") ||
+          pl === modPrefix ||
+          pl === normalizedPrefix
+        );
+      });
+    }
+
+    // 3. Base Feature Key check (e.g. "consignments.create", "reports.booking_register", "trips", "consignments")
+    // If user has any granular action key under this feature (e.g. "consignments.create.view", "consignments.create.create", "reports.booking_register.view")
+    if (
+      permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return pl.startsWith(lowerKey + ".") || pl === lowerKey;
+      })
+    ) {
+      return true;
+    }
+
+    // 4. Legacy and shorthand aliases:
+    const aliasMap: Record<string, string[]> = {
+      "parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
+      "master_data.parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
+      "fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.compliance.view": ["master_data.compliance.view", "master_data.compliance"],
+      "master_data.tyres.view": ["master_data.tyres.view", "master_data.tyres"],
+      "master_data.spares.view": ["master_data.spares.view", "master_data.spares"],
+      "master_data.loans.view": ["master_data.loans.view", "master_data.loans"],
+      "rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
+      "master_data.rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
+      "users.manage": ["system.users.view", "system.users.create", "system.users.edit", "system.users.delete", "users.manage"],
+      "settings.manage": ["system.settings.view", "system.settings.edit", "settings.manage"],
+      "saas.tenants.manage": ["system.clients.view", "system.clients", "saas.tenants.manage"],
+    };
+
+    const aliases = aliasMap[lowerKey];
+    if (aliases) {
+      if (
+        permissions.some((p) => {
+          const pl = p.toLowerCase();
+          return aliases.some((a) => pl === a || pl.startsWith(a + ".") || a.startsWith(pl + "."));
+        })
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const isReportEnabled = (reportKey: string): boolean => {
