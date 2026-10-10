@@ -68,7 +68,7 @@ export const RBAC_MODULES: RbacModule[] = [
     description: "Create, view, edit, print, and cancel consignment notes / bilty.",
     actions: [
       { id: "view", label: "View", keys: ["consignments.view", "consignments.create.view", "consignments.all.view"] },
-      { id: "create", label: "Create Bilty", keys: ["consignments.create.create"] },
+      { id: "create", label: "Create Bilty", keys: ["consignments.create.create", "consignments.create.view", "consignments.view"] },
       { id: "edit", label: "Edit Bilty", keys: ["consignments.create.edit", "consignments.all.edit"] },
       { id: "print", label: "Print Bilty", keys: ["consignments.create.print", "consignments.all.print"] },
       { id: "delete", label: "Delete / Cancel Bilty", keys: ["consignments.create.delete", "consignments.all.delete"], danger: true },

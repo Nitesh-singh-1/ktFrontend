@@ -147,7 +147,10 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
                   />
                 )}
                 {isPlatformAdmin && (
-                  <MenuLink href="/clients" onClick={() => setIsUserMenuOpen(false)} icon={<SlidersHorizontal className="w-3.5 h-3.5 text-[#2F8E86]" />} label="Multi-Client Manager" />
+                  <>
+                    <MenuLink href="/clients" onClick={() => setIsUserMenuOpen(false)} icon={<SlidersHorizontal className="w-3.5 h-3.5 text-[#2F8E86]" />} label="Multi-Client Manager" />
+                    <MenuLink href="/menu-catalog" onClick={() => setIsUserMenuOpen(false)} icon={<Menu className="w-3.5 h-3.5 text-[#2F8E86]" />} label="Menu & Access Catalog" />
+                  </>
                 )}
               </div>
 

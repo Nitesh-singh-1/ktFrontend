@@ -292,8 +292,72 @@ export default function ClientsManagementPage() {
   };
 
   // Onboarding Helpers
+  const handleSelectTier = (tier: string) => {
+    setOnboardForm((prev) => ({
+      ...prev,
+      planTier: tier,
+      enabledReportKeys:
+        tier === "Starter"
+          ? []
+          : tier === "Professional"
+          ? ["tax_summary", "party_outstanding"]
+          : [
+              "booking_register",
+              "tax_summary",
+              "party_outstanding",
+              "trip_profitability",
+              "vendor_payables",
+            ],
+      enabledModuleCodes: PLAN_DEFAULT_MODULES[tier] || [],
+    }));
+  };
+
+  const handleNextStep = () => {
+    if (onboardStep === 1) {
+      if (!onboardForm.organizationName?.trim() || !onboardForm.organizationCode?.trim()) {
+        sweetAlert.warning(
+          "Missing details",
+          "Please enter organization name and code."
+        );
+        return;
+      }
+      const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
+      if (mobileErr) {
+        sweetAlert.error("Invalid mobile number", mobileErr);
+        return;
+      }
+      setOnboardStep(2);
+    } else if (onboardStep === 2) {
+      if (
+        !onboardForm.adminUsername?.trim() ||
+        !onboardForm.adminPassword?.trim() ||
+        !onboardForm.adminFullName?.trim()
+      ) {
+        sweetAlert.warning(
+          "Missing details",
+          "Please complete administrator full name, username, and initial password."
+        );
+        return;
+      }
+      if (onboardForm.adminPassword.length < 6) {
+        sweetAlert.error(
+          "Password too short",
+          "Initial password must be at least 6 characters long."
+        );
+        return;
+      }
+      setOnboardStep(3);
+    }
+  };
+
   const handleOnboardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // STRICT GUARD: If not yet on Step 3, advance step instead of submitting to API!
+    if (onboardStep < 3) {
+      handleNextStep();
+      return;
+    }
 
     // Defense in depth: re-validate everything at final submit, not just when the user
     // clicked "Next Step" — covers the case where a value became invalid after a step
@@ -415,6 +479,18 @@ export default function ClientsManagementPage() {
           <button
             onClick={() => {
               setOnboardStep(1);
+              setOnboardForm({
+                organizationName: "",
+                organizationCode: "",
+                adminUsername: "",
+                adminPassword: "",
+                adminFullName: "",
+                adminMobile: "",
+                planTier: "Starter",
+                enabledModules: ["dashboard", "bilty", "trips", "system"],
+                enabledModuleCodes: PLAN_DEFAULT_MODULES["Starter"] || [],
+                enabledReportKeys: [],
+              });
               setShowOnboardModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
@@ -864,16 +940,32 @@ export default function ClientsManagementPage() {
                   <h2 className="text-lg font-bold text-[#111827]">
                     Onboard Transport Client
                   </h2>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Step {onboardStep} of 3:{" "}
-                    {onboardStep === 1
-                      ? "Organization Profile"
-                      : onboardStep === 2
-                      ? "Admin User Credentials"
-                      : "Subscription & Module Package"}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    {[
+                      { step: 1, label: "Organization & Plan" },
+                      { step: 2, label: "Admin Credentials" },
+                      { step: 3, label: "Modules & Review" },
+                    ].map((s) => (
+                      <div
+                        key={s.step}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                          onboardStep === s.step
+                            ? "bg-[#2F8E86] text-white shadow-xs"
+                            : onboardStep > s.step
+                            ? "bg-[#E7F1F2] text-[#25776F]"
+                            : "bg-[#F1F5F9] text-[#94A3B8]"
+                        }`}
+                      >
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-white/20">
+                          {onboardStep > s.step ? "✓" : s.step}
+                        </span>
+                        <span>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowOnboardModal(false)}
                   className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg hover:bg-[#F7F8F8] cursor-pointer"
                 >
@@ -882,7 +974,18 @@ export default function ClientsManagementPage() {
               </div>
 
               {/* Step Content */}
-              <form onSubmit={handleOnboardSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <form
+                onSubmit={handleOnboardSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (onboardStep < 3) {
+                      handleNextStep();
+                    }
+                  }
+                }}
+                className="flex flex-col flex-1 overflow-hidden"
+              >
                 <div className="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
                   {onboardStep === 1 && (
                     <div className="space-y-4">
@@ -942,6 +1045,62 @@ export default function ClientsManagementPage() {
                           }
                           className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
+                      </div>
+
+                      {/* Subscription Plan Picker on Step 1 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
+                          Select Subscription Plan *
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            {
+                              tier: "Starter",
+                              price: "₹999/mo",
+                              desc: "Bilty & basic transport",
+                            },
+                            {
+                              tier: "Professional",
+                              price: "₹2,999/mo",
+                              desc: "Bilty, POD, Billing, Reports",
+                            },
+                            {
+                              tier: "Enterprise",
+                              price: "₹9,999/mo",
+                              desc: "Complete Transport ERP suite",
+                            },
+                          ].map((item) => {
+                            const isSelected =
+                              (onboardForm.planTier || "Starter") === item.tier;
+                            return (
+                              <button
+                                key={item.tier}
+                                type="button"
+                                onClick={() => handleSelectTier(item.tier)}
+                                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] shadow-xs ring-1 ring-[#2F8E86]"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3] hover:bg-white"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-xs text-[#111827]">
+                                    {item.tier}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="w-2 h-2 rounded-full bg-[#2F8E86]" />
+                                  )}
+                                </div>
+                                <div className="text-xs text-[#2F8E86] font-semibold mt-1">
+                                  {item.price}
+                                </div>
+                                <div className="text-[10px] text-[#64748B] mt-0.5 leading-tight">
+                                  {item.desc}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1004,61 +1163,10 @@ export default function ClientsManagementPage() {
                           className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
-                    </div>
-                  )}
 
-                  {onboardStep === 3 && (
-                    <div className="space-y-4">
+                      {/* Admin User's Role */}
                       <div>
-                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
-                          Select Subscription Plan
-                        </label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {["Starter", "Professional", "Enterprise"].map((tier) => (
-                            <div
-                              key={tier}
-                              onClick={() =>
-                                setOnboardForm({
-                                  ...onboardForm,
-                                  planTier: tier,
-                                  enabledReportKeys:
-                                    tier === "Starter"
-                                      ? []
-                                      : tier === "Professional"
-                                      ? ["tax_summary", "party_outstanding"]
-                                      : [
-                                          "booking_register",
-                                          "tax_summary",
-                                          "party_outstanding",
-                                          "trip_profitability",
-                                          "vendor_payables",
-                                        ],
-                                  // TASK-046 Phase 1: pre-select the plan's default modules on tier change.
-                                  enabledModuleCodes: PLAN_DEFAULT_MODULES[tier] || [],
-                                })
-                              }
-                              className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
-                                onboardForm.planTier === tier
-                                  ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] font-bold"
-                                  : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3]"
-                              }`}
-                            >
-                              <div className="text-sm font-bold">{tier}</div>
-                              <div className="text-xs text-[#2F8E86] mt-1 font-semibold">
-                                {tier === "Starter"
-                                  ? "₹999/mo"
-                                  : tier === "Professional"
-                                  ? "₹2,999/mo"
-                                  : "₹9,999/mo"}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* TASK-046 Phase 1 — Admin role picker */}
-                      <div>
-                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
                           Admin User's Role
                         </label>
                         <select
@@ -1081,8 +1189,51 @@ export default function ClientsManagementPage() {
                           ))}
                         </select>
                         <p className="mt-1 text-[11px] text-[#64748B]">
-                          Platform admin may pick any seeded system role. Default is "admin".
+                          Default is "admin". You can pick any seeded system role.
                         </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {onboardStep === 3 && (
+                    <div className="space-y-4">
+                      {/* Subscription Plan Switcher / Confirmation */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-xs font-semibold text-[#111827] uppercase tracking-wider">
+                            Selected Subscription Plan
+                          </label>
+                          <span className="text-[11px] text-[#2F8E86] font-bold">
+                            Current: {onboardForm.planTier || "Starter"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {["Starter", "Professional", "Enterprise"].map((tier) => {
+                            const isSelected =
+                              (onboardForm.planTier || "Starter") === tier;
+                            return (
+                              <button
+                                key={tier}
+                                type="button"
+                                onClick={() => handleSelectTier(tier)}
+                                className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                                  isSelected
+                                    ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] font-bold ring-1 ring-[#2F8E86]"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3]"
+                                }`}
+                              >
+                                <div className="text-xs font-bold text-[#111827]">{tier}</div>
+                                <div className="text-xs text-[#2F8E86] mt-1 font-semibold">
+                                  {tier === "Starter"
+                                    ? "₹999/mo"
+                                    : tier === "Professional"
+                                    ? "₹2,999/mo"
+                                    : "₹9,999/mo"}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* TASK-046 Phase 1 — Module checkboxes (writes tenant_modules). */}
@@ -1120,7 +1271,7 @@ export default function ClientsManagementPage() {
                                       enabledModuleCodes: Array.from(next),
                                     });
                                   }}
-                                  className="w-4 h-4 accent-[#2F8E86] rounded"
+                                  className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
                                 />
                               </label>
                             );
@@ -1170,7 +1321,7 @@ export default function ClientsManagementPage() {
                                       enabledReportKeys: Array.from(current),
                                     });
                                   }}
-                                  className="w-4 h-4 accent-[#2F8E86] rounded"
+                                  className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
                                 />
                               </label>
                             );
@@ -1191,7 +1342,7 @@ export default function ClientsManagementPage() {
                       }
                       className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#64748B] text-xs font-bold rounded-xl border border-[#D9E2E3] transition-colors cursor-pointer"
                     >
-                      Back
+                      ← Back
                     </button>
                   ) : (
                     <div />
@@ -1200,45 +1351,7 @@ export default function ClientsManagementPage() {
                   {onboardStep < 3 ? (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (onboardStep === 1) {
-                          if (
-                            !onboardForm.organizationName ||
-                            !onboardForm.organizationCode
-                          ) {
-                            sweetAlert.warning(
-                              "Missing details",
-                              "Please enter organization name and code."
-                            );
-                            return;
-                          }
-                          const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
-                          if (mobileErr) {
-                            sweetAlert.error("Invalid mobile number", mobileErr);
-                            return;
-                          }
-                        } else if (onboardStep === 2) {
-                          if (
-                            !onboardForm.adminUsername ||
-                            !onboardForm.adminPassword ||
-                            !onboardForm.adminFullName
-                          ) {
-                            sweetAlert.warning(
-                              "Missing details",
-                              "Please complete admin credentials."
-                            );
-                            return;
-                          }
-                          if (onboardForm.adminPassword.length < 6) {
-                            sweetAlert.error(
-                              "Password too short",
-                              "Initial password must be at least 6 characters long."
-                            );
-                            return;
-                          }
-                        }
-                        setOnboardStep((prev) => (prev + 1) as 1 | 2 | 3);
-                      }}
+                      onClick={handleNextStep}
                       className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                     >
                       Next Step →

@@ -123,7 +123,7 @@ export default function Sidebar({
   const isFallbackMode = !navIsLoading && dynamicMenu.length === 0 && navHasError;
 
   // Menu items reserved for the platform operator; hidden from tenant admins/users.
-  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
+  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients", "menu_catalog", "menu-catalog", "system.menu_catalog"]);
   // Items that shouldn't appear in the authenticated nav at all:
   // - system.forgot_password: a pre-auth flow, meaningless once signed in.
   // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
