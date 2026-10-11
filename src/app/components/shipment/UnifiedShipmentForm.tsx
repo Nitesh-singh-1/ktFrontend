@@ -930,11 +930,16 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setTaxTreatment(opt.value)}
+                onClick={() => {
+                  setTaxTreatment(opt.value);
+                  if (opt.value === TaxTreatment.NonTaxable) {
+                    setTotalTaxAmount(0);
+                  }
+                }}
                 className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 cursor-pointer ${
                   isSelected
                     ? "bg-[#E7F1F2] dark:bg-slate-800 border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
-                    : "bg-white dark:bg-slate-800 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA] dark:hover:bg-slate-750"
+                    : "bg-white dark:bg-slate-800 border-[#D9E2E3] dark:border-slate-700 hover:bg-[#F5FAFA] dark:hover:bg-slate-755"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -960,19 +965,31 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
             <div className="text-xs font-bold text-[#111827] dark:text-slate-200 flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-[#64748B] dark:text-slate-300" /> GST Liability & Paid By:
             </div>
-            <div className="flex items-center gap-4">
-              {["Consignor", "Consignee", "Transporter (GTA)"].map((party) => (
-                <label key={party} className="flex items-center gap-1.5 text-xs font-medium text-[#111827] dark:text-slate-300 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="gstPaidBy"
-                    checked={gstPaidBy === party}
-                    onChange={() => setGstPaidBy(party)}
-                    className="text-[#2F8E86] focus:ring-[#2F8E86]"
-                  />
-                  <span>{party}</span>
-                </label>
-              ))}
+            <div className="flex items-center gap-5">
+              {[
+                { value: "Transporter", label: "1. Transporter" },
+                { value: "Consignee", label: "2. Consignee" },
+                { value: "Consignor", label: "3. Consignor" },
+              ].map((opt) => {
+                const s = (gstPaidBy || "").toLowerCase();
+                const isChecked =
+                  gstPaidBy === opt.value ||
+                  (opt.value === "Transporter" && s.includes("trans")) ||
+                  (opt.value === "Consignee" && s.includes("consignee")) ||
+                  (opt.value === "Consignor" && (s.includes("consignor") || s.includes("consigner")));
+                return (
+                  <label key={opt.value} className="flex items-center gap-1.5 text-xs font-semibold text-[#111827] dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="gstPaidBy"
+                      checked={isChecked}
+                      onChange={() => setGstPaidBy(opt.value)}
+                      className="text-[#2F8E86] focus:ring-[#2F8E86] w-4 h-4 cursor-pointer"
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         )}

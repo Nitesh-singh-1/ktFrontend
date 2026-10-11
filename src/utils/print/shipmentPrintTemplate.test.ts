@@ -106,4 +106,53 @@ describe("Bilty print templates", () => {
     expect(html).toContain("P-Marka: <strong>PM-456</strong>");
     expect(html).not.toContain("Private Marka: <strong>PM-456</strong>");
   });
+
+  it("prints GST PAID BY TRANSPORTER when Transporter is selected for GST liability", () => {
+    const shipmentTransporterGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.GST_Regular,
+      gstPaidBy: "Transporter",
+      totalTaxAmount: 60,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentTransporterGst);
+    expect(standardHtml).toContain("GST PAID BY TRANSPORTER");
+    expect(standardHtml).toContain("GST / Tax Amount:");
+
+    const denseHtml = renderBiltyBodyDense(shipmentTransporterGst);
+    expect(denseHtml).toContain('<div class="gst-paid-badge">GST PAID BY TRANSPORTER</div>');
+    expect(denseHtml).toContain('<div class="charge-label">GST / Tax</div>');
+  });
+
+  it("prints GST PAID BY CONSIGNOR when Consignor is selected for GST liability", () => {
+    const shipmentConsignorGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.GST_Regular,
+      gstPaidBy: "Consignor",
+      totalTaxAmount: 60,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentConsignorGst);
+    expect(standardHtml).toContain("GST PAID BY CONSIGNOR");
+
+    const denseHtml = renderBiltyBodyDense(shipmentConsignorGst);
+    expect(denseHtml).toContain('<div class="gst-paid-badge">GST PAID BY CONSIGNOR</div>');
+  });
+
+  it("does NOT print GST or GST PAID BY badge when Without GST (NonTaxable) is selected", () => {
+    const shipmentWithoutGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.NonTaxable,
+      gstPaidBy: undefined,
+      totalTaxAmount: 0,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentWithoutGst);
+    expect(standardHtml).not.toContain("GST PAID BY");
+    expect(standardHtml).not.toContain("GST / Tax Amount:");
+
+    const denseHtml = renderBiltyBodyDense(shipmentWithoutGst);
+    expect(denseHtml).not.toContain("gst-paid-badge");
+    expect(denseHtml).not.toContain('<div class="charge-label">GST / Tax</div>');
+  });
 });
