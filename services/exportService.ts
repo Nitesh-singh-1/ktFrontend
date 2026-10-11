@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://81.0.248.82:8080/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Downloads the current tenant's data export (JSON) as a file. Uses a raw fetch (not baseService)

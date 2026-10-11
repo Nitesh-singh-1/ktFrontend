@@ -13,6 +13,7 @@ export interface MoneyReceiptDto {
   totalWeightKg: number;
 
   baseFreight: number;
+  moneyReceiptCharge?: number;
   hamaliCharges: number;
   doorDeliveryCharges: number;
   stationeryCharges: number;

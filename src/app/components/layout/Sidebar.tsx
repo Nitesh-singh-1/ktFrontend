@@ -62,43 +62,18 @@ export default function Sidebar({
   const [openMenu, setOpenMenu] = useState<string | null>("consignments");
   const [user, setUser] = useState<{ fullName?: string; username?: string; role?: string } | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
-  // Hydrate from the cached user (set on login/refresh) so the menu renders with the
-  // correct items on the very first paint — no flash of "regular user" menu while /me
-  // resolves. A background refresh below keeps the value fresh, but a failed /me is
-  // treated as "keep whatever we already know" instead of resetting to false, so a
-  // transient network blip can't strip the platform operator's SaaS Configuration link.
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
+  // Default to false on initial SSR/client hydration to prevent hydration mismatch;
+  // immediately updated in useEffect from authService / cached profile.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsPlatformAdmin(authService.isPlatformAdminSync());
     setUser(authService.getUser());
     setOrgName(authService.getOrganizationName());
     authService.getMyProfile()
       .then((p) => setIsPlatformAdmin(!!p.isPlatformAdmin))
       .catch(() => { /* keep cached value */ });
   }, []);
-
-  // Menu items reserved for the platform operator; hidden from tenant admins/users.
-  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients"]);
-  // Items that shouldn't appear in the authenticated nav at all:
-  // - system.forgot_password: a pre-auth flow, meaningless once signed in.
-  // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
-  //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
-  const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
-
-  const filterMenu = (items: any[]): any[] =>
-    (items || [])
-      .filter((it) => !HIDDEN_IDS.has(it.id))
-      .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
-      .map((it) => {
-        const title =
-          it.id === "system.settings"
-            ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
-            : it.title;
-        const children = it.children ? filterMenu(it.children) : it.children;
-        return { ...it, title, children };
-      })
-      // Drop parent groups that became empty after filtering (no children left and no own route).
-      .filter((it) => it.path || !it.children || it.children.length > 0);
 
   // Auto-expand menu containing the active page
   useEffect(() => {
@@ -113,6 +88,11 @@ export default function Sidebar({
 
   let companyName = orgName || "K-Transport";
   let dynamicMenu: (DynamicMenuItem | SidebarItem)[] = [];
+  // Permissive fallback when Sidebar is rendered outside a NavigationProvider
+  // (tests / storybook). Matches pre-TASK-039 behaviour so the sidebar still renders.
+  let hasPermission: (key?: string) => boolean = () => true;
+  let navIsLoading = false;
+  let navHasError = false;
 
   try {
     const configCtx = useTenantConfig();
@@ -128,12 +108,59 @@ export default function Sidebar({
     if (navCtx?.menu && navCtx.menu.length > 0) {
       dynamicMenu = navCtx.menu;
     }
+    if (navCtx?.hasPermission) {
+      hasPermission = navCtx.hasPermission;
+    }
+    navIsLoading = !!navCtx?.isLoading;
+    navHasError = !!navCtx?.error;
   } catch {
     // Context fallback
   }
 
-  // Fallback to static sidebar items if dynamic menu is not populated, then apply role-based filtering.
-  const displayItems = filterMenu(dynamicMenu.length > 0 ? dynamicMenu : sidebarItems);
+  // TASK-045: fallback mode activates when the API-driven menu is empty, loading
+  // has settled, and the context flagged an error. We render the trimmed static
+  // `sidebarItems` plus an amber "Menu offline" banner.
+  const isFallbackMode = !navIsLoading && dynamicMenu.length === 0 && navHasError;
+
+  // Menu items reserved for the platform operator; hidden from tenant admins/users.
+  const PLATFORM_ONLY_IDS = new Set(["clients", "system.tenants", "system.clients", "menu_catalog", "menu-catalog", "system.menu_catalog"]);
+  // Items that shouldn't appear in the authenticated nav at all:
+  // - system.forgot_password: a pre-auth flow, meaningless once signed in.
+  // - system.onboard: points to the public /onboard signup, which redirects authenticated users away.
+  //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
+  const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
+
+  const filterMenu = (items: any[]): any[] =>
+    (items || [])
+      .filter((it) => !HIDDEN_IDS.has(it.id))
+      .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
+      .map((it) => {
+        const title =
+          it.id === "system.settings"
+            ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
+            : it.title;
+        const filteredChildren = it.children && it.children.length > 0 ? filterMenu(it.children) : undefined;
+        return { ...it, title, children: filteredChildren };
+      })
+      // Keep item if:
+      // 1. It has filtered children remaining (parent group with visible items)
+      // 2. OR it is a navigable route / leaf item AND satisfies permission (or has no permissionKey)
+      .filter((it) => {
+        if (it.children && it.children.length > 0) {
+          return true;
+        }
+        if (!it.path && (!it.children || it.children.length === 0)) {
+          return false;
+        }
+        return !it.permissionKey || hasPermission(it.permissionKey);
+      });
+
+  // Fallback to the trimmed static sidebar items only when the API-driven menu
+  // is empty AND the context reported an error (TASK-045). Otherwise render
+  // whatever the API returned, even if it's briefly empty during load.
+  const displayItems = filterMenu(
+    dynamicMenu.length > 0 ? dynamicMenu : isFallbackMode ? sidebarItems : []
+  );
 
   const handleLogout = () => {
     authService.logout();
@@ -176,6 +203,21 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      {/* TASK-045: Fallback banner when the API-driven menu is unavailable. */}
+      {isFallbackMode && expanded && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-3 py-2 text-xs font-medium">
+          Menu offline —{" "}
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="underline hover:no-underline cursor-pointer"
+          >
+            refresh
+          </button>{" "}
+          to reconnect
+        </div>
+      )}
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">

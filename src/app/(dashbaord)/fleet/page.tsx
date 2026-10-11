@@ -10,6 +10,7 @@ import { fleetService } from "services/fleetService";
 import VehicleModal from "@/app/components/fleet/VehicleModal";
 import DriverModal from "@/app/components/fleet/DriverModal";
 import LocationModal from "@/app/components/fleet/LocationModal";
+import TablePagination from "@/app/components/ui/TablePagination";
 import { cacheActiveStations } from "@/utils/print/tenantProfile";
 import {
   MapPin,
@@ -134,6 +135,25 @@ export default function FleetMasterPage() {
       v.driverName?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search]);
+
+  const currentList =
+    activeTab === "locations"
+      ? filteredLocations
+      : activeTab === "drivers"
+      ? filteredDrivers
+      : filteredVehicles;
+
+  const paginatedLocations = filteredLocations.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedDrivers = filteredDrivers.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedVehicles = filteredVehicles.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
@@ -162,7 +182,7 @@ export default function FleetMasterPage() {
               className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Station / Hub</span>
+              <span>Add Station</span>
             </button>
           )}
 
@@ -346,7 +366,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Add First Station / Hub
+                      + Add Station
                     </button>
                   </div>
                 ) : (
@@ -363,7 +383,7 @@ export default function FleetMasterPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
-                        {filteredLocations.map((l) => (
+                        {paginatedLocations.map((l) => (
                           <tr key={l.id} className="hover:bg-[#F5FAFA] transition">
                             <td className="py-3.5 px-4 font-bold text-[#111827]">
                               {l.name}
@@ -428,7 +448,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Register First Driver
+                      + Add Driver
                     </button>
                   </div>
                 ) : (
@@ -444,7 +464,7 @@ export default function FleetMasterPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
-                        {filteredDrivers.map((d) => (
+                        {paginatedDrivers.map((d) => (
                           <tr key={d.id} className="hover:bg-[#F5FAFA] transition">
                             <td className="py-3.5 px-4 font-bold text-[#111827]">
                               {d.name}
@@ -506,7 +526,7 @@ export default function FleetMasterPage() {
                       }}
                       className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer"
                     >
-                      + Add First Vehicle
+                      + Add Vehicle
                     </button>
                   </div>
                 ) : (
@@ -523,7 +543,7 @@ export default function FleetMasterPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E5EAEB] text-[#111827]">
-                        {filteredVehicles.map((v) => (
+                        {paginatedVehicles.map((v) => (
                           <tr key={v.id} className="hover:bg-[#F5FAFA] transition">
                             <td className="py-3.5 px-4 font-mono font-bold text-[#111827]">
                               {v.vehicleNo}
@@ -575,6 +595,19 @@ export default function FleetMasterPage() {
               </div>
             )}
           </>
+        )}
+
+        {!loading && currentList.length > 0 && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            totalCount={currentList.length}
+            onPageChange={setPage}
+            onPageSizeChange={(sz) => {
+              setPageSize(sz);
+              setPage(1);
+            }}
+          />
         )}
       </div>
 

@@ -1,7 +1,15 @@
 import { baseService } from "./baseservice";
 import { authService } from "./authService";
 import { TenantOnboardingRequest, TenantOnboardingResponse } from "@/types/shipment";
-import { TenantMenuEntitlements } from "./navigationService";
+import {
+  TenantMenuEntitlements,
+  UpdateTenantEntitlementsPayload,
+} from "./navigationService";
+
+// TASK-049b — `UpdateTenantEntitlementsPayload` is now defined in
+// `./navigationService.ts` so both navigationService and tenantService can
+// share one source of truth. Re-exported here for existing importers.
+export type { UpdateTenantEntitlementsPayload };
 
 export interface TenantAdminListItem {
   id: string;
@@ -31,6 +39,16 @@ export interface TenantOnboardingPayload {
   planTier?: string;
   enabledModules?: string[];
   enabledReportKeys?: string[];
+  // TASK-046 Phase 1: platform-admin-only fields. Ignored on public /tenant/onboard.
+  adminRoleCode?: string;
+  enabledModuleCodes?: string[];
+}
+
+// TASK-046 Phase 1: GET /api/admin/roles/system-templates row.
+export interface SystemRoleTemplate {
+  code: string;
+  name: string;
+  description?: string;
 }
 
 export interface TenantOnboardingResult {
@@ -83,6 +101,27 @@ export const tenantService = {
   onboardTenant: (data: TenantOnboardingPayload) =>
     baseService.post<TenantOnboardingResult>("/tenant/onboard", data),
 
+  // TASK-046 Phase 1: platform-admin-only onboarding. Respects adminRoleCode
+  // and the explicit enabledModuleCodes array (writes tenant_modules rows).
+  onboardTenantByAdmin: (data: TenantOnboardingPayload) =>
+    baseService.post<TenantOnboardingResult>("/admin/tenants", {
+      organizationName: data.organizationName,
+      organizationCode: data.organizationCode,
+      adminUsername: data.adminUsername,
+      adminPassword: data.adminPassword,
+      adminFullName: data.adminFullName,
+      adminMobile: data.adminMobile,
+      adminEmail: (data as any).adminEmail,
+      planTier: data.planTier,
+      adminRoleCode: data.adminRoleCode || "admin",
+      enabledModuleCodes: data.enabledModuleCodes || [],
+      enabledReportKeys: data.enabledReportKeys || [],
+    }),
+
+  // TASK-046 Phase 1: fetch the 7 seeded system role templates for the admin wizard.
+  getSystemRoleTemplates: () =>
+    baseService.get<SystemRoleTemplate[]>("/admin/roles/system-templates"),
+
   // Toggle active/inactive status
   updateStatus: (id: string, isActive: boolean) =>
     baseService.put<{ success: boolean; message: string }>(`/tenant/${id}/status`, { isActive }),
@@ -95,8 +134,8 @@ export const tenantService = {
   getEntitlements: (id: string) =>
     baseService.get<TenantMenuEntitlements>(`/tenant/${id}/entitlements`),
 
-  // Update menu entitlements for a tenant
-  updateEntitlements: (id: string, data: TenantMenuEntitlements) =>
+  // Update menu entitlements for a tenant (TASK-049: moduleCodes payload shape).
+  updateEntitlements: (id: string, data: UpdateTenantEntitlementsPayload) =>
     baseService.put<TenantMenuEntitlements>(`/tenant/${id}/entitlements`, data),
 
   // Platform-operator: list a tenant's users

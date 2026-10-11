@@ -3,6 +3,8 @@
 import React, { useState, useRef } from "react";
 import { CreateConsignmentInvoiceReferenceRequest } from "@/types/shipment";
 import { Receipt, Plus, Camera, FileText, X, Trash2, Download, Image as ImageIcon } from "lucide-react";
+import DatePicker from "@/app/components/ui/DatePicker";
+import CustomSelect from "@/app/components/ui/CustomSelect";
 
 interface CustomerInvoicesTableProps {
   invoices: CreateConsignmentInvoiceReferenceRequest[];
@@ -134,13 +136,13 @@ export default function CustomerInvoicesTable({
             <tr className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-300 font-semibold border-y border-[#E5EAEB] dark:border-slate-700">
               <th className="py-2.5 px-2 w-8 text-center">#</th>
               <th className="py-2.5 px-3 min-w-[150px]">Invoice No *</th>
-              <th className="py-2.5 px-2.5 min-w-[125px]">Invoice Date</th>
-              <th className="py-2.5 px-3 min-w-[135px]">Value (₹) *</th>
-              <th className="py-2.5 px-3 min-w-[145px]">E-Way Bill No</th>
-              <th className="py-2.5 px-2.5 min-w-[125px]">Doc Type</th>
+              <th className="py-2.5 px-2.5 min-w-[145px]">Invoice Date</th>
+              <th className="py-2.5 px-3 min-w-[110px]">Value (₹) *</th>
+              <th className="py-2.5 px-3 min-w-[140px]">E-Way Bill No</th>
+              <th className="py-2.5 px-2.5 min-w-[150px]">Doc Type</th>
               <th className="py-2.5 px-3 min-w-[130px]">Private Marka</th>
               <th className="py-2.5 px-3 min-w-[160px]">Commodity / Description</th>
-              <th className="py-2.5 px-3 min-w-[140px] text-center">Bill Photo / Scan</th>
+              <th className="py-2.5 px-3 min-w-[130px] text-center">Bill Photo / Scan</th>
               {!disabled && <th className="py-2.5 px-2 w-10 text-center">Action</th>}
             </tr>
           </thead>
@@ -163,18 +165,20 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "customerInvoiceNo", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                    className="w-full h-9 px-2.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
-                <td className="py-2 px-2.5">
-                  <input
-                    type="date"
+                <td className="py-2 px-2.5 min-w-[145px]">
+                  <DatePicker
                     disabled={disabled}
                     value={inv.customerInvoiceDate}
-                    onChange={(e) =>
-                      handleFieldChange(idx, "customerInvoiceDate", e.target.value)
+                    onChange={(d) =>
+                      handleFieldChange(idx, "customerInvoiceDate", d)
                     }
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white"
+                    direction="auto"
+                    align="left"
+                    size="sm"
+                    className="w-full"
                   />
                 </td>
                 <td className="py-2 px-3">
@@ -192,7 +196,7 @@ export default function CustomerInvoicesTable({
                         parseFloat(e.target.value) || 0
                       )
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-bold font-mono text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                    className="w-full h-9 px-2.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-bold font-mono text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
                 <td className="py-2 px-3">
@@ -204,23 +208,26 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "ewayBillNo", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                    className="w-full h-9 px-2.5 text-xs font-mono bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
-                <td className="py-2 px-2.5">
-                  <select
+                <td className="py-2 px-2.5 min-w-[150px]">
+                  <CustomSelect
                     disabled={disabled}
                     value={inv.documentType || "TaxInvoice"}
-                    onChange={(e) =>
-                      handleFieldChange(idx, "documentType", e.target.value)
+                    onChange={(val) =>
+                      handleFieldChange(idx, "documentType", val)
                     }
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white"
-                  >
-                    <option value="TaxInvoice">Tax Invoice</option>
-                    <option value="DeliveryChallan">Delivery Challan</option>
-                    <option value="BillOfSupply">Bill of Supply</option>
-                    <option value="JobWorkChallan">Job Work</option>
-                  </select>
+                    options={[
+                      { label: "Tax Invoice", value: "TaxInvoice" },
+                      { label: "Delivery Challan", value: "DeliveryChallan" },
+                      { label: "Bill of Supply", value: "BillOfSupply" },
+                      { label: "Job Work", value: "JobWorkChallan" },
+                    ]}
+                    size="sm"
+                    direction="auto"
+                    className="w-full"
+                  />
                 </td>
                 <td className="py-2 px-3">
                   <input
@@ -232,7 +239,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "privateMarka", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                    className="w-full h-9 px-2.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
                 <td className="py-2 px-3">
@@ -244,7 +251,7 @@ export default function CustomerInvoicesTable({
                     onChange={(e) =>
                       handleFieldChange(idx, "commodityDescription", e.target.value)
                     }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-md focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
+                    className="w-full h-9 px-2.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-600 rounded-lg focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8]"
                   />
                 </td>
 
@@ -270,7 +277,7 @@ export default function CustomerInvoicesTable({
                             title: `Customer Bill ${inv.customerInvoiceNo || `#${idx + 1}`}`,
                           })
                         }
-                        className="group relative flex items-center gap-1 px-2 py-1 bg-[#E7F1F2] dark:bg-slate-800 hover:bg-[#D9E2E3] dark:hover:bg-slate-700 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-[#25776F] dark:text-[#2F8E86] text-[11px] font-bold transition cursor-pointer"
+                        className="group relative inline-flex items-center justify-center gap-1.5 h-9 px-2.5 bg-[#E7F1F2] dark:bg-slate-800 hover:bg-[#D9E2E3] dark:hover:bg-slate-700 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-[#25776F] dark:text-[#2F8E86] text-xs font-bold transition cursor-pointer shadow-2xs"
                         title="Click to zoom bill photo"
                       >
                         {inv.documentUrl.startsWith("data:image") ? (
@@ -289,7 +296,7 @@ export default function CustomerInvoicesTable({
                         <button
                           type="button"
                           onClick={() => handleFieldChange(idx, "documentUrl", "")}
-                          className="p-1 text-[#94A3B8] hover:text-[#D95C5C] transition cursor-pointer"
+                          className="h-9 w-8 flex items-center justify-center rounded-lg text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
                           title="Remove photo"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -301,9 +308,9 @@ export default function CustomerInvoicesTable({
                       <button
                         type="button"
                         onClick={() => fileInputRefs.current[idx]?.click()}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] border border-[#D9E2E3] dark:border-slate-700 rounded-md text-[#64748B] dark:text-slate-300 text-[11px] font-medium transition cursor-pointer shadow-2xs"
+                        className="inline-flex items-center justify-center gap-1.5 w-full h-9 px-2.5 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-[#64748B] dark:text-slate-300 text-xs font-semibold transition cursor-pointer shadow-2xs"
                       >
-                        <Camera className="w-3.5 h-3.5" />
+                        <Camera className="w-3.5 h-3.5 text-[#2F8E86]" />
                         <span>Upload Photo</span>
                       </button>
                     )
@@ -316,7 +323,7 @@ export default function CustomerInvoicesTable({
                     <button
                       type="button"
                       onClick={() => handleRemoveRow(idx)}
-                      className="p-1 text-[#94A3B8] hover:text-[#D95C5C] transition-colors rounded hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                      className="h-9 w-9 inline-flex items-center justify-center text-[#94A3B8] hover:text-[#D95C5C] transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                       title="Remove Bill"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -387,7 +387,7 @@ export default function VendorModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialVendor ? "Update Vendor" : "Save Vendor"}
+                {loading ? "Saving..." : initialVendor ? "Update" : "Save"}
               </button>
             </div>
           </div>

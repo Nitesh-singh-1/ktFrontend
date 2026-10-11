@@ -7,6 +7,19 @@ import PlanUsageBanner from "../components/layout/PlanUsageBanner";
 import { TenantConfigProvider } from "@/context/TenantConfigContext";
 import { NavigationProvider } from "@/context/NavigationContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { useSessionHeartbeat } from "@/hooks/useSessionHeartbeat";
+
+/**
+ * TASK-039: mount the session heartbeat exactly once per authenticated layout
+ * so a 30s interval can monitor the JWT `exp` claim and preemptively refresh
+ * (or auto-logout) even when the user is idle and no API traffic is firing.
+ * Rendered as a zero-DOM wrapper so it can sit *inside* NavigationProvider but
+ * not disturb the existing dashboard-shell layout tree.
+ */
+function SessionWatcher({ children }: { children: React.ReactNode }) {
+  useSessionHeartbeat();
+  return <>{children}</>;
+}
 
 export default function DashboardLayout({
   children,
@@ -20,14 +33,17 @@ export default function DashboardLayout({
     <ThemeProvider>
       <TenantConfigProvider>
         <NavigationProvider>
+         <SessionWatcher>
           <div className="flex min-h-screen bg-[#F7F8F8] dark:bg-slate-950 text-[#111827] dark:text-slate-100 font-sans antialiased">
             {/* Sidebar (fixed rail on desktop, slide-in drawer on mobile) */}
-            <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+            <div className="print:hidden">
+              <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+            </div>
 
             {/* Mobile drawer backdrop */}
             {mobileOpen && (
               <div
-                className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-xs md:hidden"
+                className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-xs md:hidden print:hidden"
                 onClick={() => setMobileOpen(false)}
                 aria-hidden="true"
               />
@@ -36,16 +52,21 @@ export default function DashboardLayout({
             {/* Main Content Area — no left offset on mobile; follows the rail on desktop */}
             <div
               className={`flex-1 flex flex-col min-h-screen bg-[#F7F8F8] dark:bg-slate-950 transition-all duration-300 ease-in-out min-w-0
-              ml-0 ${isOpen ? "md:ml-64" : "md:ml-20"}`}
+              ml-0 ${isOpen ? "md:ml-64" : "md:ml-20"} print:ml-0 print:p-0 print:bg-white`}
             >
-              <Navbar onMenuClick={() => setMobileOpen(true)} />
+              <div className="print:hidden">
+                <Navbar onMenuClick={() => setMobileOpen(true)} />
+              </div>
 
-              <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#F7F8F8] dark:bg-slate-950 overflow-x-hidden">
-                <PlanUsageBanner />
+              <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#F7F8F8] dark:bg-slate-950 overflow-x-hidden print:p-0 print:m-0 print:bg-white print:overflow-visible">
+                <div className="print:hidden">
+                  <PlanUsageBanner />
+                </div>
                 {children}
               </main>
             </div>
           </div>
+         </SessionWatcher>
         </NavigationProvider>
       </TenantConfigProvider>
     </ThemeProvider>

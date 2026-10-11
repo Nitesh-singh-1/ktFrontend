@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { TripDto, TripStatus, TripExpenseType } from "@/types/tms";
+import { createPortal } from "react-dom";
+import { TripDto, TripStatus, TripExpenseType, PaymentTerm } from "@/types/tms";
 import { tripService } from "services/tripService";
+import { shipmentService } from "services/shipmentService";
 import { Truck, Send, Flag, Fuel, Printer, X, FileText } from "lucide-react";
 import { getTenantPrintProfile } from "@/utils/print/tenantProfile";
 
@@ -11,6 +13,7 @@ interface TripDetailsModalProps {
   onClose: () => void;
   tripId: number | null;
   onUpdated: () => void;
+  initialShowPrint?: boolean;
 }
 
 export default function TripDetailsModal({
@@ -18,11 +21,17 @@ export default function TripDetailsModal({
   onClose,
   tripId,
   onUpdated,
+  initialShowPrint = false,
 }: TripDetailsModalProps) {
   const [trip, setTrip] = useState<TripDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Expense form state
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -37,17 +46,48 @@ export default function TripDetailsModal({
   useEffect(() => {
     if (isOpen && tripId) {
       loadTrip(tripId);
+      if (initialShowPrint) {
+        setShowPrintView(true);
+      }
     } else {
       setTrip(null);
       setShowPrintView(false);
     }
-  }, [isOpen, tripId]);
+  }, [isOpen, tripId, initialShowPrint]);
 
   const loadTrip = async (id: number) => {
     try {
       setLoading(true);
       setError("");
       const res = await tripService.getTripById(id);
+      if (res && res.shipments && res.shipments.length > 0) {
+        // Hydrate any shipment that might be missing consignee or payment term info
+        const enrichedShipments = await Promise.all(
+          res.shipments.map(async (shp) => {
+            if ((!shp.consigneeName || shp.paymentTerm === undefined) && shp.shipmentId) {
+              try {
+                const fullRes = await shipmentService.getShipmentById(shp.shipmentId);
+                const fullShipment = fullRes?.data;
+                if (fullShipment) {
+                  return {
+                    ...shp,
+                    consigneeName: fullShipment.consigneeName || shp.consigneeName,
+                    consignorName: fullShipment.consignorName || shp.consignorName,
+                    paymentTerm: fullShipment.paymentTerm !== undefined ? (fullShipment.paymentTerm as any) : shp.paymentTerm,
+                    paymentTermName: (fullShipment as any).paymentTermName || shp.paymentTermName,
+                    fromLocation: fullShipment.fromLocation || shp.fromLocation,
+                    toLocation: fullShipment.toLocation || shp.toLocation,
+                  };
+                }
+              } catch (e) {
+                console.warn("Could not fetch bilty details for shipment", shp.shipmentId, e);
+              }
+            }
+            return shp;
+          })
+        );
+        res.shipments = enrichedShipments;
+      }
       setTrip(res);
     } catch (err: any) {
       console.error("Load trip error:", err);
@@ -137,8 +177,18 @@ export default function TripDetailsModal({
   const totalFreight = trip?.shipments?.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0) || trip?.totalFreightRevenue || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto ${
+        showPrintView
+          ? "print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:overflow-visible"
+          : ""
+      }`}
+    >
+      <div
+        className={`bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200 ${
+          showPrintView ? "print:hidden" : ""
+        }`}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
@@ -345,7 +395,7 @@ export default function TripDetailsModal({
                       disabled={actionLoading}
                       className="btn-primary h-9 min-w-[120px] text-xs"
                     >
-                      Save Expense Entry
+                      Save
                     </button>
                   </div>
                 </form>
@@ -364,6 +414,8 @@ export default function TripDetailsModal({
                     <thead>
                       <tr className="bg-[#F7F8F8] dark:bg-slate-800 border-b border-[#E5EAEB] dark:border-slate-700 text-[10px] font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
                         <th className="py-2.5 px-3">Bilty / GR No</th>
+                        <th className="py-2.5 px-3">Consignee</th>
+                        <th className="py-2.5 px-3 text-center">Type</th>
                         <th className="py-2.5 px-3">Loaded Weight</th>
                         <th className="py-2.5 px-3">Packages</th>
                         <th className="py-2.5 px-3 text-right">Freight (₹)</th>
@@ -376,16 +428,24 @@ export default function TripDetailsModal({
                             <td className="py-2.5 px-3 font-mono font-bold text-[#2F8E86]">
                               {shp.shipmentNo}
                             </td>
+                            <td className="py-2.5 px-3 font-semibold text-[#111827] dark:text-slate-200">
+                              {shp.consigneeName || "—"}
+                            </td>
+                            <td className="py-2.5 px-3 text-center font-bold text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                {shp.paymentTermName || (Number(shp.freightAmount) > 0 ? "ToPay" : "Paid")}
+                              </span>
+                            </td>
                             <td className="py-2.5 px-3 font-semibold">{shp.loadedWeight} Kg</td>
                             <td className="py-2.5 px-3">{shp.loadedPackages} PKGS</td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold text-[#111827] dark:text-white">
-                              ₹{shp.freightAmount}
+                              ₹{(Number(shp.freightAmount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="py-4 text-center text-[#94A3B8]">
+                          <td colSpan={6} className="py-4 text-center text-[#94A3B8]">
                             No Bilties loaded on this Challan yet.
                           </td>
                         </tr>
@@ -443,10 +503,103 @@ export default function TripDetailsModal({
         </div>
       </div>
 
-      {/* Printable Pink Truck Challan Modal matching Photo 3 */}
-      {showPrintView && trip && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full p-6 text-slate-900 dark:text-slate-100 space-y-4 max-h-[92vh] overflow-y-auto print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none">
+      {/* Printable Pink Truck Challan Modal (Portaled directly to document.body for clean print isolation) */}
+      {mounted && showPrintView && trip && createPortal(
+        <div
+          id="challan-print-portal"
+          data-print-portal="true"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:overflow-visible"
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full p-6 text-slate-900 dark:text-slate-100 space-y-4 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0 print:m-0 print:w-full print:rounded-none print:block">
+            {/* Global Print Styles for Perfect Top-of-Page A4 Rendering */}
+            <style jsx global>{`
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 6mm 8mm;
+                }
+
+                /* HIDE ALL OTHER ELEMENTS IN DOCUMENT BODY EXCEPT THE CHALLAN PRINT PORTAL */
+                body > *:not(#challan-print-portal) {
+                  display: none !important;
+                }
+
+                html, body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: #ffffff !important;
+                  height: auto !important;
+                  min-height: 0 !important;
+                  overflow: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+
+                #challan-print-portal {
+                  position: static !important;
+                  display: block !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  width: 100% !important;
+                  background: #ffffff !important;
+                  overflow: visible !important;
+                }
+
+                #challan-print-portal > div {
+                  max-height: none !important;
+                  overflow: visible !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                  width: 100% !important;
+                  border-radius: 0 !important;
+                }
+
+                .pink-challan-slip {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  box-sizing: border-box !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  background: #ffffff !important;
+                  color: #000000 !important;
+                  border: 2px solid #000000 !important;
+                }
+
+                /* High contrast print optimization: crisp deep black text, borders & clean white background */
+                .pink-challan-slip * {
+                  color: #000000 !important;
+                  border-color: #000000 !important;
+                }
+
+                .pink-challan-slip table {
+                  background: #ffffff !important;
+                  border: 1px solid #000000 !important;
+                }
+
+                .pink-challan-slip thead tr {
+                  background: #f1f5f9 !important;
+                  border-bottom: 2px solid #000000 !important;
+                }
+
+                .pink-challan-slip tfoot tr {
+                  background: #f1f5f9 !important;
+                  border-top: 2px solid #000000 !important;
+                }
+
+                .pink-challan-slip .bg-white\/80,
+                .pink-challan-slip .bg-white\/70,
+                .pink-challan-slip .bg-rose-200\/50,
+                .pink-challan-slip .bg-rose-100\/70,
+                .pink-challan-slip .bg-rose-200\/90,
+                .pink-challan-slip .bg-rose-200\/80 {
+                  background: #ffffff !important;
+                }
+              }
+            `}</style>
+
             {/* Top Toolbar */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 print:hidden">
               <span className="font-bold text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
@@ -475,21 +628,73 @@ export default function TripDetailsModal({
             {/* Pink Challan Slip Layout (Dynamic Client Branding) */}
             {(() => {
               const profile = getTenantPrintProfile();
+
+              const getPaymentTermLabel = (term?: PaymentTerm | number | string, termName?: string, freight?: number) => {
+                if (term === PaymentTerm.TBB || termName === "TBB" || term === 2 || term === "2") return "TBB";
+                if (term === PaymentTerm.Paid || termName === "Paid" || term === 1 || term === "1") return "PAID";
+                if (term === PaymentTerm.ToPay || termName === "ToPay" || term === 0 || term === "0") return "TO PAY";
+                return (Number(freight) || 0) > 0 ? "TO PAY" : "PAID";
+              };
+
+              const tbbShipments = trip.shipments?.filter(s => getPaymentTermLabel(s.paymentTerm, s.paymentTermName, s.freightAmount) === "TBB") || [];
+              const toPayShipments = trip.shipments?.filter(s => getPaymentTermLabel(s.paymentTerm, s.paymentTermName, s.freightAmount) === "TO PAY") || [];
+              const paidShipments = trip.shipments?.filter(s => getPaymentTermLabel(s.paymentTerm, s.paymentTermName, s.freightAmount) === "PAID") || [];
+
+              const tbbCount = tbbShipments.length;
+              const tbbTotal = tbbShipments.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0);
+
+              const toPayCount = toPayShipments.length;
+              const toPayTotal = toPayShipments.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0);
+
+              const paidCount = paidShipments.length;
+              const paidTotal = paidShipments.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0);
+
               return (
-                <div className="bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950">
-                  {/* Slip Header */}
-                  <div className="text-center border-b-2 border-rose-400 pb-3">
-                    <h1 className="text-xl font-black tracking-wider uppercase">
-                      TRUCK CHALLAN
-                    </h1>
-                    <h2 className="text-2xl font-black text-rose-900 mt-1 tracking-tight">
-                      {profile.companyName || "KESHRI TRANSPORT"}
-                    </h2>
-                    <p className="text-xs font-bold text-rose-800">
-                      {profile.address || "ZERO MILE, PAHARI, PATNA-7"}
-                      {profile.gstin ? ` | GSTIN: ${profile.gstin}` : ""}
-                      {profile.panNumber ? ` | PAN: ${profile.panNumber}` : ""}
-                    </p>
+                <div className="pink-challan-slip bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950 print:p-4 print:border-2 print:rounded-none">
+                  {/* Slip Header with Top-Left Organization Logo (just like Bilty) */}
+                  <div className="border-b-2 border-rose-400 pb-3 flex items-start justify-between gap-4">
+                    {/* Top Left: Logo & Company Branding */}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {profile.logoUrl ? (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white border-2 border-rose-300 rounded-xl flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-2xs">
+                          <img
+                            src={profile.logoUrl}
+                            alt="Logo"
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                      <div className="text-left">
+                        <span className="inline-block px-2 py-0.5 bg-rose-200/90 text-rose-950 font-black text-[10px] tracking-wider rounded border border-rose-400 uppercase mb-1">
+                          TRUCK CHALLAN / LORRY DISPATCH MANIFEST
+                        </span>
+                        <h2 className="text-2xl sm:text-3xl font-black text-rose-900 tracking-tight leading-tight">
+                          {profile.companyName || "KESHRI TRANSPORT"}
+                        </h2>
+                        {profile.tagline && (
+                          <p className="text-xs font-bold text-rose-800">
+                            {profile.tagline}
+                          </p>
+                        )}
+                        <p className="text-xs font-semibold text-rose-800 mt-0.5">
+                          {profile.address || "ZERO MILE, PAHARI, PATNA-7"}
+                          {profile.phone ? ` • Ph: ${profile.phone}` : ""}
+                          {profile.panNumber ? ` • PAN: ${profile.panNumber}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Top Right: Challan Quick Meta */}
+                    <div className="text-right shrink-0 bg-white/80 border border-rose-300 px-3 py-2 rounded-lg">
+                      <div className="text-[10px] font-bold text-rose-700 uppercase">CHALLAN NUMBER</div>
+                      <div className="font-mono font-black text-base text-rose-950">{trip.tripNo}</div>
+                      <div className="text-[11px] font-bold text-rose-800 mt-0.5">
+                        Date: {trip.tripDate ? trip.tripDate.split("T")[0] : ""}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Challan Meta Grid */}
@@ -532,55 +737,105 @@ export default function TripDetailsModal({
                           <th className="py-2 px-3 border-r border-rose-300 min-w-[90px]">From</th>
                           <th className="py-2 px-3 border-r border-rose-300 text-right min-w-[90px]">Freight</th>
                           <th className="py-2 px-3 border-r border-rose-300 text-center min-w-[90px]">Freight Paid</th>
-                          <th className="py-2 px-3">Consignee Name</th>
+                          <th className="py-2 px-3 border-r border-rose-300 min-w-[140px]">Consignee Name</th>
+                          <th className="py-2 px-3 min-w-[100px]">Remark</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-rose-300">
                         {trip.shipments && trip.shipments.length > 0 ? (
-                          trip.shipments.map((shp, idx) => (
-                            <tr key={shp.id} className="hover:bg-white transition">
-                              <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{idx + 1}</td>
-                              <td className="py-1.5 px-3 font-mono font-bold border-r border-rose-300">{shp.shipmentNo}</td>
-                              <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{shp.loadedPackages || 1}</td>
-                              <td className="py-1.5 px-3 border-r border-rose-300">{trip.originLocationName || "Pahari"}</td>
-                              <td className="py-1.5 px-3 text-right font-mono font-bold border-r border-rose-300">₹{shp.freightAmount}</td>
-                              <td className="py-1.5 px-3 text-center border-r border-rose-300 font-semibold text-[10px]">
-                                {shp.freightAmount > 0 ? "TO PAY" : "PAID"}
-                              </td>
-                              <td className="py-1.5 px-3 font-medium truncate max-w-[180px]">
-                                {shp.shipmentNo} Party
-                              </td>
-                            </tr>
-                          ))
+                          trip.shipments.map((shp, idx) => {
+                            const termLabel = getPaymentTermLabel(shp.paymentTerm, shp.paymentTermName, shp.freightAmount);
+                            return (
+                              <tr key={shp.id} className="hover:bg-white transition">
+                                <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{idx + 1}</td>
+                                <td className="py-1.5 px-3 font-mono font-bold border-r border-rose-300">{shp.shipmentNo}</td>
+                                <td className="py-1.5 px-2 text-center font-bold border-r border-rose-300">{shp.loadedPackages || 1}</td>
+                                <td className="py-1.5 px-3 border-r border-rose-300">{shp.fromLocation || trip.originLocationName || "Pahari"}</td>
+                                <td className="py-1.5 px-3 text-right font-mono font-bold border-r border-rose-300">
+                                  ₹{(Number(shp.freightAmount) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="py-1.5 px-3 text-center border-r border-rose-300 font-bold text-[10px]">
+                                  <span className={
+                                    termLabel === "TBB"
+                                      ? "text-blue-900 font-extrabold"
+                                      : termLabel === "PAID"
+                                      ? "text-emerald-900 font-extrabold"
+                                      : "text-rose-950 font-extrabold"
+                                  }>
+                                    {termLabel}
+                                  </span>
+                                </td>
+                                <td className="py-1.5 px-3 font-bold border-r border-rose-300 truncate max-w-[180px]">
+                                  {shp.consigneeName || "—"}
+                                </td>
+                                <td className="py-1.5 px-3 text-slate-700">
+                                  {shp.remarks || ""}
+                                </td>
+                              </tr>
+                            );
+                          })
                         ) : (
                           <tr>
-                            <td colSpan={7} className="py-4 text-center text-rose-400">
+                            <td colSpan={8} className="py-4 text-center text-rose-400">
                               No Bilties listed
                             </td>
                           </tr>
                         )}
                       </tbody>
+                      {/* Grand Total Row */}
+                      <tfoot>
+                        <tr className="bg-rose-200/90 font-black border-t-2 border-rose-400 text-rose-950">
+                          <td className="py-2 px-2 text-center border-r border-rose-300"></td>
+                          <td className="py-2 px-3 border-r border-rose-300 uppercase tracking-wider font-black">
+                            Grand Total
+                          </td>
+                          <td className="py-2 px-2 text-center font-mono border-r border-rose-300 font-black">
+                            {totalLoadedPackages}
+                          </td>
+                          <td className="py-2 px-3 border-r border-rose-300"></td>
+                          <td className="py-2 px-3 text-right font-mono border-r border-rose-300 font-black text-rose-950">
+                            ₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-2 px-3 border-r border-rose-300"></td>
+                          <td className="py-2 px-3 border-r border-rose-300"></td>
+                          <td className="py-2 px-3"></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
 
-                  {/* Challan Footer & Signature Blocks (Cash and Fuel Advance Shown Individually) */}
+                  {/* Challan Footer & Signature Blocks (Cash & Fuel Advance + TBB, ToPay, Paid Breakdowns) */}
                   <div className="pt-3 border-t-2 border-rose-400 space-y-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold text-rose-900 bg-rose-200/50 p-2.5 rounded-lg border border-rose-300">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs font-bold text-rose-900 bg-rose-200/50 p-2.5 rounded-lg border border-rose-300">
                       <div>
                         <span className="text-rose-700 block text-[10px] uppercase">Total Packages</span>
-                        <span className="font-mono text-sm">{totalLoadedPackages} PKGS</span>
+                        <span className="font-mono text-sm font-black">{totalLoadedPackages} PKGS</span>
                       </div>
                       <div>
                         <span className="text-rose-700 block text-[10px] uppercase">Cash Advance</span>
-                        <span className="font-mono text-sm">₹{(trip.driverAdvanceCash || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                        <span className="font-mono text-sm font-black">₹{(trip.driverAdvanceCash || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                       </div>
                       <div>
                         <span className="text-rose-700 block text-[10px] uppercase">Fuel / Diesel Advance</span>
-                        <span className="font-mono text-sm">₹{(trip.driverAdvanceFuel || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                        <span className="font-mono text-sm font-black">₹{(trip.driverAdvanceFuel || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                       </div>
-                      <div>
-                        <span className="text-rose-700 block text-[10px] uppercase">Total Freight</span>
-                        <span className="font-mono text-sm">₹{totalFreight.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                      <div className="bg-rose-100/70 p-1.5 rounded border border-rose-300">
+                        <span className="text-rose-800 block text-[10px] uppercase font-bold">TBB</span>
+                        <span className="font-mono text-sm font-black text-rose-950 block mt-0.5">
+                          ₹{tbbTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="bg-rose-100/70 p-1.5 rounded border border-rose-300">
+                        <span className="text-rose-800 block text-[10px] uppercase font-bold">ToPay</span>
+                        <span className="font-mono text-sm font-black text-rose-950 block mt-0.5">
+                          ₹{toPayTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="bg-rose-100/70 p-1.5 rounded border border-rose-300">
+                        <span className="text-rose-800 block text-[10px] uppercase font-bold">Paid</span>
+                        <span className="font-mono text-sm font-black text-rose-950 block mt-0.5">
+                          ₹{paidTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
                       </div>
                     </div>
 
@@ -597,7 +852,8 @@ export default function TripDetailsModal({
               );
             })()}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

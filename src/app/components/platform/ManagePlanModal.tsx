@@ -220,7 +220,7 @@ export default function ManagePlanModal({ isOpen, client, onClose, onSaved }: Ma
               disabled={saving || !isDirty}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving…" : isDirty ? `Save (${selectedTier})` : "No change"}
+              {saving ? "Saving…" : "Save"}
             </button>
           </div>
         </div>

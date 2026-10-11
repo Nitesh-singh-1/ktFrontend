@@ -202,7 +202,7 @@ export default function TyreModal({ isOpen, onClose, onSaved, initial }: TyreMod
           <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Saving…" : initial ? "Update Tyre" : "Add Tyre"}
+              {loading ? "Saving…" : initial ? "Update" : "Save"}
             </button>
           </div>
         </form>

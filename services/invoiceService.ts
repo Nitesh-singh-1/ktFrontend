@@ -74,4 +74,50 @@ export const invoiceService = {
   deleteInvoice: (id: number): Promise<{ success: boolean; message?: string }> => {
     return baseService.delete<{ success: boolean; message?: string }>(`/invoice/${id}`);
   },
+
+  // Get list of unbilled parties summary
+  getUnbilledParties: async (search?: string): Promise<any[]> => {
+    const query = search ? `?search=${encodeURIComponent(search)}` : "";
+    const res = await baseService.get<any[]>(`/invoice/unbilled-parties${query}`);
+    return Array.isArray(res) ? res : [];
+  },
+
+  // Get unbilled shipments for a specific party
+  getUnbilledByParty: async (partyName?: string, partyId?: number): Promise<any[]> => {
+    const query = new URLSearchParams();
+    if (partyName) query.append("partyName", partyName);
+    if (partyId) query.append("partyId", partyId.toString());
+    const res = await baseService.get<any[]>(`/invoice/unbilled-by-party?${query.toString()}`);
+    return Array.isArray(res) ? res : [];
+  },
+
+  // Get all unbilled shipments
+  getUnbilledShipments: async (search?: string): Promise<any[]> => {
+    const query = search ? `?search=${encodeURIComponent(search)}` : "";
+    const res = await baseService.get<any[]>(`/invoice/unbilled${query}`);
+    return Array.isArray(res) ? res : [];
+  },
+
+  // Create Bill Book (Consolidated Freight Bill)
+  createBillBookInvoice: (data: {
+    invoiceNo?: string;
+    partyId?: number;
+    partyName: string;
+    partyGstNo?: string;
+    partyAddress?: string;
+    billingMonth?: string;
+    invoiceDate: string;
+    dueDate?: string;
+    shipmentIds: number[];
+    taxRate?: number;
+    discount?: number;
+    otherCharges?: number;
+    paidAmount?: number;
+    paymentMode?: string;
+    remarks?: string;
+    preparedBy?: string;
+    checkedBy?: string;
+  }): Promise<{ success: boolean; message: string; data?: any }> => {
+    return baseService.post<{ success: boolean; message: string; data?: any }>("/invoice/bill-book", data);
+  },
 };

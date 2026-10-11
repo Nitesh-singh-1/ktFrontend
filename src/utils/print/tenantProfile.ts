@@ -64,12 +64,16 @@ export function getTenantPrintProfile(customProfile?: Partial<TenantPrintProfile
         const parsed = JSON.parse(storedConfig);
         if (parsed?.general?.companyName) {
           defaultProfile.companyName = parsed.general.companyName;
+        } else if (parsed?.companyName) {
+          defaultProfile.companyName = parsed.companyName;
         }
         if (parsed?.general?.legalName) {
           defaultProfile.tagline = parsed.general.legalName;
         }
         if (parsed?.general?.logoUrl) {
           defaultProfile.logoUrl = parsed.general.logoUrl;
+        } else if (parsed?.logoUrl) {
+          defaultProfile.logoUrl = parsed.logoUrl;
         }
         if (parsed?.general?.address) {
           defaultProfile.address = parsed.general.address;

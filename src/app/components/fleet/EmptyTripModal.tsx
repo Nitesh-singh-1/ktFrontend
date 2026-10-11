@@ -165,7 +165,7 @@ export default function EmptyTripModal({ isOpen, onClose, onSaved, initial }: Em
           <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Saving…" : initial ? "Update" : "Log Trip"}
+              {loading ? "Saving…" : initial ? "Update" : "Save"}
             </button>
           </div>
         </form>

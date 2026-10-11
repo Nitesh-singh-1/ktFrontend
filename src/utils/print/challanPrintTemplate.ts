@@ -470,7 +470,12 @@ export function generateChallanPrintTemplate(challan: ChallanData): string {
           }
           
           @media print {
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm;
+            }
             body {
+              margin: 0;
               padding: 0;
               background: white;
             }

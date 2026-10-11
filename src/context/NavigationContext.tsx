@@ -1,199 +1,29 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { navigationService, DynamicMenuItem } from "../../services/navigationService";
+import { navigationService, DynamicMenuItem, NAVIGATION_REFRESH_EVENT } from "../../services/navigationService";
 
 interface NavigationContextType {
   menu: DynamicMenuItem[];
   permissions: string[];
   isLoading: boolean;
+  error: boolean;
   hasPermission: (permissionKey?: string) => boolean;
   isReportEnabled: (reportKey: string) => boolean;
   refreshNavigation: () => Promise<void>;
 }
 
-const defaultStaticMenu: DynamicMenuItem[] = [
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    path: "/dashboard",
-    icon: "home",
-    permissionKey: "dashboard.view",
-  },
-  {
-    id: "consignments",
-    title: "Consignments (GR)",
-    icon: "package",
-    permissionKey: "consignments.module",
-    children: [
-      {
-        id: "consignments.all",
-        title: "All Shipments",
-        path: "/shipments",
-        icon: "fileText",
-        permissionKey: "consignments.view",
-      },
-      {
-        id: "consignments.create",
-        title: "New Consignment",
-        path: "/shipments/create",
-        icon: "package",
-        permissionKey: "consignments.create",
-      },
-    ],
-  },
-  {
-    id: "trips",
-    title: "Trip Manifests",
-    path: "/trips",
-    icon: "truck",
-    permissionKey: "trips.view",
-  },
-  {
-    id: "pod",
-    title: "POD & Deliveries",
-    path: "/pod",
-    icon: "fileText",
-    permissionKey: "pod.view",
-  },
-  {
-    id: "master_data",
-    title: "Master Data",
-    icon: "cog",
-    permissionKey: "masterdata.module",
-    children: [
-      {
-        id: "master_data.parties",
-        title: "Party Directory",
-        path: "/customers",
-        icon: "fileText",
-        permissionKey: "parties.view",
-      },
-      {
-        id: "master_data.fleet",
-        title: "Fleet & Stations",
-        path: "/fleet",
-        icon: "truck",
-        permissionKey: "fleet.view",
-      },
-    ],
-  },
-  {
-    id: "vendors",
-    title: "Market Vendors & Hire",
-    path: "/vendors",
-    icon: "truck",
-    permissionKey: "vendors.view",
-  },
-  {
-    id: "billing",
-    title: "Billing & Invoices",
-    path: "/billing",
-    icon: "fileText",
-    permissionKey: "billing.view",
-  },
-  {
-    id: "claims",
-    title: "Damage & Claims",
-    path: "/claims",
-    icon: "info",
-    permissionKey: "claims.view",
-  },
-  {
-    id: "reports",
-    title: "Reports & Analytics",
-    path: "/reports",
-    icon: "barChart",
-    permissionKey: "reports.view",
-    children: [
-      {
-        id: "reports.booking_register",
-        title: "Booking Register",
-        path: "/reports?tab=booking_register",
-        icon: "fileText",
-        permissionKey: "reports.booking_register",
-      },
-      {
-        id: "reports.tax_summary",
-        title: "GST Tax Summary",
-        path: "/reports?tab=tax_summary",
-        icon: "fileText",
-        permissionKey: "reports.tax_summary",
-      },
-      {
-        id: "reports.party_outstanding",
-        title: "Customer Outstanding",
-        path: "/reports?tab=party_outstanding",
-        icon: "fileText",
-        permissionKey: "reports.party_outstanding",
-      },
-      {
-        id: "reports.trip_profitability",
-        title: "Trip Profitability",
-        path: "/reports?tab=trip_profitability",
-        icon: "fileText",
-        permissionKey: "reports.trip_profitability",
-      },
-      {
-        id: "reports.vendor_payables",
-        title: "Vendor Payables",
-        path: "/reports?tab=vendor_payables",
-        icon: "fileText",
-        permissionKey: "reports.vendor_payables",
-      },
-    ],
-  },
-  {
-    id: "tracking",
-    title: "Live Tracker",
-    path: "/tracking",
-    icon: "info",
-    permissionKey: "tracking.view",
-  },
-  {
-    id: "clients",
-    title: "Client Management",
-    path: "/clients",
-    icon: "lock",
-    permissionKey: "saas.tenants.manage",
-    badge: "SaaS",
-  },
-  {
-    id: "system",
-    title: "System & Settings",
-    icon: "settings",
-    children: [
-      {
-        id: "system.settings",
-        title: "SaaS Configuration",
-        path: "/settings",
-        icon: "settings",
-        permissionKey: "settings.manage",
-      },
-      {
-        id: "system.onboard",
-        title: "Tenant Onboarding",
-        path: "/onboard",
-        icon: "info",
-        permissionKey: "tenant.onboard",
-      },
-      {
-        id: "system.forgot_password",
-        title: "Forgot Password",
-        path: "/forgot-password",
-        icon: "lock",
-        permissionKey: "auth.password_reset",
-      },
-    ],
-  },
-];
+// TASK-045 Phase 3: `defaultStaticMenu` removed. The API is now authoritative;
+// when it fails, the Sidebar renderer detects `error: true` + empty `menu` and
+// renders the minimal fallback from `src/app/config/sidebar.ts`.
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [menu, setMenu] = useState<DynamicMenuItem[]>(defaultStaticMenu);
+  const [menu, setMenu] = useState<DynamicMenuItem[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
 
   const fetchNavigation = useCallback(async () => {
     try {
@@ -211,13 +41,19 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (menuRes.status === "fulfilled" && menuRes.value && menuRes.value.length > 0) {
         setMenu(menuRes.value);
+        setError(false);
+      } else {
+        setMenu([]);
+        setError(true);
       }
 
       if (permsRes.status === "fulfilled" && permsRes.value) {
         setPermissions(permsRes.value);
       }
     } catch (err) {
-      console.warn("Navigation API failed, using configuration defaults:", err);
+      console.warn("Navigation API failed, using fallback sidebar:", err);
+      setMenu([]);
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -227,11 +63,94 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     fetchNavigation();
   }, [fetchNavigation]);
 
+  // TASK-048: Platform-admin assign/revoke flows call navigationService.refreshMenu(),
+  // which dispatches NAVIGATION_REFRESH_EVENT. Re-pull the menu so the sidebar
+  // reflects the new tenant_entitlement_subscriptions state without a hard reload.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => {
+      fetchNavigation();
+    };
+    window.addEventListener(NAVIGATION_REFRESH_EVENT, handler);
+    return () => window.removeEventListener(NAVIGATION_REFRESH_EVENT, handler);
+  }, [fetchNavigation]);
+
+  // Phase 2 (TASK-042) & TASK-047: `permissions` contains action-split keys (e.g. `consignments.view`, `billing.view`, `master_data.parties.view`).
+  // hasPermission supports exact keys, wildcard `*`, base-feature prefixes (`consignments.create`), parent `.module` keys, and legacy aliases.
   const hasPermission = (permissionKey?: string): boolean => {
     if (!permissionKey) return true;
-    if (permissions.length === 0) return true; // Default permissive until permissions load
-    if (permissions.includes("*") || permissions.includes("admin")) return true;
-    return permissions.some((p) => p.toLowerCase() === permissionKey.toLowerCase());
+    if (isLoading) return false; // deny during initial load
+    if (permissions.includes("*")) return true;
+
+    const lowerKey = permissionKey.toLowerCase().trim();
+    if (!lowerKey) return true;
+
+    // 1. Direct exact match or wildcard prefix (e.g. "consignments.*")
+    if (
+      permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return pl === lowerKey || (pl.endsWith(".*") && lowerKey.startsWith(pl.slice(0, -2)));
+      })
+    ) {
+      return true;
+    }
+
+    // 2. Parent module key check (e.g. "consignments.module", "masterdata.module", "billing.module")
+    if (lowerKey.endsWith(".module")) {
+      const modPrefix = lowerKey.replace(".module", "");
+      const normalizedPrefix = modPrefix === "masterdata" ? "master_data" : modPrefix;
+      return permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return (
+          pl.startsWith(modPrefix + ".") ||
+          pl.startsWith(normalizedPrefix + ".") ||
+          pl === modPrefix ||
+          pl === normalizedPrefix
+        );
+      });
+    }
+
+    // 3. Base Feature Key check (e.g. "consignments.create", "reports.booking_register", "trips", "consignments")
+    // If user has any granular action key under this feature (e.g. "consignments.create.view", "consignments.create.create", "reports.booking_register.view")
+    if (
+      permissions.some((p) => {
+        const pl = p.toLowerCase();
+        return pl.startsWith(lowerKey + ".") || pl === lowerKey;
+      })
+    ) {
+      return true;
+    }
+
+    // 4. Legacy and shorthand aliases:
+    const aliasMap: Record<string, string[]> = {
+      "parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
+      "master_data.parties.view": ["master_data.parties.view", "master_data.parties", "parties.view"],
+      "fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.fleet.view": ["master_data.fleet.view", "master_data.fleet", "fleet.view"],
+      "master_data.compliance.view": ["master_data.compliance.view", "master_data.compliance"],
+      "master_data.tyres.view": ["master_data.tyres.view", "master_data.tyres"],
+      "master_data.spares.view": ["master_data.spares.view", "master_data.spares"],
+      "master_data.loans.view": ["master_data.loans.view", "master_data.loans"],
+      "rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
+      "master_data.rates.view": ["master_data.rates.view", "master_data.rates", "rates.view"],
+      "users.manage": ["system.users.view", "system.users.create", "system.users.edit", "system.users.delete", "users.manage"],
+      "settings.manage": ["system.settings.view", "system.settings.edit", "settings.manage"],
+      "saas.tenants.manage": ["system.clients.view", "system.clients", "saas.tenants.manage"],
+    };
+
+    const aliases = aliasMap[lowerKey];
+    if (aliases) {
+      if (
+        permissions.some((p) => {
+          const pl = p.toLowerCase();
+          return aliases.some((a) => pl === a || pl.startsWith(a + ".") || a.startsWith(pl + "."));
+        })
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const isReportEnabled = (reportKey: string): boolean => {
@@ -248,6 +167,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         menu,
         permissions,
         isLoading,
+        error,
         hasPermission,
         isReportEnabled,
         refreshNavigation: fetchNavigation,

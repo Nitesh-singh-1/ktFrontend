@@ -54,6 +54,7 @@ export default function ProtectedLayout({
   const isSaaSConfigRoute = 
     pathname?.startsWith("/settings") || 
     pathname?.startsWith("/clients") || 
+    pathname?.startsWith("/menu-catalog") || 
     pathname?.startsWith("/onboard");
 
   const isRestrictedForSubUser = isSaaSConfigRoute && !isSuperUser;
@@ -90,7 +91,7 @@ export default function ProtectedLayout({
 
               <div className="pt-2 flex items-center justify-center">
                 <Link
-                  href="/dashboard"
+                  href="/dashboard/"
                   className="px-6 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold transition shadow-xs"
                 >
                   Return to Dashboard

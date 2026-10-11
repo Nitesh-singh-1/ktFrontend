@@ -5,6 +5,8 @@ import { VehicleMaster, DriverLookupItem } from "@/types/shipment";
 import { fleetService } from "services/fleetService";
 import { Truck, X, AlertTriangle } from "lucide-react";
 import { sanitizeMobile, validateMobile, firstError } from "@/utils/validation";
+import CustomSelect from "@/app/components/ui/CustomSelect";
+import { DatePicker } from "@/app/components/ui/DatePicker";
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -120,8 +122,8 @@ export default function VehicleModal({
     setError("");
   };
 
-  const handleDriverSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const dId = Number(e.target.value);
+  const handleDriverChange = (val: any) => {
+    const dId = Number(val);
     if (!dId) {
       setDriverId(undefined);
       setDriverName("");
@@ -200,17 +202,25 @@ export default function VehicleModal({
     }
   };
 
+  const driverOptions = [
+    { label: "-- No Driver Assigned --", value: "" },
+    ...availableDrivers.map((d) => ({
+      label: `${d.name}${d.mobile ? ` (${d.mobile})` : ""}`,
+      value: d.id,
+    })),
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#E5EAEB] dark:border-slate-800 w-full max-w-lg overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#E5EAEB] dark:border-slate-800 w-full max-w-4xl overflow-visible relative my-4 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60 rounded-t-2xl">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
               <Truck className="w-4 h-4 text-[#2F8E86]" />
               <span>{initialVehicle ? "Edit Fleet Vehicle" : "Add New Fleet Vehicle (Truck)"}</span>
             </h2>
-            <p className="text-xs text-[#64748B] dark:text-slate-400">
+            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
               Register commercial vehicles for trip manifest and autocomplete.
             </p>
           </div>
@@ -223,7 +233,7 @@ export default function VehicleModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-visible rounded-b-2xl">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
@@ -231,8 +241,8 @@ export default function VehicleModal({
             </div>
           )}
 
-          {/* Vehicle No & Body Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Row 1: Vehicle No, Body Type, Ownership Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Vehicle / Truck Reg No * (ALL CAPS)
@@ -251,42 +261,32 @@ export default function VehicleModal({
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Vehicle Body Type
               </label>
-              <select
+              <CustomSelect
                 value={vehicleType}
-                onChange={(e) => setVehicleType(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
-              >
-                {VEHICLE_BODY_TYPES.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setVehicleType(String(v))}
+                options={VEHICLE_BODY_TYPES}
+                className="w-full"
+              />
             </div>
-          </div>
 
-          {/* Owner Type & Capacity */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Ownership Category
               </label>
-              <select
+              <CustomSelect
                 value={ownerType}
-                onChange={(e) => setOwnerType(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
-              >
-                {OWNER_TYPES.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setOwnerType(String(v))}
+                options={OWNER_TYPES}
+                className="w-full"
+              />
             </div>
+          </div>
 
+          {/* Row 2: Capacity, Engine Number, Chassis Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-                Carrying Capacity (in Metric Tons / MT)
+                Carrying Capacity (in MT)
               </label>
               <input
                 type="number"
@@ -298,10 +298,7 @@ export default function VehicleModal({
                 className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
-          </div>
 
-          {/* Engine & Chassis Numbers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Engine Number
@@ -329,92 +326,87 @@ export default function VehicleModal({
             </div>
           </div>
 
-          {/* Validity Compliance Dates */}
-          <div className="bg-[#F7F8F8] dark:bg-slate-800/40 p-3.5 rounded-xl border border-[#E5EAEB] dark:border-slate-800 space-y-3">
+          {/* Row 3: Validity Compliance Dates (Using uniform DatePicker) */}
+          <div className="bg-[#F7F8F8] dark:bg-slate-800/40 p-4 rounded-xl border border-[#E5EAEB] dark:border-slate-800 space-y-3">
             <p className="text-[11px] font-bold text-[#64748B] dark:text-slate-300 uppercase tracking-wider">
               Document Expiries & Compliance
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
-                  Fitness Valid Until
-                </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={fitnessValidUntil}
-                  onChange={(e) => setFitnessValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  onChange={(d) => setFitnessValidUntil(d)}
+                  label="Fitness Until"
+                  align="left"
+                  direction="auto"
+                  disableFutureDates={false}
+                  className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
-                  Insurance Valid Until
-                </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={insuranceValidUntil}
-                  onChange={(e) => setInsuranceValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  onChange={(d) => setInsuranceValidUntil(d)}
+                  label="Insurance Until"
+                  align="left"
+                  direction="auto"
+                  disableFutureDates={false}
+                  className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
-                  National Permit Until
-                </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={permitValidUntil}
-                  onChange={(e) => setPermitValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  onChange={(d) => setPermitValidUntil(d)}
+                  label="Permit Until"
+                  align="left"
+                  direction="auto"
+                  disableFutureDates={false}
+                  className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
-                  PUC (Pollution) Until
-                </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={pucValidUntil}
-                  onChange={(e) => setPucValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  onChange={(d) => setPucValidUntil(d)}
+                  label="PUC Until"
+                  align="right"
+                  direction="auto"
+                  disableFutureDates={false}
+                  className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#64748B] dark:text-slate-400 mb-1">
-                  Road Tax Until
-                </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={taxValidUntil}
-                  onChange={(e) => setTaxValidUntil(e.target.value)}
-                  className="w-full h-9 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+                  onChange={(d) => setTaxValidUntil(d)}
+                  label="Road Tax Until"
+                  align="right"
+                  direction="auto"
+                  disableFutureDates={false}
+                  className="w-full"
                 />
               </div>
             </div>
           </div>
 
-          {/* Assigned Driver & Owner Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Row 4: Assigned Driver, Owner Name, Owner Mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Default Assigned Driver
               </label>
-              <select
+              <CustomSelect
                 value={driverId || ""}
-                onChange={handleDriverSelect}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] cursor-pointer"
-              >
-                <option value="">-- No Driver Assigned --</option>
-                {availableDrivers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} {d.mobile ? `(${d.mobile})` : ""}
-                  </option>
-                ))}
-              </select>
+                onChange={handleDriverChange}
+                options={driverOptions}
+                searchable={true}
+                className="w-full"
+              />
             </div>
 
             <div>
@@ -429,50 +421,43 @@ export default function VehicleModal({
                 className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] capitalize"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-              Owner Mobile Number (10 Digits)
-            </label>
-            <input
-              type="tel"
-              maxLength={10}
-              placeholder="9876543210"
-              value={ownerMobile}
-              onChange={(e) => handleMobileChange(e.target.value)}
-              className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-            />
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
+                  Owner Mobile (10 Digits)
+                </label>
+                <span className="text-[10px] text-[#94A3B8] font-mono">
+                  {ownerMobile.length}/10
+                </span>
+              </div>
+              <input
+                type="tel"
+                maxLength={10}
+                placeholder="9876543210"
+                value={ownerMobile}
+                onChange={(e) => handleMobileChange(e.target.value)}
+                className="w-full h-10 px-3.5 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+              />
+            </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs font-semibold text-[#111827] dark:text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
-              />
-              <span>Active in Fleet Directory</span>
-            </label>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary"
-              >
-                {loading ? "Saving..." : initialVehicle ? "Update" : "Save"}
-              </button>
-            </div>
+          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+            >
+              {loading ? "Saving..." : initialVehicle ? "Update Truck" : "Save Truck"}
+            </button>
           </div>
         </form>
       </div>

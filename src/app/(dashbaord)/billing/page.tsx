@@ -8,8 +8,9 @@ import PaymentRecordModal from "@/app/components/invoice/PaymentRecordModal";
 import InvoiceDetailsModal from "@/app/components/invoice/InvoiceDetailsModal";
 import { Plus, Search, AlertTriangle, FileText, Receipt, X, CreditCard, Eye, Ban } from "lucide-react";
 import { DataTable } from "@/app/components/ui/DataTable";
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 
-export default function BillingPage() {
+function BillingContent() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +105,7 @@ export default function BillingPage() {
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>New Invoice</span>
+          <span>Create Invoice</span>
         </button>
       </div>
 
@@ -207,7 +208,7 @@ export default function BillingPage() {
         emptyMessage="Generate your first freight invoice to bill customers, link consignments, and balance receipts."
         emptyAction={
           <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Generate First Invoice
+            <Plus className="w-4 h-4" /> Create Invoice
           </button>
         }
         columns={[
@@ -311,5 +312,13 @@ export default function BillingPage() {
         onRecordPayment={(inv) => setSelectedForPayment(inv)}
       />
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <PagePermissionGuard permission="billing.invoices.view" moduleName="Freight Invoices">
+      <BillingContent />
+    </PagePermissionGuard>
   );
 }

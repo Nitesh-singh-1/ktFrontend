@@ -205,7 +205,7 @@ export default function StatusTransitionModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Updating..." : "Commit Status Change"}
+                {loading ? "Updating..." : "Update"}
               </button>
             )}
           </div>

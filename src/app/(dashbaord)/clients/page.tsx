@@ -6,11 +6,19 @@ import {
   TenantAdminListItem,
   TenantOnboardingPayload,
   TenantUser,
+  SystemRoleTemplate,
+  UpdateTenantEntitlementsPayload,
 } from "../../../../services/tenantService";
 import {
   TenantMenuEntitlements,
   ReportEntitlementItem,
+  navigationService,
 } from "../../../../services/navigationService";
+import {
+  ALL_MODULE_CODES,
+  ALL_MODULE_CODE_LIST,
+  PRESET_MODULE_CODES,
+} from "@/app/config/moduleCatalog";
 import {
   PackageIcon,
   TruckIcon,
@@ -48,26 +56,33 @@ export default function ClientsManagementPage() {
     adminFullName: "",
     adminMobile: "",
     planTier: "Starter",
-    enabledModules: [
-      "dashboard",
-      "gr",
-      "gr.list",
-      "gr.entry",
-      "challan",
-      "challan.list",
-      "challan.entry",
-      "system",
-      "system.settings",
-    ],
+    // TASK-049 — canonical module codes only. Legacy aliases (`gr`, `challan`,
+    // `gr.list`, …) are deleted; preset expansion lives in PLAN_DEFAULT_MODULES.
+    enabledModules: ["dashboard", "bilty", "trips", "system"],
     enabledReportKeys: [],
   });
   const [submittingOnboard, setSubmittingOnboard] = useState(false);
+
+  // TASK-046 Phase 1 — role picker + module checkboxes for the admin wizard.
+  const [systemRoles, setSystemRoles] = useState<SystemRoleTemplate[]>([]);
+  // TASK-049b — canonical catalog + presets now live in
+  // `src/app/config/moduleCatalog.ts` so /settings reuses them.
+  const PLAN_DEFAULT_MODULES: Record<string, string[]> = {
+    Starter: ["dashboard", "bilty", "reports"],
+    Professional: ["dashboard", "bilty", "pod", "billing", "reports"],
+    Enterprise: ALL_MODULE_CODE_LIST,
+  };
 
   // Module Entitlement Drawer/Modal State
   const [selectedClient, setSelectedClient] =
     useState<TenantAdminListItem | null>(null);
   const [clientEntitlements, setClientEntitlements] =
     useState<TenantMenuEntitlements | null>(null);
+  // TASK-049 — editing state tracks canonical module codes (NOT dotted strings).
+  // Initialized from the GET response's `moduleCodes` with a backwards-compat
+  // fallback to `enabledMenuKeys` filtered to recognized codes. All toggles and
+  // presets write to this Set; the PUT payload is `Array.from(moduleCodes)`.
+  const [moduleCodes, setModuleCodes] = useState<Set<string>>(new Set());
   const [loadingEntitlements, setLoadingEntitlements] = useState(false);
   const [savingEntitlements, setSavingEntitlements] = useState(false);
 
@@ -82,6 +97,11 @@ export default function ClientsManagementPage() {
 
   useEffect(() => {
     loadClients();
+    // TASK-046 Phase 1: fetch system role templates once on page mount.
+    tenantService
+      .getSystemRoleTemplates()
+      .then((rows) => setSystemRoles(rows || []))
+      .catch(() => setSystemRoles([]));
   }, []);
 
   const handleOpenUsers = async (client: TenantAdminListItem) => {
@@ -153,6 +173,15 @@ export default function ClientsManagementPage() {
       setLoadingEntitlements(true);
       const entitlements = await tenantService.getEntitlements(client.id);
       setClientEntitlements(entitlements);
+      // TASK-049 — prefer the backend's new `moduleCodes`; during the one-release
+      // transition the legacy `enabledMenuKeys` is still populated, so filter it
+      // to the canonical catalog as a fallback.
+      const knownCodes = new Set(ALL_MODULE_CODES.map((m) => m.code));
+      const seed =
+        entitlements.moduleCodes && entitlements.moduleCodes.length > 0
+          ? entitlements.moduleCodes
+          : (entitlements.enabledMenuKeys || []).filter((k) => knownCodes.has(k));
+      setModuleCodes(new Set(seed));
     } catch (err: any) {
       showToast("error", "Failed to load entitlements for this client.");
     } finally {
@@ -164,17 +193,32 @@ export default function ClientsManagementPage() {
     if (!selectedClient || !clientEntitlements) return;
     try {
       setSavingEntitlements(true);
-      await tenantService.updateEntitlements(
-        selectedClient.id,
-        clientEntitlements
-      );
+      // TASK-049 — send the new canonical shape. `moduleCodes` IS the input;
+      // the backend derives everything (tenant_modules writes, admin-role
+      // reseed, legacy enabled_feature_keys) from this one list. No more
+      // dotted-key strings. No more gr/challan aliases.
+      const payload: UpdateTenantEntitlementsPayload = {
+        moduleCodes: Array.from(moduleCodes),
+        reports: clientEntitlements.reports,
+      };
+      await tenantService.updateEntitlements(selectedClient.id, payload);
       showToast(
         "success",
         `Module permissions updated successfully for ${selectedClient.name}!`
       );
       setSelectedClient(null);
       setClientEntitlements(null);
+      setModuleCodes(new Set());
       loadClients();
+      // TASK-048: Platform-admin assign/revoke must flip the sidebar immediately
+      // without a hard refresh. This re-pulls /api/navigation/menu, which the
+      // backend resolves from tenant_entitlement_subscriptions — the global
+      // menu_items catalog is NEVER mutated by this flow.
+      try {
+        await navigationService.refreshMenu();
+      } catch {
+        // Non-fatal: the sidebar will refresh on next route transition.
+      }
     } catch (err: any) {
       showToast("error", err.message || "Failed to update entitlements.");
     } finally {
@@ -182,86 +226,50 @@ export default function ClientsManagementPage() {
     }
   };
 
+  // TASK-049b — presets are centralised in `src/app/config/moduleCatalog.ts`.
+  // The three variants used by this /clients drawer are a subset of the full
+  // preset map; the /settings page uses the full set.
+
   const applyPresetToClient = (presetType: "starter" | "tax_reports" | "enterprise") => {
     if (!clientEntitlements) return;
+
+    setModuleCodes(new Set(PRESET_MODULE_CODES[presetType]));
 
     if (presetType === "starter") {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
-          "system",
-          "system.settings",
-        ],
-        reports: clientEntitlements.reports.map((r) => ({
-          ...r,
-          isEnabled: false,
-        })),
+        reports: clientEntitlements.reports.map((r) => ({ ...r, isEnabled: false })),
       });
       showToast("success", "Applied: Bill-Making Only Preset");
     } else if (presetType === "tax_reports") {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
-          "reports",
-          "system",
-          "system.settings",
-        ],
         reports: clientEntitlements.reports.map((r) => ({
           ...r,
           isEnabled:
-            r.reportKey === "tax_summary" || r.reportKey === "party_outstanding",
+            r.reportKey === "tax_summary" ||
+            r.reportKey === "party_outstanding" ||
+            r.reportKey === "booking_register",
         })),
       });
       showToast("success", "Applied: Billing + Tax Reports Preset");
-    } else if (presetType === "enterprise") {
+    } else {
       setClientEntitlements({
         ...clientEntitlements,
-        enabledMenuKeys: [
-          "dashboard",
-          "gr",
-          "gr.list",
-          "gr.entry",
-          "challan",
-          "challan.list",
-          "challan.entry",
-          "reports",
-          "system",
-          "system.settings",
-        ],
-        reports: clientEntitlements.reports.map((r) => ({
-          ...r,
-          isEnabled: true,
-        })),
+        reports: clientEntitlements.reports.map((r) => ({ ...r, isEnabled: true })),
       });
       showToast("success", "Applied: Full Enterprise Preset");
     }
   };
 
-  const toggleClientMenuKey = (key: string) => {
-    if (!clientEntitlements) return;
-    const current = new Set(clientEntitlements.enabledMenuKeys);
-    if (current.has(key)) {
-      current.delete(key);
-    } else {
-      current.add(key);
-    }
-    setClientEntitlements({
-      ...clientEntitlements,
-      enabledMenuKeys: Array.from(current),
+  // TASK-049 — toggle one canonical module code. No alias normalization, no
+  // parent/child magic. The checkbox value is literally `moduleCodes.has(code)`.
+  const toggleClientMenuKey = (code: string) => {
+    setModuleCodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
     });
   };
 
@@ -270,26 +278,86 @@ export default function ClientsManagementPage() {
     const updated = clientEntitlements.reports.map((r) =>
       r.reportKey === reportKey ? { ...r, isEnabled: !r.isEnabled } : r
     );
+    setClientEntitlements({ ...clientEntitlements, reports: updated });
 
-    // If at least one report is enabled, ensure 'reports' menu key is present
+    // If at least one report is enabled, ensure the `reports` module is granted
+    // so the sidebar can even render the parent group.
     const hasAnyReport = updated.some((r) => r.isEnabled);
-    const keys = new Set(clientEntitlements.enabledMenuKeys);
-    if (hasAnyReport) {
-      keys.add("reports");
-    } else {
-      keys.delete("reports");
-    }
-
-    setClientEntitlements({
-      ...clientEntitlements,
-      enabledMenuKeys: Array.from(keys),
-      reports: updated,
+    setModuleCodes((prev) => {
+      const next = new Set(prev);
+      if (hasAnyReport) next.add("reports");
+      else next.delete("reports");
+      return next;
     });
   };
 
   // Onboarding Helpers
+  const handleSelectTier = (tier: string) => {
+    setOnboardForm((prev) => ({
+      ...prev,
+      planTier: tier,
+      enabledReportKeys:
+        tier === "Starter"
+          ? []
+          : tier === "Professional"
+          ? ["tax_summary", "party_outstanding"]
+          : [
+              "booking_register",
+              "tax_summary",
+              "party_outstanding",
+              "trip_profitability",
+              "vendor_payables",
+            ],
+      enabledModuleCodes: PLAN_DEFAULT_MODULES[tier] || [],
+    }));
+  };
+
+  const handleNextStep = () => {
+    if (onboardStep === 1) {
+      if (!onboardForm.organizationName?.trim() || !onboardForm.organizationCode?.trim()) {
+        sweetAlert.warning(
+          "Missing details",
+          "Please enter organization name and code."
+        );
+        return;
+      }
+      const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
+      if (mobileErr) {
+        sweetAlert.error("Invalid mobile number", mobileErr);
+        return;
+      }
+      setOnboardStep(2);
+    } else if (onboardStep === 2) {
+      if (
+        !onboardForm.adminUsername?.trim() ||
+        !onboardForm.adminPassword?.trim() ||
+        !onboardForm.adminFullName?.trim()
+      ) {
+        sweetAlert.warning(
+          "Missing details",
+          "Please complete administrator full name, username, and initial password."
+        );
+        return;
+      }
+      if (onboardForm.adminPassword.length < 6) {
+        sweetAlert.error(
+          "Password too short",
+          "Initial password must be at least 6 characters long."
+        );
+        return;
+      }
+      setOnboardStep(3);
+    }
+  };
+
   const handleOnboardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // STRICT GUARD: If not yet on Step 3, advance step instead of submitting to API!
+    if (onboardStep < 3) {
+      handleNextStep();
+      return;
+    }
 
     // Defense in depth: re-validate everything at final submit, not just when the user
     // clicked "Next Step" — covers the case where a value became invalid after a step
@@ -308,7 +376,18 @@ export default function ClientsManagementPage() {
 
     try {
       setSubmittingOnboard(true);
-      const res = await tenantService.onboardTenant(onboardForm);
+      // TASK-046 Phase 1: platform admin uses the new /api/admin/tenants path
+      // that respects adminRoleCode + explicit enabledModuleCodes. Fall back to
+      // the public endpoint if the admin-only one 403s (not expected here).
+      const adminPayload: TenantOnboardingPayload = {
+        ...onboardForm,
+        adminRoleCode: onboardForm.adminRoleCode || "admin",
+        enabledModuleCodes:
+          onboardForm.enabledModuleCodes && onboardForm.enabledModuleCodes.length > 0
+            ? onboardForm.enabledModuleCodes
+            : PLAN_DEFAULT_MODULES[onboardForm.planTier || "Starter"] || [],
+      };
+      const res = await tenantService.onboardTenantByAdmin(adminPayload);
       if (res.success) {
         await sweetAlert.success(
           "Client onboarded",
@@ -324,17 +403,8 @@ export default function ClientsManagementPage() {
           adminFullName: "",
           adminMobile: "",
           planTier: "Starter",
-          enabledModules: [
-            "dashboard",
-            "gr",
-            "gr.list",
-            "gr.entry",
-            "challan",
-            "challan.list",
-            "challan.entry",
-            "system",
-            "system.settings",
-          ],
+          // TASK-049 — canonical module codes only; see comment at initial state.
+          enabledModules: ["dashboard", "bilty", "trips", "system"],
           enabledReportKeys: [],
         });
         loadClients();
@@ -372,7 +442,7 @@ export default function ClientsManagementPage() {
 
   return (
     <PagePermissionGuard
-      permission="saas.tenants.manage"
+      permission="saas.tenants.manage.view"
       moduleName="Client Management & SaaS Onboarding"
       platformOnly
     >
@@ -409,12 +479,24 @@ export default function ClientsManagementPage() {
           <button
             onClick={() => {
               setOnboardStep(1);
+              setOnboardForm({
+                organizationName: "",
+                organizationCode: "",
+                adminUsername: "",
+                adminPassword: "",
+                adminFullName: "",
+                adminMobile: "",
+                planTier: "Starter",
+                enabledModules: ["dashboard", "bilty", "trips", "system"],
+                enabledModuleCodes: PLAN_DEFAULT_MODULES["Starter"] || [],
+                enabledReportKeys: [],
+              });
               setShowOnboardModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
-            <span>Onboard New Client</span>
+            <span>Add Client</span>
           </button>
         </div>
 
@@ -671,6 +753,7 @@ export default function ClientsManagementPage() {
                   onClick={() => {
                     setSelectedClient(null);
                     setClientEntitlements(null);
+                    setModuleCodes(new Set());
                   }}
                   className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg hover:bg-[#F7F8F8] cursor-pointer"
                 >
@@ -730,46 +813,43 @@ export default function ClientsManagementPage() {
                     {/* Core Modules Toggles */}
                     <div>
                       <h3 className="text-sm font-semibold text-[#111827] mb-3">
-                        Core Operations Modules
+                        Subscribed Functional Modules
                       </h3>
-                      <div className="space-y-2.5">
-                        {/* GR Module */}
-                        <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-[#111827] text-sm">
-                              Module A: Goods Receipt (GR) & Consignments
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {ALL_MODULE_CODES.filter((m) => m.code !== "dashboard" && m.code !== "system").map((mod) => {
+                          // TASK-049 — checkbox state = pure membership in the
+                          // canonical moduleCodes Set. No alias checks.
+                          const isChecked = moduleCodes.has(mod.code);
+                          return (
+                            <div
+                              key={mod.code}
+                              onClick={() => toggleClientMenuKey(mod.code)}
+                              className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer select-none ${
+                                isChecked
+                                  ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#111827]"
+                                  : "bg-[#F7F8F8] border-[#E5EAEB] text-[#94A3B8]"
+                              }`}
+                            >
+                              <div>
+                                <div className="font-semibold text-xs text-[#111827]">
+                                  {mod.label}
+                                </div>
+                                <div className="text-[11px] text-[#64748B]">
+                                  Code: {mod.code}
+                                </div>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleClientMenuKey(mod.code);
+                                }}
+                                className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
+                              />
                             </div>
-                            <div className="text-xs text-[#64748B]">
-                              Create GR, Print Bilty, View Consignment Register
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={clientEntitlements.enabledMenuKeys.includes("gr")}
-                            onChange={() => toggleClientMenuKey("gr")}
-                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
-                          />
-                        </div>
-
-                        {/* Challan Module */}
-                        <div className="p-3.5 bg-[#F7F8F8] border border-[#E5EAEB] rounded-xl flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-[#111827] text-sm">
-                              Module A: Loading Challan & Dispatch
-                            </div>
-                            <div className="text-xs text-[#64748B]">
-                              Create Challan, Lorry Hire contracts, Dispatch list
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={clientEntitlements.enabledMenuKeys.includes(
-                              "challan"
-                            )}
-                            onChange={() => toggleClientMenuKey("challan")}
-                            className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
-                          />
-                        </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -792,7 +872,8 @@ export default function ClientsManagementPage() {
                         {clientEntitlements.reports.map((rep) => (
                           <div
                             key={rep.reportKey}
-                            className={`p-3 rounded-xl border transition-all flex items-center justify-between ${
+                            onClick={() => toggleClientReport(rep.reportKey)}
+                            className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer select-none ${
                               rep.isEnabled
                                 ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#111827]"
                                 : "bg-[#F7F8F8] border-[#E5EAEB] text-[#94A3B8] opacity-75"
@@ -809,7 +890,10 @@ export default function ClientsManagementPage() {
                             <input
                               type="checkbox"
                               checked={rep.isEnabled}
-                              onChange={() => toggleClientReport(rep.reportKey)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleClientReport(rep.reportKey);
+                              }}
                               className="w-5 h-5 accent-[#2F8E86] rounded cursor-pointer"
                             />
                           </div>
@@ -827,6 +911,7 @@ export default function ClientsManagementPage() {
                   onClick={() => {
                     setSelectedClient(null);
                     setClientEntitlements(null);
+                    setModuleCodes(new Set());
                   }}
                   className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#64748B] text-xs font-bold rounded-xl border border-[#D9E2E3] transition-colors cursor-pointer"
                 >
@@ -855,16 +940,32 @@ export default function ClientsManagementPage() {
                   <h2 className="text-lg font-bold text-[#111827]">
                     Onboard Transport Client
                   </h2>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Step {onboardStep} of 3:{" "}
-                    {onboardStep === 1
-                      ? "Organization Profile"
-                      : onboardStep === 2
-                      ? "Admin User Credentials"
-                      : "Subscription & Module Package"}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    {[
+                      { step: 1, label: "Organization & Plan" },
+                      { step: 2, label: "Admin Credentials" },
+                      { step: 3, label: "Modules & Review" },
+                    ].map((s) => (
+                      <div
+                        key={s.step}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                          onboardStep === s.step
+                            ? "bg-[#2F8E86] text-white shadow-xs"
+                            : onboardStep > s.step
+                            ? "bg-[#E7F1F2] text-[#25776F]"
+                            : "bg-[#F1F5F9] text-[#94A3B8]"
+                        }`}
+                      >
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-white/20">
+                          {onboardStep > s.step ? "✓" : s.step}
+                        </span>
+                        <span>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowOnboardModal(false)}
                   className="text-[#94A3B8] hover:text-[#111827] p-1.5 rounded-lg hover:bg-[#F7F8F8] cursor-pointer"
                 >
@@ -873,7 +974,18 @@ export default function ClientsManagementPage() {
               </div>
 
               {/* Step Content */}
-              <form onSubmit={handleOnboardSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <form
+                onSubmit={handleOnboardSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (onboardStep < 3) {
+                      handleNextStep();
+                    }
+                  }
+                }}
+                className="flex flex-col flex-1 overflow-hidden"
+              >
                 <div className="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
                   {onboardStep === 1 && (
                     <div className="space-y-4">
@@ -933,6 +1045,62 @@ export default function ClientsManagementPage() {
                           }
                           className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-mono font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
+                      </div>
+
+                      {/* Subscription Plan Picker on Step 1 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
+                          Select Subscription Plan *
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            {
+                              tier: "Starter",
+                              price: "₹999/mo",
+                              desc: "Bilty & basic transport",
+                            },
+                            {
+                              tier: "Professional",
+                              price: "₹2,999/mo",
+                              desc: "Bilty, POD, Billing, Reports",
+                            },
+                            {
+                              tier: "Enterprise",
+                              price: "₹9,999/mo",
+                              desc: "Complete Transport ERP suite",
+                            },
+                          ].map((item) => {
+                            const isSelected =
+                              (onboardForm.planTier || "Starter") === item.tier;
+                            return (
+                              <button
+                                key={item.tier}
+                                type="button"
+                                onClick={() => handleSelectTier(item.tier)}
+                                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] shadow-xs ring-1 ring-[#2F8E86]"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3] hover:bg-white"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-xs text-[#111827]">
+                                    {item.tier}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="w-2 h-2 rounded-full bg-[#2F8E86]" />
+                                  )}
+                                </div>
+                                <div className="text-xs text-[#2F8E86] font-semibold mt-1">
+                                  {item.price}
+                                </div>
+                                <div className="text-[10px] text-[#64748B] mt-0.5 leading-tight">
+                                  {item.desc}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -995,53 +1163,119 @@ export default function ClientsManagementPage() {
                           className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:border-[#2F8E86] focus:outline-none"
                         />
                       </div>
+
+                      {/* Admin User's Role */}
+                      <div>
+                        <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
+                          Admin User's Role
+                        </label>
+                        <select
+                          value={onboardForm.adminRoleCode || "admin"}
+                          onChange={(e) =>
+                            setOnboardForm({
+                              ...onboardForm,
+                              adminRoleCode: e.target.value,
+                            })
+                          }
+                          className="w-full px-3.5 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] focus:border-[#2F8E86] focus:outline-none"
+                        >
+                          {(systemRoles.length > 0
+                            ? systemRoles
+                            : [{ code: "admin", name: "Administrator", description: "" }]
+                          ).map((r) => (
+                            <option key={r.code} value={r.code}>
+                              {r.name} ({r.code})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="mt-1 text-[11px] text-[#64748B]">
+                          Default is "admin". You can pick any seeded system role.
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {onboardStep === 3 && (
                     <div className="space-y-4">
+                      {/* Subscription Plan Switcher / Confirmation */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-xs font-semibold text-[#111827] uppercase tracking-wider">
+                            Selected Subscription Plan
+                          </label>
+                          <span className="text-[11px] text-[#2F8E86] font-bold">
+                            Current: {onboardForm.planTier || "Starter"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {["Starter", "Professional", "Enterprise"].map((tier) => {
+                            const isSelected =
+                              (onboardForm.planTier || "Starter") === tier;
+                            return (
+                              <button
+                                key={tier}
+                                type="button"
+                                onClick={() => handleSelectTier(tier)}
+                                className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                                  isSelected
+                                    ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] font-bold ring-1 ring-[#2F8E86]"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3]"
+                                }`}
+                              >
+                                <div className="text-xs font-bold text-[#111827]">{tier}</div>
+                                <div className="text-xs text-[#2F8E86] mt-1 font-semibold">
+                                  {tier === "Starter"
+                                    ? "₹999/mo"
+                                    : tier === "Professional"
+                                    ? "₹2,999/mo"
+                                    : "₹9,999/mo"}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* TASK-046 Phase 1 — Module checkboxes (writes tenant_modules). */}
                       <div>
                         <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-2">
-                          Select Subscription Plan
+                          Enabled Modules
                         </label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {["Starter", "Professional", "Enterprise"].map((tier) => (
-                            <div
-                              key={tier}
-                              onClick={() =>
-                                setOnboardForm({
-                                  ...onboardForm,
-                                  planTier: tier,
-                                  enabledReportKeys:
-                                    tier === "Starter"
-                                      ? []
-                                      : tier === "Professional"
-                                      ? ["tax_summary", "party_outstanding"]
-                                      : [
-                                          "booking_register",
-                                          "tax_summary",
-                                          "party_outstanding",
-                                          "trip_profitability",
-                                          "vendor_payables",
-                                        ],
-                                })
-                              }
-                              className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
-                                onboardForm.planTier === tier
-                                  ? "bg-[#E7F1F2] border-[#2F8E86] text-[#25776F] font-bold"
-                                  : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B] hover:border-[#D9E2E3]"
-                              }`}
-                            >
-                              <div className="text-sm font-bold">{tier}</div>
-                              <div className="text-xs text-[#2F8E86] mt-1 font-semibold">
-                                {tier === "Starter"
-                                  ? "₹999/mo"
-                                  : tier === "Professional"
-                                  ? "₹2,999/mo"
-                                  : "₹9,999/mo"}
-                              </div>
-                            </div>
-                          ))}
+                        <div className="grid grid-cols-2 gap-2">
+                          {ALL_MODULE_CODES.map((mod) => {
+                            const current = new Set(
+                              onboardForm.enabledModuleCodes ||
+                                PLAN_DEFAULT_MODULES[onboardForm.planTier || "Starter"] ||
+                                []
+                            );
+                            const isChecked = current.has(mod.code);
+                            return (
+                              <label
+                                key={mod.code}
+                                className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer text-xs ${
+                                  isChecked
+                                    ? "bg-[#E7F1F2]/60 border-[#D9E2E3] text-[#25776F] font-semibold"
+                                    : "bg-[#F7F8F8] border-[#E5EAEB] text-[#64748B]"
+                                }`}
+                              >
+                                <span>{mod.label}</span>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const next = new Set(current);
+                                    if (next.has(mod.code)) next.delete(mod.code);
+                                    else next.add(mod.code);
+                                    setOnboardForm({
+                                      ...onboardForm,
+                                      enabledModuleCodes: Array.from(next),
+                                    });
+                                  }}
+                                  className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
+                                />
+                              </label>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -1087,7 +1321,7 @@ export default function ClientsManagementPage() {
                                       enabledReportKeys: Array.from(current),
                                     });
                                   }}
-                                  className="w-4 h-4 accent-[#2F8E86] rounded"
+                                  className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
                                 />
                               </label>
                             );
@@ -1108,7 +1342,7 @@ export default function ClientsManagementPage() {
                       }
                       className="px-4 py-2 bg-white hover:bg-[#E7F1F2] text-[#64748B] text-xs font-bold rounded-xl border border-[#D9E2E3] transition-colors cursor-pointer"
                     >
-                      Back
+                      ← Back
                     </button>
                   ) : (
                     <div />
@@ -1117,45 +1351,7 @@ export default function ClientsManagementPage() {
                   {onboardStep < 3 ? (
                     <button
                       type="button"
-                      onClick={() => {
-                        if (onboardStep === 1) {
-                          if (
-                            !onboardForm.organizationName ||
-                            !onboardForm.organizationCode
-                          ) {
-                            sweetAlert.warning(
-                              "Missing details",
-                              "Please enter organization name and code."
-                            );
-                            return;
-                          }
-                          const mobileErr = validateMobile(onboardForm.adminMobile || "", "Contact mobile");
-                          if (mobileErr) {
-                            sweetAlert.error("Invalid mobile number", mobileErr);
-                            return;
-                          }
-                        } else if (onboardStep === 2) {
-                          if (
-                            !onboardForm.adminUsername ||
-                            !onboardForm.adminPassword ||
-                            !onboardForm.adminFullName
-                          ) {
-                            sweetAlert.warning(
-                              "Missing details",
-                              "Please complete admin credentials."
-                            );
-                            return;
-                          }
-                          if (onboardForm.adminPassword.length < 6) {
-                            sweetAlert.error(
-                              "Password too short",
-                              "Initial password must be at least 6 characters long."
-                            );
-                            return;
-                          }
-                        }
-                        setOnboardStep((prev) => (prev + 1) as 1 | 2 | 3);
-                      }}
+                      onClick={handleNextStep}
                       className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                     >
                       Next Step →
@@ -1167,8 +1363,8 @@ export default function ClientsManagementPage() {
                       className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {submittingOnboard
-                        ? "Onboarding Client..."
-                        : "Complete Client Onboarding"}
+                        ? "Saving..."
+                        : "Save"}
                     </button>
                   )}
                 </div>
