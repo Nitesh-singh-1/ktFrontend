@@ -248,7 +248,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
 
     ${profile.activeStations && profile.activeStations.length > 0 ? `
     <div style="margin-top: 10px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; color: #111;">
-      <span style="font-weight: 800; color: #000; margin-right: 6px;">STATIONS:</span> ${profile.activeStations.map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim())).filter(Boolean).map(formatStationEntry).join(" &nbsp;·&nbsp; ")}
+      <span style="font-weight: 800; color: #000; margin-right: 6px;">STATIONS:</span> ${formatStationsList(profile.activeStations, 15)}
     </div>` : ""}
   </div>`;
 }
@@ -340,15 +340,62 @@ function inr(n: number): string {
   return (n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function formatStationEntry(raw: string): string {
-  const clean = raw.trim();
+export interface ParsedStation {
+  name: string;
+  phone?: string;
+}
+
+export function parseStationEntry(raw: string): ParsedStation | null {
+  const clean = raw.includes("·") ? raw.split("·").slice(1).join("·").trim() : raw.trim();
+  if (!clean) return null;
   const match = clean.match(/^([^()]+?)(?:\s*\((?:Ph:\s*)?([^)]+)\))?$/i);
-  if (match && match[2]) {
-    const stationName = match[1].trim();
-    const phone = match[2].trim().replace(/^Ph:\s*/i, "");
-    return `<strong>${esc(stationName)}</strong> (<strong>${esc(phone)}</strong>)`;
+  if (match) {
+    const name = match[1].trim();
+    const phone = match[2] ? match[2].trim().replace(/^Ph:\s*/i, "") : undefined;
+    return { name, phone };
   }
-  return `<strong>${esc(clean)}</strong>`;
+  return { name: clean };
+}
+
+/**
+ * Formats active stations footer strip according to rules:
+ * 1. If <= 5 stations, shows up to 5 WITH phone numbers.
+ * 2. If > 5 stations, shows ONLY station names (NO phone numbers).
+ * 3. Caps at maxLimit so the printed bill never overflows or spills onto a 2nd page.
+ */
+export function formatStationsList(rawStations: string[] = [], maxLimit = 12): string {
+  const parsed = rawStations
+    .map(parseStationEntry)
+    .filter((s): s is ParsedStation => s !== null && s.name.length > 0);
+
+  if (parsed.length === 0) return "";
+
+  // <= 5 stations: Show with phone number
+  if (parsed.length <= 5) {
+    return parsed
+      .map((s) => {
+        if (s.phone) {
+          return `<strong>${esc(s.name)}</strong> (<strong>${esc(s.phone)}</strong>)`;
+        }
+        return `<strong>${esc(s.name)}</strong>`;
+      })
+      .join(" &nbsp;·&nbsp; ");
+  }
+
+  // > 5 stations: Do NOT show phone numbers, only station names, capped at maxLimit
+  const visible = parsed.slice(0, maxLimit);
+  return visible
+    .map((s) => `<strong>${esc(s.name)}</strong>`)
+    .join(" &nbsp;·&nbsp; ");
+}
+
+export function formatStationEntry(raw: string): string {
+  const s = parseStationEntry(raw);
+  if (!s) return "";
+  if (s.phone) {
+    return `<strong>${esc(s.name)}</strong> (<strong>${esc(s.phone)}</strong>)`;
+  }
+  return `<strong>${esc(s.name)}</strong>`;
 }
 
 export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): string {
@@ -418,14 +465,13 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     return parts.length > 0 ? parts[parts.length - 1] : loc.trim();
   };
 
-  // Footer strip: list of station names pulled from tenant profile. Names and phones are bolded without "Ph:".
+  // Footer strip: list of station names pulled from tenant profile.
+  // <= 5 stations show with phone number; > 5 stations show only station names up to 12.
   const stationsRaw = profile.activeStations || [];
-  const stationNames = stationsRaw
-    .map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim()))
-    .filter(Boolean);
+  const stationsContent = formatStationsList(stationsRaw, 12);
   const stationsStrip =
-    stationNames.length > 0
-      ? `<span class="stations-label">STATIONS:</span> ${stationNames.map(formatStationEntry).join(" &nbsp;·&nbsp; ")}`
+    stationsContent.length > 0
+      ? `<span class="stations-label">STATIONS:</span> ${stationsContent}`
       : `For ${esc(profile.companyName)}`;
 
   return `
