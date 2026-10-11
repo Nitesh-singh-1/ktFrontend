@@ -47,6 +47,28 @@ function esc(s: unknown): string {
   );
 }
 
+export function isShipmentWithGst(shipment: Shipment): boolean {
+  if (shipment.taxTreatment === TaxTreatment.NonTaxable || shipment.taxTreatment === TaxTreatment.Exempt) {
+    return false;
+  }
+  return (
+    shipment.taxTreatment === TaxTreatment.GST_Regular ||
+    shipment.taxTreatment === TaxTreatment.GST_RCM ||
+    shipment.taxTreatment === TaxTreatment.CustomTax ||
+    Number(shipment.totalTaxAmount) > 0 ||
+    Boolean(shipment.gstPaidBy)
+  );
+}
+
+export function getGstPaidByLabel(paidBy?: string): string {
+  if (!paidBy) return "CONSIGNEE";
+  const s = paidBy.trim().toUpperCase();
+  if (s.includes("TRANS")) return "TRANSPORTER";
+  if (s.includes("CONSIGNEE")) return "CONSIGNEE";
+  if (s.includes("CONSIGNOR") || s.includes("CONSIGNER")) return "CONSIGNOR";
+  return s;
+}
+
 // ============================================================================
 // STANDARD PRESET — original spacious per-copy template (pre-2026-09-28).
 // Kept as the default so existing clients get exactly what they had before.
@@ -54,15 +76,13 @@ function esc(s: unknown): string {
 
 export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef): string {
   const profile = getTenantPrintProfile();
+  const withGst = isShipmentWithGst(shipment);
 
-  const taxTreatmentLabel =
-    shipment.taxTreatment === TaxTreatment.GST_Regular
-      ? "TAX INVOICE / CONSIGNMENT NOTE (GST REGULAR)"
-      : shipment.taxTreatment === TaxTreatment.GST_RCM
+  const taxTreatmentLabel = withGst
+    ? shipment.taxTreatment === TaxTreatment.GST_RCM
       ? "CONSIGNMENT NOTE (UNDER REVERSE CHARGE MECHANISM)"
-      : shipment.taxTreatment === TaxTreatment.Exempt
-      ? "CONSIGNMENT NOTE (EXEMPTED COMMODITY)"
-      : "CONSIGNMENT NOTE / WAYBILL";
+      : "TAX INVOICE / CONSIGNMENT NOTE (GST REGULAR)"
+    : "CONSIGNMENT NOTE / WAYBILL";
 
   const paymentTermLabel =
     shipment.paymentTerm === PaymentTerm.Paid
@@ -127,7 +147,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
                 ${esc(profile.tagline || "Fleet & Logistics Management Platform")}
               </div>
               <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-                ${profile.address ? `Head Office: ${esc(profile.address)}` : ""} ${profile.phone ? `• Ph: ${esc(profile.phone)}` : ""} ${profile.gstin ? `• GSTIN: ${esc(profile.gstin)}` : ""}
+                ${profile.address ? `Head Office: ${esc(profile.address)}` : ""} ${profile.phone ? `• Ph: ${esc(profile.phone)}` : ""} ${withGst && profile.gstin ? `• GSTIN: ${esc(profile.gstin)}` : ""}
               </div>
             </div>
           </div>
@@ -198,7 +218,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       <div>
         <div class="info-box-title" style="font-weight: bold; margin-bottom: 6px;">ANCILLARY CHARGES BREAKDOWN</div>
         ${chargesHtml || `<div style="font-size: 11px; color: #64748b;">No extra charges attached.</div>`}
-        <div style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #111; text-transform: uppercase;">GST Paid by Consignee</div>
+        ${withGst ? `<div style="margin-top: 8px; font-size: 12px; font-weight: bold; color: #111; text-transform: uppercase;">GST PAID BY ${esc(getGstPaidByLabel(shipment.gstPaidBy))}</div>` : ""}
         <div style="margin-top: 6px; font-size: 11px; font-weight: bold; color: #333; text-transform: uppercase;">* TERMS &amp; CONDITION</div>
         <div style="margin-top: 2px; font-size: 10px; color: #555; line-height: 1.3;">
           ${shipment.remarks ? `${esc(shipment.remarks)}<br>` : ""}
@@ -209,7 +229,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
       <div class="ledger-box">
         <div class="ledger-line"><span>Freight Amount:</span><span>₹${(shipment.totalFreight || 0).toFixed(2)}</span></div>
         <div class="ledger-line"><span>Other / Hamali / Misc:</span><span>₹${(shipment.totalOtherCharges || 0).toFixed(2)}</span></div>
-        ${shipment.totalTaxAmount ? `<div class="ledger-line"><span>GST / Tax Amount:</span><span>₹${(shipment.totalTaxAmount || 0).toFixed(2)}</span></div>` : ""}
+        ${withGst ? `<div class="ledger-line"><span>GST / Tax Amount:</span><span>₹${(Number(shipment.totalTaxAmount) || 0).toFixed(2)}</span></div>` : ""}
         <div class="grand-total-line"><span>GRAND TOTAL:</span><span>₹${(shipment.grandTotal || 0).toFixed(2)}</span></div>
         <div class="ledger-line" style="margin-top: 4px;"><span>Paid / Advance:</span><span>₹${(shipment.paidAmount || 0).toFixed(2)}</span></div>
         <div class="ledger-line" style="font-weight: bold; color: #b91c1c;"><span>Balance Due:</span><span>₹${(shipment.dueAmount || 0).toFixed(2)}</span></div>
@@ -228,7 +248,7 @@ export function renderBiltyBodyStandard(shipment: Shipment, copy?: BiltyCopyDef)
 
     ${profile.activeStations && profile.activeStations.length > 0 ? `
     <div style="margin-top: 10px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; color: #111;">
-      <span style="font-weight: 800; color: #000; margin-right: 6px;">STATIONS:</span> ${profile.activeStations.map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim())).filter(Boolean).map(formatStationEntry).join(" &nbsp;·&nbsp; ")}
+      <span style="font-weight: 800; color: #000; margin-right: 6px;">STATIONS:</span> ${formatStationsList(profile.activeStations, 15)}
     </div>` : ""}
   </div>`;
 }
@@ -320,25 +340,73 @@ function inr(n: number): string {
   return (n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function formatStationEntry(raw: string): string {
-  const clean = raw.trim();
+export interface ParsedStation {
+  name: string;
+  phone?: string;
+}
+
+export function parseStationEntry(raw: string): ParsedStation | null {
+  const clean = raw.includes("·") ? raw.split("·").slice(1).join("·").trim() : raw.trim();
+  if (!clean) return null;
   const match = clean.match(/^([^()]+?)(?:\s*\((?:Ph:\s*)?([^)]+)\))?$/i);
-  if (match && match[2]) {
-    const stationName = match[1].trim();
-    const phone = match[2].trim().replace(/^Ph:\s*/i, "");
-    return `<strong>${esc(stationName)}</strong> (<strong>${esc(phone)}</strong>)`;
+  if (match) {
+    const name = match[1].trim();
+    const phone = match[2] ? match[2].trim().replace(/^Ph:\s*/i, "") : undefined;
+    return { name, phone };
   }
-  return `<strong>${esc(clean)}</strong>`;
+  return { name: clean };
+}
+
+/**
+ * Formats active stations footer strip according to rules:
+ * 1. If <= 5 stations, shows up to 5 WITH phone numbers.
+ * 2. If > 5 stations, shows ONLY station names (NO phone numbers).
+ * 3. Caps at maxLimit so the printed bill never overflows or spills onto a 2nd page.
+ */
+export function formatStationsList(rawStations: string[] = [], maxLimit = 12): string {
+  const parsed = rawStations
+    .map(parseStationEntry)
+    .filter((s): s is ParsedStation => s !== null && s.name.length > 0);
+
+  if (parsed.length === 0) return "";
+
+  // <= 5 stations: Show with phone number
+  if (parsed.length <= 5) {
+    return parsed
+      .map((s) => {
+        if (s.phone) {
+          return `<strong>${esc(s.name)}</strong> (<strong>${esc(s.phone)}</strong>)`;
+        }
+        return `<strong>${esc(s.name)}</strong>`;
+      })
+      .join(" &nbsp;·&nbsp; ");
+  }
+
+  // > 5 stations: Do NOT show phone numbers, only station names, capped at maxLimit
+  const visible = parsed.slice(0, maxLimit);
+  return visible
+    .map((s) => `<strong>${esc(s.name)}</strong>`)
+    .join(" &nbsp;·&nbsp; ");
+}
+
+export function formatStationEntry(raw: string): string {
+  const s = parseStationEntry(raw);
+  if (!s) return "";
+  if (s.phone) {
+    return `<strong>${esc(s.name)}</strong> (<strong>${esc(s.phone)}</strong>)`;
+  }
+  return `<strong>${esc(s.name)}</strong>`;
 }
 
 export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): string {
   const profile = getTenantPrintProfile();
+  const withGst = isShipmentWithGst(shipment);
 
   // Tenant's own GSTIN (the transporter's — e.g. "Nitesh Transports"
   // GSTIN in the header) is printed only when the bilty is a GST tax
   // invoice. Non-Taxable / Without-GST hides it. Consignor / consignee
   // GSTINs are party data and stay visible whenever present.
-  const showGstin = shipment.taxTreatment !== TaxTreatment.NonTaxable;
+  const showGstin = withGst;
 
   const items = shipment.items && shipment.items.length > 0 ? shipment.items : [];
 
@@ -397,14 +465,13 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
     return parts.length > 0 ? parts[parts.length - 1] : loc.trim();
   };
 
-  // Footer strip: list of station names pulled from tenant profile. Names and phones are bolded without "Ph:".
+  // Footer strip: list of station names pulled from tenant profile.
+  // <= 5 stations show with phone number; > 5 stations show only station names up to 12.
   const stationsRaw = profile.activeStations || [];
-  const stationNames = stationsRaw
-    .map((s) => (s.includes("·") ? s.split("·").slice(1).join("·").trim() : s.trim()))
-    .filter(Boolean);
+  const stationsContent = formatStationsList(stationsRaw, 12);
   const stationsStrip =
-    stationNames.length > 0
-      ? `<span class="stations-label">STATIONS:</span> ${stationNames.map(formatStationEntry).join(" &nbsp;·&nbsp; ")}`
+    stationsContent.length > 0
+      ? `<span class="stations-label">STATIONS:</span> ${stationsContent}`
       : `For ${esc(profile.companyName)}`;
 
   return `
@@ -488,6 +555,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
             <div class="charge-label">Freight</div><div class="charge-value">₹ ${inr(freight)}</div>
             <div class="charge-label">Hamali</div><div class="charge-value">₹ ${inr(hamali)}</div>
             <div class="charge-label">Other</div><div class="charge-value">₹ ${inr(otherCharges)}</div>
+            ${withGst ? `<div class="charge-label">GST / Tax</div><div class="charge-value">₹ ${inr(shipment.totalTaxAmount || 0)}</div>` : ""}
             <div class="charge-label charge-total">GRAND TOTAL</div><div class="charge-value charge-total">₹ ${inr(grandTotal)}</div>
             <div class="charge-label charge-pay-type">BILL TYPE</div><div class="charge-value charge-pay-type">${esc(paymentTermLabel)}</div>
           </div>
@@ -500,7 +568,7 @@ export function renderBiltyBodyDense(shipment: Shipment, copy?: BiltyCopyDef): s
         <span class="words-bar-label">AMOUNT IN WORDS:</span>
         <span class="words-bar-value">${esc(numberToWords(grandTotal))}</span>
       </div>
-      <div class="gst-paid-badge">GST PAID BY CONSIGNEE</div>
+      ${withGst ? `<div class="gst-paid-badge">GST PAID BY ${esc(getGstPaidByLabel(shipment.gstPaidBy))}</div>` : ""}
     </div>
 
     <div class="bottom">

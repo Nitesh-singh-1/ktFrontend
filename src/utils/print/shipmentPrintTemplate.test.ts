@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderBiltyBodyDense, renderBiltyBodyStandard } from "./shipmentPrintTemplate";
+import { renderBiltyBodyDense, renderBiltyBodyStandard, formatStationsList } from "./shipmentPrintTemplate";
 import { Shipment, TaxTreatment, PaymentTerm, ShipmentStatus } from "@/types/shipment";
 
 const mockShipmentSingleItem = {
@@ -105,5 +105,110 @@ describe("Bilty print templates", () => {
     const html = renderBiltyBodyStandard(mockShipmentSingleItem);
     expect(html).toContain("P-Marka: <strong>PM-456</strong>");
     expect(html).not.toContain("Private Marka: <strong>PM-456</strong>");
+  });
+
+  it("prints GST PAID BY TRANSPORTER when Transporter is selected for GST liability", () => {
+    const shipmentTransporterGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.GST_Regular,
+      gstPaidBy: "Transporter",
+      totalTaxAmount: 60,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentTransporterGst);
+    expect(standardHtml).toContain("GST PAID BY TRANSPORTER");
+    expect(standardHtml).toContain("GST / Tax Amount:");
+
+    const denseHtml = renderBiltyBodyDense(shipmentTransporterGst);
+    expect(denseHtml).toContain('<div class="gst-paid-badge">GST PAID BY TRANSPORTER</div>');
+    expect(denseHtml).toContain('<div class="charge-label">GST / Tax</div>');
+  });
+
+  it("prints GST PAID BY CONSIGNOR when Consignor is selected for GST liability", () => {
+    const shipmentConsignorGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.GST_Regular,
+      gstPaidBy: "Consignor",
+      totalTaxAmount: 60,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentConsignorGst);
+    expect(standardHtml).toContain("GST PAID BY CONSIGNOR");
+
+    const denseHtml = renderBiltyBodyDense(shipmentConsignorGst);
+    expect(denseHtml).toContain('<div class="gst-paid-badge">GST PAID BY CONSIGNOR</div>');
+  });
+
+  it("does NOT print GST or GST PAID BY badge when Without GST (NonTaxable) is selected", () => {
+    const shipmentWithoutGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.NonTaxable,
+      gstPaidBy: undefined,
+      totalTaxAmount: 0,
+    } as unknown as Shipment;
+
+    const standardHtml = renderBiltyBodyStandard(shipmentWithoutGst);
+    expect(standardHtml).not.toContain("GST PAID BY");
+    expect(standardHtml).not.toContain("GST / Tax Amount:");
+
+    const denseHtml = renderBiltyBodyDense(shipmentWithoutGst);
+    expect(denseHtml).not.toContain("gst-paid-badge");
+    expect(denseHtml).not.toContain('<div class="charge-label">GST / Tax</div>');
+  });
+
+  describe("Station strip rules", () => {
+    it("shows up to 5 stations WITH phone number when stations count is <= 5", () => {
+      const stations = [
+        "PAT · Patna (Ph: 9430492601)",
+        "GAY · Gaya (Ph: 9430492602)",
+        "RAN · Ranchi (Ph: 9430492603)",
+      ];
+
+      const html = formatStationsList(stations, 12);
+      expect(html).toContain("<strong>Patna</strong> (<strong>9430492601</strong>)");
+      expect(html).toContain("<strong>Gaya</strong> (<strong>9430492602</strong>)");
+      expect(html).toContain("<strong>Ranchi</strong> (<strong>9430492603</strong>)");
+    });
+
+    it("does NOT show phone numbers when stations count is > 5 (only station names)", () => {
+      const stations = [
+        "PAT · Patna (Ph: 9430492601)",
+        "GAY · Gaya (Ph: 9430492602)",
+        "RAN · Ranchi (Ph: 9430492603)",
+        "MUZ · Muzaffarpur (Ph: 9430492604)",
+        "BHA · Bhagalpur (Ph: 9430492605)",
+        "DAR · Darbhanga (Ph: 9430492606)",
+        "PUR · Purnia (Ph: 9430492607)",
+      ];
+
+      const html = formatStationsList(stations, 12);
+      // All station names are present
+      expect(html).toContain("<strong>Patna</strong>");
+      expect(html).toContain("<strong>Gaya</strong>");
+      expect(html).toContain("<strong>Darbhanga</strong>");
+      expect(html).toContain("<strong>Purnia</strong>");
+
+      // ZERO phone numbers should be printed
+      expect(html).not.toContain("9430492601");
+      expect(html).not.toContain("9430492606");
+      expect(html).not.toContain("(");
+      expect(html).not.toContain(")");
+    });
+
+    it("caps displayed stations at maxLimit when stations count exceeds limit to prevent print layout failure", () => {
+      const stations = Array.from({ length: 20 }, (_, i) => `ST${i + 1} · Station ${i + 1} (Ph: 900000000${i})`);
+
+      const html = formatStationsList(stations, 10);
+      // Top 10 are rendered
+      expect(html).toContain("<strong>Station 1</strong>");
+      expect(html).toContain("<strong>Station 10</strong>");
+
+      // Stations past limit 10 are NOT rendered
+      expect(html).not.toContain("<strong>Station 11</strong>");
+      expect(html).not.toContain("<strong>Station 20</strong>");
+
+      // No phone numbers since count > 5
+      expect(html).not.toContain("900000000");
+    });
   });
 });
