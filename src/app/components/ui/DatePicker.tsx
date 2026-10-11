@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -21,6 +22,7 @@ export interface DatePickerProps {
   align?: "left" | "right";
   direction?: "down" | "up" | "auto";
   disableFutureDates?: boolean;
+  size?: "sm" | "md";
 }
 
 const MONTH_NAMES = [
@@ -57,12 +59,20 @@ export function DatePicker({
   disabled = false,
   align = "right",
   direction = "auto",
-  disableFutureDates = true,
+  disableFutureDates = false,
+  size = "md",
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<"days" | "months" | "years">("days");
+  const [coords, setCoords] = useState<{ top?: number; bottom?: number; left: number }>({ left: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const today = new Date();
   const todayYear = today.getFullYear();
@@ -76,26 +86,74 @@ export function DatePicker({
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
 
+  const updateCoords = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+    const popoverHeight = 330;
+    const shouldOpenUp = direction === "up" || (direction === "auto" && spaceBelow < popoverHeight && spaceAbove > spaceBelow);
+    setOpenUpward(shouldOpenUp);
+
+    const popoverWidth = 280;
+    let left = align === "right" ? rect.right - popoverWidth : rect.left;
+    if (left + popoverWidth > window.innerWidth - 12) {
+      left = window.innerWidth - popoverWidth - 12;
+    }
+    if (left < 12) left = 12;
+
+    if (shouldOpenUp) {
+      const topIfBottomPinned = rect.top - 6 - popoverHeight;
+      if (topIfBottomPinned < 12) {
+        setCoords({
+          top: 12,
+          left,
+        });
+      } else {
+        setCoords({
+          bottom: window.innerHeight - rect.top + 6,
+          left,
+        });
+      }
+    } else {
+      const bottomIfTopPinned = rect.bottom + 6 + popoverHeight;
+      if (bottomIfTopPinned > window.innerHeight - 12) {
+        setCoords({
+          bottom: 12,
+          left,
+        });
+      } else {
+        setCoords({
+          top: rect.bottom + 6,
+          left,
+        });
+      }
+    }
+  };
+
   // Determine upward opening on trigger click or direction prop
   const handleToggleOpen = () => {
     if (disabled) return;
     if (!isOpen) {
-      if (direction === "up") {
-        setOpenUpward(true);
-      } else if (direction === "down") {
-        setOpenUpward(false);
-      } else if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        // If less than 320px below container, open upward
-        setOpenUpward(spaceBelow < 320);
-      }
+      updateCoords();
       setViewMode("days");
       setIsOpen(true);
     } else {
       setIsOpen(false);
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updateCoords();
+    const handleScrollOrResize = () => updateCoords();
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (value) {
@@ -110,7 +168,13 @@ export function DatePicker({
   // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false);
         setViewMode("days");
       }
@@ -215,14 +279,25 @@ export function DatePicker({
       })()
     : false;
 
-  // Year choices (2020 to todayYear)
+  // Year choices (allow past years and future years for compliance/expiry dates)
+  const maxYear = effectiveMaxDate
+    ? new Date(effectiveMaxDate + "T00:00:00").getFullYear()
+    : todayYear + 15;
+  const minYear = minDate
+    ? new Date(minDate + "T00:00:00").getFullYear()
+    : Math.min(2015, todayYear - 10);
   const yearsList = Array.from(
-    { length: Math.max(1, todayYear - 2019) },
-    (_, i) => 2020 + i
+    { length: Math.max(1, maxYear - minYear + 1) },
+    (_, i) => minYear + i
   ).reverse();
 
   return (
-    <div className={`relative ${className.includes("w-") ? "" : "inline-block"} ${className}`} ref={containerRef}>
+    <div
+      className={`relative ${isOpen ? "z-[70]" : "z-auto"} ${
+        className.includes("w-") ? "" : "inline-block"
+      } ${className}`}
+      ref={containerRef}
+    >
       {label && (
         <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
           {label}
@@ -234,7 +309,7 @@ export function DatePicker({
         type="button"
         disabled={disabled}
         onClick={handleToggleOpen}
-        className={`w-full h-10 px-3 py-2 rounded-lg border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
+        className={`w-full ${size === "sm" ? "h-9 px-2.5 py-1" : "h-10 px-3 py-2"} rounded-lg border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
           isOpen
             ? "border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
             : "border-[#D9E2E3] dark:border-slate-700 hover:border-[#2F8E86]/60"
@@ -262,14 +337,18 @@ export function DatePicker({
         )}
       </button>
 
-      {/* Calendar Popover (Z-index 100 with auto upward/downward smart positioning) */}
-      {isOpen && (
+      {/* Calendar Popover (Rendered in Portal at z-[99999] so never clipped by table/modal overflow) */}
+      {mounted && isOpen && createPortal(
         <div
-          className={`absolute ${
-            align === "left" ? "left-0" : "right-0"
-          } ${
-            openUpward ? "bottom-full mb-1.5" : "top-full mt-1.5"
-          } z-[100] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#D9E2E3] dark:border-slate-800 p-3.5 w-[280px] animate-in fade-in zoom-in-95 duration-150`}
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            top: coords.top !== undefined ? `${coords.top}px` : "auto",
+            bottom: coords.bottom !== undefined ? `${coords.bottom}px` : "auto",
+            left: `${coords.left}px`,
+            zIndex: 99999,
+          }}
+          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#D9E2E3] dark:border-slate-800 p-3.5 w-[280px] animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Header Navigation */}
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-800">
@@ -454,7 +533,8 @@ export function DatePicker({
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

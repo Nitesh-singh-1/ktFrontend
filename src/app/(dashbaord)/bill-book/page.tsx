@@ -297,15 +297,6 @@ function BillBookContent() {
     return totals;
   }, [dynamicChargeCols, billedShipmentsForPrint]);
 
-  // Qty × Rate column total.
-  const qtyRateTotal = useMemo(
-    () =>
-      billedShipmentsForPrint.reduce(
-        (sum, s) => sum + (Number(s.rate) || 0) * (Number(s.totalPackages) || 1),
-        0
-      ),
-    [billedShipmentsForPrint]
-  );
 
   // Selected Party Metadata
   const currentPartyInfo = useMemo(() => {
@@ -389,7 +380,8 @@ function BillBookContent() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <>
+      <div className={`p-6 max-w-7xl mx-auto space-y-6 ${isPrintModalOpen ? "print:hidden" : ""}`}>
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -978,31 +970,67 @@ function BillBookContent() {
           </div>
         </div>
       )}
+      </div>
 
       {/* ========================================================================= */}
       {/* AUTHENTIC PRINTABLE FREIGHT BILL PREVIEW MODAL                            */}
       {/* ========================================================================= */}
       {isPrintModalOpen && generatedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm print:p-0 print:bg-white print:fixed print:inset-0">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:backdrop-blur-none print:overflow-visible">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-5xl w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0 print:m-0 print:w-full print:rounded-none">
+            {/* Global Print Styles for Perfect Top-of-Page A4 Landscape Rendering */}
+            <style jsx global>{`
+              @media print {
+                @page {
+                  size: A4 landscape;
+                  margin: 6mm 8mm;
+                }
+                html, body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: #ffffff !important;
+                  height: auto !important;
+                  min-height: 0 !important;
+                  overflow: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                .bill-book-print-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  padding: 8px 12px !important;
+                  border: 1.5px solid #000 !important;
+                  box-sizing: border-box !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                }
+              }
+            `}</style>
+
             {/* Modal Controls (Hidden in Print) */}
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-200 dark:border-gray-800 print:hidden">
               <div className="flex items-center gap-2">
                 <Printer className="w-6 h-6 text-indigo-600" />
-                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                  Freight Bill Preview — #{generatedInvoice.invoiceNo}
-                </h2>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    Freight Bill Preview — #{generatedInvoice.invoiceNo}
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Formatted for A4 Landscape print — starts right at top of page
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handlePrint}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow transition-colors cursor-pointer"
                 >
-                  <Printer className="w-4 h-4" /> Print Bill (A4)
+                  <Printer className="w-4 h-4" /> Print Bill (A4 Landscape)
                 </button>
                 <button
                   onClick={() => setIsPrintModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1070,75 +1098,67 @@ function BillBookContent() {
                 )}
               </div>
 
-              {/* Fixed cols: Sl, Date, GrNo, Pkg, Destination, Wt, D.Date, Rate, Qty×Rate.
-                  Dynamic cols: one per distinct chargeName across selected bilties.
-                  Fixed-right cols: Amount (₹), Remark. */}
-              <table className="w-full border-collapse border border-black text-xs font-sans mb-3 table-fixed">
+              {/* Consolidated Bilties Table (Without Qty×Rate; spacious Destination column) */}
+              <table className="w-full border-collapse border border-black text-xs font-sans mb-3">
                 <thead>
                   <tr className="bg-gray-100 border-b border-black text-center font-bold">
-                    <th className="border border-black py-1.5 px-1 w-8">Sl.</th>
-                    <th className="border border-black py-1.5 px-2 w-20">Date</th>
-                    <th className="border border-black py-1.5 px-2 w-24">GrNo</th>
-                    <th className="border border-black py-1.5 px-1 w-12">Pkg</th>
-                    <th className="border border-black py-1.5 px-2">Destination</th>
-                    <th className="border border-black py-1.5 px-1 w-14">Wt (Kg)</th>
-                    <th className="border border-black py-1.5 px-2 w-20">D.Date</th>
-                    <th className="border border-black py-1.5 px-2 w-14">Rate</th>
-                    <th className="border border-black py-1.5 px-2 w-16 min-w-[64px]">Qty×Rate</th>
+                    <th className="border border-black py-1.5 px-1 w-8 text-center">Sl.</th>
+                    <th className="border border-black py-1.5 px-2 w-20 text-center whitespace-nowrap">Date</th>
+                    <th className="border border-black py-1.5 px-2 w-28 text-center whitespace-nowrap">GrNo</th>
+                    <th className="border border-black py-1.5 px-1 w-12 text-center">Pkg</th>
+                    <th className="border border-black py-1.5 px-2 text-left w-44 min-w-[140px]">Destination</th>
+                    <th className="border border-black py-1.5 px-1 w-16 text-center whitespace-nowrap">Wt (Kg)</th>
+                    <th className="border border-black py-1.5 px-2 w-20 text-center whitespace-nowrap">D.Date</th>
+                    <th className="border border-black py-1.5 px-2 w-16 text-right whitespace-nowrap">Rate</th>
                     {dynamicChargeCols.map((name) => (
                       <th
                         key={name}
-                        className="border border-black py-1.5 px-1 w-16 min-w-[64px]"
+                        className="border border-black py-1.5 px-1 w-16 min-w-[60px] text-right whitespace-nowrap"
                       >
                         {name}
                       </th>
                     ))}
-                    <th className="border border-black py-1.5 px-2 w-24 text-right">Amount (₹)</th>
-                    <th className="border border-black py-1.5 px-2 w-20">Remark</th>
+                    <th className="border border-black py-1.5 px-2 w-28 text-right whitespace-nowrap">Amount (₹)</th>
+                    <th className="border border-black py-1.5 px-2 w-24 text-left">Remark</th>
                   </tr>
                 </thead>
                 <tbody>
                   {billedShipmentsForPrint.map((s, index) => {
                     const biltyAmount = s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
                     const qty = Number(s.totalPackages) || 1;
-                    const rate = Number(s.rate) || 0;
-                    const qtyRate = qty * rate;
                     return (
-                      <tr key={s.id || index} className="text-center border-b border-gray-400">
-                        <td className="border border-black py-1 px-1 font-mono">{index + 1}</td>
-                        <td className="border border-black py-1 px-1 font-mono whitespace-nowrap">
+                      <tr key={s.id || index} className="border-b border-gray-400">
+                        <td className="border border-black py-1 px-1 font-mono text-center">{index + 1}</td>
+                        <td className="border border-black py-1 px-1 font-mono whitespace-nowrap text-center">
                           {formatDate(s.shipmentDate)}
                         </td>
-                        <td className="border border-black py-1 px-1 font-mono font-bold">
+                        <td className="border border-black py-1 px-1 font-mono font-bold text-center whitespace-nowrap">
                           {s.shipmentNo}
                         </td>
-                        <td className="border border-black py-1 px-1 font-mono">{qty}</td>
-                        <td className="border border-black py-1 px-2 text-left truncate">
+                        <td className="border border-black py-1 px-1 font-mono text-center">{qty}</td>
+                        <td className="border border-black py-1 px-2 text-left whitespace-normal break-words font-medium">
                           {s.toLocation || "Destination"}
                         </td>
-                        <td className="border border-black py-1 px-1 font-mono">{s.totalWeightKg || 0}</td>
-                        <td className="border border-black py-1 px-1 font-mono whitespace-nowrap">
+                        <td className="border border-black py-1 px-1 font-mono text-center whitespace-nowrap">{s.totalWeightKg || 0}</td>
+                        <td className="border border-black py-1 px-1 font-mono whitespace-nowrap text-center">
                           {s.deliveryDate ? formatDate(s.deliveryDate) : "-"}
                         </td>
-                        <td className="border border-black py-1 px-1 font-mono">{s.rate || "-"}</td>
-                        <td className="border border-black py-1 px-1 font-mono">
-                          {qtyRate > 0 ? qtyRate : "-"}
-                        </td>
+                        <td className="border border-black py-1 px-2 font-mono text-right whitespace-nowrap">{s.rate ? s.rate : "-"}</td>
                         {dynamicChargeCols.map((name) => {
                           const match = s.chargeItems?.find((c) => c.chargeName === name);
                           return (
                             <td
                               key={name}
-                              className="border border-black py-1 px-1 font-mono"
+                              className="border border-black py-1 px-1 font-mono text-right whitespace-nowrap"
                             >
                               {match ? match.amount : ""}
                             </td>
                           );
                         })}
-                        <td className="border border-black py-1 px-2 text-right font-mono font-bold">
+                        <td className="border border-black py-1 px-2 text-right font-mono font-bold whitespace-nowrap">
                           {formatCurrency(biltyAmount)}
                         </td>
-                        <td className="border border-black py-1 px-2 truncate">{s.remarks || ""}</td>
+                        <td className="border border-black py-1 px-2 text-left truncate">{s.remarks || ""}</td>
                       </tr>
                     );
                   })}
@@ -1156,13 +1176,10 @@ function BillBookContent() {
                       {printTotals.wtTotal}
                     </td>
                     <td colSpan={2} className="border border-black py-1.5 px-1"></td>
-                    <td className="border border-black py-1.5 px-1 font-mono text-center">
-                      {qtyRateTotal > 0 ? qtyRateTotal : ""}
-                    </td>
                     {dynamicChargeCols.map((name) => (
                       <td
                         key={name}
-                        className="border border-black py-1.5 px-1 font-mono text-center"
+                        className="border border-black py-1.5 px-1 font-mono text-right font-bold"
                       >
                         {dynamicChargeTotals[name] > 0 ? dynamicChargeTotals[name] : ""}
                       </td>
@@ -1178,8 +1195,8 @@ function BillBookContent() {
               {/* Amount in words */}
               <div className="border border-black p-2 mb-3 text-xs font-sans">
                 <span className="font-bold">Amount in Words: </span>
-                <span className="italic font-serif">
-                  Rupees {numberToWords(Math.round(generatedInvoice.grandTotal))} Only.
+                <span className="italic font-serif font-semibold">
+                  {numberToWords(Math.round(generatedInvoice.grandTotal))}
                 </span>
               </div>
 
@@ -1212,7 +1229,7 @@ function BillBookContent() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -168,3 +168,36 @@ aside::-webkit-scrollbar-thumb:hover {
     @apply px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/50 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3;
   }
 }
+
+/* =========================================================================
+   Global Print Styles — Always print starting right at the top of the page
+   ========================================================================= */
+@media print {
+  @page {
+    margin-top: 6mm;
+    margin-bottom: 6mm;
+    margin-left: 8mm;
+    margin-right: 8mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When an isolated print portal exists, completely hide all other body children */
+  body:has(#challan-print-portal) > *:not(#challan-print-portal),
+  body:has([data-print-portal]) > *:not([data-print-portal]) {
+    display: none !important;
+  }
+}
+

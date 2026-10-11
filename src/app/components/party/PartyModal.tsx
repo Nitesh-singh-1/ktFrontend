@@ -5,6 +5,7 @@ import { Party, PartyType, PaymentTerm } from "@/types/shipment";
 import { partyService } from "services/partyService";
 import { INDIAN_STATES, getStateByGstNo } from "@/utils/indianStates";
 import { Users, X, AlertTriangle } from "lucide-react";
+import CustomSelect, { SelectOption } from "@/app/components/ui/CustomSelect";
 
 interface PartyModalProps {
   isOpen: boolean;
@@ -246,9 +247,9 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-visible my-4 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+        <div className="px-6 py-3.5 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 rounded-t-2xl">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
               <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg">
@@ -269,7 +270,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-visible rounded-b-2xl">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-[#D95C5C] shrink-0" />
@@ -277,7 +278,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
             </div>
           )}
 
-          {/* Party Type & Basic Info */}
+          {/* Row 1: Company Name & Alias */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
@@ -313,7 +314,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
             </div>
           </div>
 
-          {/* Role Type & Default Term */}
+          {/* Row 2: Role Type & Default Term */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F7F8F8] dark:bg-slate-800/40 p-3.5 rounded-xl border border-[#E5EAEB] dark:border-slate-800">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1.5">
@@ -345,20 +346,21 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1.5">
                 Default Payment Term
               </label>
-              <select
+              <CustomSelect
                 value={defaultPaymentTerm}
-                onChange={(e) => setDefaultPaymentTerm(Number(e.target.value))}
-                className="w-full h-9 px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] cursor-pointer"
-              >
-                <option value={PaymentTerm.ToPay}>To Pay (Consignee Paid)</option>
-                <option value={PaymentTerm.Paid}>Paid (Consignor Paid)</option>
-                <option value={PaymentTerm.TBB}>T.B.B. (To Be Billed / Credit)</option>
-              </select>
+                onChange={(val) => setDefaultPaymentTerm(Number(val))}
+                options={[
+                  { label: "To Pay (Consignee Paid)", value: PaymentTerm.ToPay },
+                  { label: "Paid (Consignor Paid)", value: PaymentTerm.Paid },
+                  { label: "T.B.B. (To Be Billed / Credit)", value: PaymentTerm.TBB },
+                ]}
+                className="w-full"
+              />
             </div>
           </div>
 
-          {/* Tax Identification (GSTIN & PAN) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Row 3: Tax Identification & Credit Limit */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
@@ -392,9 +394,23 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
                 className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] uppercase"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
+                Credit Limit (₹)
+              </label>
+              <input
+                type="number"
+                min="0"
+                placeholder="0"
+                value={creditLimit || ""}
+                onChange={(e) => setCreditLimit(Number(e.target.value))}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
+              />
+            </div>
           </div>
 
-          {/* Contacts (Person, Mobile, Email) */}
+          {/* Row 4: Contacts (Person, Mobile, Email) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
@@ -442,7 +458,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
             </div>
           </div>
 
-          {/* Address */}
+          {/* Row 5: Premises Address */}
           <div>
             <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
               Premises / Street Address
@@ -456,7 +472,7 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
             />
           </div>
 
-          {/* City, State Dropdown, Pincode (6 digits) */}
+          {/* Row 6: City, State, Pincode */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
@@ -475,17 +491,17 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 State (GST State Code)
               </label>
-              <select
+              <CustomSelect
                 value={state}
-                onChange={(e) => setState(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] cursor-pointer"
-              >
-                {INDIAN_STATES.map((s) => (
-                  <option key={s.code} value={s.name}>
-                    [{s.code}] {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setState(String(val))}
+                options={INDIAN_STATES.map((s) => ({
+                  label: `[${s.code}] ${s.name}`,
+                  value: s.name,
+                }))}
+                searchable={true}
+                direction="auto"
+                className="w-full"
+              />
             </div>
 
             <div>
@@ -509,33 +525,21 @@ export default function PartyModal({ isOpen, onClose, onSaved, initialParty }: P
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded text-[#2F8E86] focus:ring-[#2F8E86]"
-              />
-              <span>Active in Autocomplete Directory</span>
-            </label>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary"
-              >
-                {loading ? "Saving..." : initialParty ? "Update" : "Save"}
-              </button>
-            </div>
+          <div className="pt-4 border-t border-[#E5EAEB] dark:border-slate-800 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+            >
+              {loading ? "Saving..." : initialParty ? "Update Party" : "Save Party"}
+            </button>
           </div>
         </form>
       </div>

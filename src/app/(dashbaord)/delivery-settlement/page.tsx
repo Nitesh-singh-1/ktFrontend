@@ -80,7 +80,6 @@ function DeliverySettlementContent() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [paymentTermFilter, setPaymentTermFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("PENDING");
   const [partyFilter, setPartyFilter] = useState("ALL");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -127,16 +126,12 @@ function DeliverySettlementContent() {
         statusParam = parseInt(statusFilter, 10);
       }
 
-      let paymentTermParam: number | undefined = undefined;
-      if (paymentTermFilter !== "ALL" && paymentTermFilter !== "") {
-        paymentTermParam = parseInt(paymentTermFilter, 10);
-      }
-
+      // Strictly fetch ToPay consignments (Delivery Settlement is solely for collecting ToPay payments)
       const res = await shipmentService.getShipments({
         page,
         pageSize,
         status: statusParam,
-        paymentTerm: paymentTermParam,
+        paymentTerm: PaymentTerm.ToPay,
         search: searchTerm.trim() || undefined,
       });
 
@@ -144,7 +139,8 @@ function DeliverySettlementContent() {
         let list = res.data.filter(
           (s) =>
             s.status !== ShipmentStatus.Cancelled &&
-            s.status !== ShipmentStatus.Draft
+            s.status !== ShipmentStatus.Draft &&
+            (s.paymentTerm === PaymentTerm.ToPay || (s.paymentTerm as any) === 0)
         );
 
         // Filter by status on client if PENDING or PARTIAL
@@ -180,7 +176,7 @@ function DeliverySettlementContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, statusFilter, paymentTermFilter, partyFilter, searchQuery]);
+  }, [page, pageSize, statusFilter, partyFilter, searchQuery]);
 
   useEffect(() => {
     fetchShipments();
@@ -681,17 +677,11 @@ function DeliverySettlementContent() {
               className="w-full sm:w-auto min-w-[160px]"
             />
 
-            {/* Payment Term Dropdown */}
-            <CustomSelect
-              value={paymentTermFilter}
-              onChange={(val) => {
-                setPaymentTermFilter(String(val));
-                setPage(1);
-              }}
-              icon={<CreditCard className="w-3.5 h-3.5" />}
-              options={PAYMENT_TERM_OPTIONS}
-              className="w-full sm:w-auto min-w-[160px]"
-            />
+            {/* Payment Term Badge - Strictly ToPay Consignments */}
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-[#E7F1F2] dark:bg-teal-950/40 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30 rounded-xl text-xs font-semibold whitespace-nowrap">
+              <CreditCard className="w-3.5 h-3.5 text-[#2F8E86]" />
+              <span>ToPay Consignments Only</span>
+            </div>
 
             {/* Party Filter Dropdown */}
             <CustomSelect
@@ -938,14 +928,14 @@ function DeliverySettlementContent() {
         ]}
       />
 
-      {/* Delivery Settlement Modal (Wider max-w-2xl, strict conditional Remarks, fixed width dropdowns) */}
+      {/* Delivery Settlement Modal (Wider max-w-4xl, multi-column compact layout to prevent vertical scrolling) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5EAEB] dark:border-slate-800 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto scrollbar-thin">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl border border-[#E5EAEB] dark:border-slate-800 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto scrollbar-thin">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#E5EAEB] dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#E5EAEB] dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-teal-950/40 text-[#2F8E86] flex items-center justify-center font-bold shadow-2xs shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] dark:bg-teal-950/40 text-[#2F8E86] flex items-center justify-center font-bold shadow-2xs shrink-0">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -954,11 +944,11 @@ function DeliverySettlementContent() {
                       Delivery Settlement
                     </h3>
                     {activeShipment ? (
-                      <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30">
+                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30">
                         {activeShipment.shipmentNo}
                       </span>
                     ) : (
-                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30">
                         Bulk ({selectedIds.length} Consignments)
                       </span>
                     )}
@@ -977,14 +967,14 @@ function DeliverySettlementContent() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitSettlement} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmitSettlement} className="mt-4 space-y-3.5">
               {/* Financial Target Summary Card */}
-              <div className="p-4 bg-[#E7F1F2] dark:bg-teal-950/30 rounded-xl border border-[#2F8E86]/20 flex items-center justify-between">
+              <div className="px-4 py-2.5 bg-[#E7F1F2] dark:bg-teal-950/30 rounded-xl border border-[#2F8E86]/20 flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-[#25776F] dark:text-teal-300 font-bold uppercase tracking-wider block">
                     Total Due to Settle
                   </span>
-                  <div className="text-2xl font-bold text-[#111827] dark:text-white font-mono mt-0.5">
+                  <div className="text-xl font-bold text-[#111827] dark:text-white font-mono mt-0.5">
                     {formatCurrency(targetDueAmount)}
                   </div>
                 </div>
@@ -994,18 +984,14 @@ function DeliverySettlementContent() {
                       Payment Term
                     </span>
                     <div className="mt-1 inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-white dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#2F8E86]/30 shadow-2xs">
-                      {activeShipment.paymentTerm === PaymentTerm.ToPay || (activeShipment.paymentTerm as any) === 0
-                        ? "ToPay (Collect)"
-                        : activeShipment.paymentTerm === PaymentTerm.Paid || (activeShipment.paymentTerm as any) === 1
-                        ? "Paid (Prepaid)"
-                        : "TBB"}
+                      ToPay (Collect)
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Received & Discount Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Row 1: 3-column grid for key settlement financials */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
                     Amount Received (₹) <span className="text-rose-500 font-bold">*</span>
@@ -1024,7 +1010,7 @@ function DeliverySettlementContent() {
                 <div>
                   <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1 flex items-center gap-1">
                     <Percent className="w-3.5 h-3.5 text-amber-500" />
-                    <span>% Discount / Deduction (₹)</span>
+                    <span>% Deduction / Discount (₹)</span>
                   </label>
                   <input
                     type="text"
@@ -1035,44 +1021,7 @@ function DeliverySettlementContent() {
                     placeholder="0.00"
                   />
                 </div>
-              </div>
 
-              {/* Deduction Reason & Remarks (when discount entered) - Only show remarks when "Other" is chosen */}
-              {numDiscount > 0 && (
-                <div className="space-y-3 p-3.5 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/70 dark:border-amber-800/40">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
-                      Reason for Shortage / Deduction <span className="text-rose-500 font-bold">*</span>
-                    </label>
-                    <CustomSelect
-                      value={discountReason}
-                      onChange={(val) => setDiscountReason(String(val))}
-                      options={DEDUCTION_REASON_OPTIONS}
-                      className="w-full min-w-0"
-                    />
-                  </div>
-
-                  {/* Remark input is strictly displayed ONLY when "Other" reason is selected */}
-                  {discountReason === "Other" && (
-                    <div className="animate-in fade-in duration-150">
-                      <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
-                        Shortage / Deduction Reason Details <span className="text-rose-500 font-bold">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={discountRemarks}
-                        onChange={(e) => setDiscountRemarks(e.target.value)}
-                        placeholder="Specify reason for shortage / deduction..."
-                        className="w-full h-10 px-3.5 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-[#111827] dark:text-white shadow-2xs focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 focus:border-[#2F8E86]"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Payment Mode & Reference - Fixed length layout with min-w-0 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 min-w-0">
                 <div className="min-w-0">
                   <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
                     Payment Mode <span className="text-rose-500 font-bold">*</span>
@@ -1084,7 +1033,45 @@ function DeliverySettlementContent() {
                     className="w-full min-w-0"
                   />
                 </div>
+              </div>
 
+              {/* Deduction Reason & Details - 2 column layout when discount is entered */}
+              {numDiscount > 0 && (
+                <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/70 dark:border-amber-800/40">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
+                        Reason for Shortage / Deduction <span className="text-rose-500 font-bold">*</span>
+                      </label>
+                      <CustomSelect
+                        value={discountReason}
+                        onChange={(val) => setDiscountReason(String(val))}
+                        options={DEDUCTION_REASON_OPTIONS}
+                        className="w-full min-w-0"
+                      />
+                    </div>
+
+                    {discountReason === "Other" && (
+                      <div className="animate-in fade-in duration-150">
+                        <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
+                          Reason Details <span className="text-rose-500 font-bold">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={discountRemarks}
+                          onChange={(e) => setDiscountRemarks(e.target.value)}
+                          placeholder="Specify reason for shortage / deduction..."
+                          className="w-full h-10 px-3.5 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-[#111827] dark:text-white shadow-2xs focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 focus:border-[#2F8E86]"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Row 2: 3-column grid for Reference, Delivered To, and Delivery Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 min-w-0">
                 <div className="min-w-0">
                   <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
                     Ref / UTR / Cheque No
@@ -1097,10 +1084,7 @@ function DeliverySettlementContent() {
                     className="w-full h-10 px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 focus:border-[#2F8E86] text-[#111827] dark:text-white shadow-2xs"
                   />
                 </div>
-              </div>
 
-              {/* Delivered To & Date Picker */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
                     Delivered To (Person / Stamp)
@@ -1126,37 +1110,39 @@ function DeliverySettlementContent() {
                 </div>
               </div>
 
-              {/* Remarks */}
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
-                  Settlement Remarks / Delivery Notes
-                </label>
-                <textarea
-                  rows={2}
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Any handover comments, pod notes, or collection remarks..."
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 focus:border-[#2F8E86] text-[#111827] dark:text-white shadow-2xs"
-                />
-              </div>
+              {/* Row 3: Remarks and Summary Check side-by-side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
+                    Settlement Remarks / Delivery Notes
+                  </label>
+                  <input
+                    type="text"
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="Any handover comments, pod notes, or collection remarks..."
+                    className="w-full h-10 px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2F8E86]/30 focus:border-[#2F8E86] text-[#111827] dark:text-white shadow-2xs"
+                  />
+                </div>
 
-              {/* Summary Calculation Check */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs flex items-center justify-between text-[#64748B] dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
-                <span>
-                  Settled Amount: <strong className="text-[#111827] dark:text-slate-200 font-mono font-bold">{formatCurrency(totalSettled)}</strong>
-                </span>
-                <span>
-                  Remaining Balance:{" "}
-                  <strong
-                    className={`font-mono ${
-                      remainingBalance > 0
-                        ? "text-[#D95C5C] dark:text-red-400 font-bold"
-                        : "text-[#2F8E86] dark:text-teal-400 font-bold"
-                    }`}
-                  >
-                    {formatCurrency(remainingBalance)}
-                  </strong>
-                </span>
+                {/* Summary Calculation Check */}
+                <div className="h-10 px-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs flex items-center justify-between text-[#64748B] dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                  <span>
+                    Settled: <strong className="text-[#111827] dark:text-slate-200 font-mono font-bold">{formatCurrency(totalSettled)}</strong>
+                  </span>
+                  <span>
+                    Balance:{" "}
+                    <strong
+                      className={`font-mono ${
+                        remainingBalance > 0
+                          ? "text-[#D95C5C] dark:text-red-400 font-bold"
+                          : "text-[#2F8E86] dark:text-teal-400 font-bold"
+                      }`}
+                    >
+                      {formatCurrency(remainingBalance)}
+                    </strong>
+                  </span>
+                </div>
               </div>
 
               {/* Action Buttons */}

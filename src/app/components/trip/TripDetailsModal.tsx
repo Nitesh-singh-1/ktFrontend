@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { TripDto, TripStatus, TripExpenseType, PaymentTerm } from "@/types/tms";
 import { tripService } from "services/tripService";
 import { shipmentService } from "services/shipmentService";
@@ -26,6 +27,11 @@ export default function TripDetailsModal({
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Expense form state
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -171,8 +177,18 @@ export default function TripDetailsModal({
   const totalFreight = trip?.shipments?.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0) || trip?.totalFreightRevenue || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto ${
+        showPrintView
+          ? "print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:overflow-visible"
+          : ""
+      }`}
+    >
+      <div
+        className={`bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 w-full max-w-4xl overflow-hidden my-6 animate-in fade-in zoom-in duration-200 ${
+          showPrintView ? "print:hidden" : ""
+        }`}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
@@ -487,10 +503,103 @@ export default function TripDetailsModal({
         </div>
       </div>
 
-      {/* Printable Pink Truck Challan Modal */}
-      {showPrintView && trip && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full p-6 text-slate-900 dark:text-slate-100 space-y-4 max-h-[92vh] overflow-y-auto print:p-0 print:m-0 print:max-w-none print:shadow-none print:rounded-none">
+      {/* Printable Pink Truck Challan Modal (Portaled directly to document.body for clean print isolation) */}
+      {mounted && showPrintView && trip && createPortal(
+        <div
+          id="challan-print-portal"
+          data-print-portal="true"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs overflow-y-auto print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:overflow-visible"
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full p-6 text-slate-900 dark:text-slate-100 space-y-4 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0 print:m-0 print:w-full print:rounded-none print:block">
+            {/* Global Print Styles for Perfect Top-of-Page A4 Rendering */}
+            <style jsx global>{`
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 6mm 8mm;
+                }
+
+                /* HIDE ALL OTHER ELEMENTS IN DOCUMENT BODY EXCEPT THE CHALLAN PRINT PORTAL */
+                body > *:not(#challan-print-portal) {
+                  display: none !important;
+                }
+
+                html, body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: #ffffff !important;
+                  height: auto !important;
+                  min-height: 0 !important;
+                  overflow: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+
+                #challan-print-portal {
+                  position: static !important;
+                  display: block !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  width: 100% !important;
+                  background: #ffffff !important;
+                  overflow: visible !important;
+                }
+
+                #challan-print-portal > div {
+                  max-height: none !important;
+                  overflow: visible !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                  width: 100% !important;
+                  border-radius: 0 !important;
+                }
+
+                .pink-challan-slip {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  box-sizing: border-box !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  background: #ffffff !important;
+                  color: #000000 !important;
+                  border: 2px solid #000000 !important;
+                }
+
+                /* High contrast print optimization: crisp deep black text, borders & clean white background */
+                .pink-challan-slip * {
+                  color: #000000 !important;
+                  border-color: #000000 !important;
+                }
+
+                .pink-challan-slip table {
+                  background: #ffffff !important;
+                  border: 1px solid #000000 !important;
+                }
+
+                .pink-challan-slip thead tr {
+                  background: #f1f5f9 !important;
+                  border-bottom: 2px solid #000000 !important;
+                }
+
+                .pink-challan-slip tfoot tr {
+                  background: #f1f5f9 !important;
+                  border-top: 2px solid #000000 !important;
+                }
+
+                .pink-challan-slip .bg-white\/80,
+                .pink-challan-slip .bg-white\/70,
+                .pink-challan-slip .bg-rose-200\/50,
+                .pink-challan-slip .bg-rose-100\/70,
+                .pink-challan-slip .bg-rose-200\/90,
+                .pink-challan-slip .bg-rose-200\/80 {
+                  background: #ffffff !important;
+                }
+              }
+            `}</style>
+
             {/* Top Toolbar */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 print:hidden">
               <span className="font-bold text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
@@ -541,19 +650,51 @@ export default function TripDetailsModal({
               const paidTotal = paidShipments.reduce((sum, s) => sum + (Number(s.freightAmount) || 0), 0);
 
               return (
-                <div className="bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950">
-                  {/* Slip Header - Note: GST Number is omitted on this print */}
-                  <div className="text-center border-b-2 border-rose-400 pb-3">
-                    <h1 className="text-xl font-black tracking-wider uppercase">
-                      TRUCK CHALLAN
-                    </h1>
-                    <h2 className="text-2xl font-black text-rose-900 mt-1 tracking-tight">
-                      {profile.companyName || "KESHRI TRANSPORT"}
-                    </h2>
-                    <p className="text-xs font-bold text-rose-800">
-                      {profile.address || "ZERO MILE, PAHARI, PATNA-7"}
-                      {profile.panNumber ? ` | PAN: ${profile.panNumber}` : ""}
-                    </p>
+                <div className="pink-challan-slip bg-[#ffe4e6] border-2 border-rose-400 p-6 rounded-xl space-y-4 font-sans text-rose-950 print:p-4 print:border-2 print:rounded-none">
+                  {/* Slip Header with Top-Left Organization Logo (just like Bilty) */}
+                  <div className="border-b-2 border-rose-400 pb-3 flex items-start justify-between gap-4">
+                    {/* Top Left: Logo & Company Branding */}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {profile.logoUrl ? (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white border-2 border-rose-300 rounded-xl flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-2xs">
+                          <img
+                            src={profile.logoUrl}
+                            alt="Logo"
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                      <div className="text-left">
+                        <span className="inline-block px-2 py-0.5 bg-rose-200/90 text-rose-950 font-black text-[10px] tracking-wider rounded border border-rose-400 uppercase mb-1">
+                          TRUCK CHALLAN / LORRY DISPATCH MANIFEST
+                        </span>
+                        <h2 className="text-2xl sm:text-3xl font-black text-rose-900 tracking-tight leading-tight">
+                          {profile.companyName || "KESHRI TRANSPORT"}
+                        </h2>
+                        {profile.tagline && (
+                          <p className="text-xs font-bold text-rose-800">
+                            {profile.tagline}
+                          </p>
+                        )}
+                        <p className="text-xs font-semibold text-rose-800 mt-0.5">
+                          {profile.address || "ZERO MILE, PAHARI, PATNA-7"}
+                          {profile.phone ? ` • Ph: ${profile.phone}` : ""}
+                          {profile.panNumber ? ` • PAN: ${profile.panNumber}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Top Right: Challan Quick Meta */}
+                    <div className="text-right shrink-0 bg-white/80 border border-rose-300 px-3 py-2 rounded-lg">
+                      <div className="text-[10px] font-bold text-rose-700 uppercase">CHALLAN NUMBER</div>
+                      <div className="font-mono font-black text-base text-rose-950">{trip.tripNo}</div>
+                      <div className="text-[11px] font-bold text-rose-800 mt-0.5">
+                        Date: {trip.tripDate ? trip.tripDate.split("T")[0] : ""}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Challan Meta Grid */}
@@ -711,7 +852,8 @@ export default function TripDetailsModal({
               );
             })()}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

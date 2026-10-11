@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { DriverMaster } from "@/types/shipment";
 import { fleetService } from "services/fleetService";
 import { User, X, AlertTriangle } from "lucide-react";
+import { DatePicker } from "@/app/components/ui/DatePicker";
 
 interface DriverModalProps {
   isOpen: boolean;
@@ -128,15 +129,15 @@ export default function DriverModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#E5EAEB] dark:border-slate-800 w-full max-w-md overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#E5EAEB] dark:border-slate-800 w-full max-w-3xl overflow-visible relative my-4 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60">
+        <div className="px-6 py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between bg-[#F7F8F8] dark:bg-slate-800/60 rounded-t-2xl">
           <div>
             <h2 className="text-base font-bold text-[#111827] dark:text-white flex items-center gap-2">
               <User className="w-4 h-4 text-[#2F8E86]" />
               <span>{initialDriver ? "Edit Fleet Driver" : "Register New Fleet Driver"}</span>
             </h2>
-            <p className="text-xs text-[#64748B] dark:text-slate-400">
+            <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
               Manage commercial drivers with valid licenses and contacts.
             </p>
           </div>
@@ -149,7 +150,7 @@ export default function DriverModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-visible rounded-b-2xl">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
@@ -157,49 +158,23 @@ export default function DriverModal({
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-              Driver Full Name * (Capitalized)
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Surendra Yadav"
-              value={name}
-              onChange={(e) => setName(toTitleCase(e.target.value))}
-              className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white capitalize focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-            />
-            <span className="text-[10px] text-[#94A3B8] mt-0.5 block">First letters will automatically be capitalized</span>
-          </div>
-
+          {/* Row 1: Full Name & Mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-                Driving License No (DL)
+                Driver Full Name * (Capitalized)
               </label>
               <input
                 type="text"
-                placeholder="e.g. BR0120190012345"
-                value={licenseNo}
-                onChange={(e) => setLicenseNo(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] uppercase"
+                required
+                placeholder="e.g. Surendra Yadav"
+                value={name}
+                onChange={(e) => setName(toTitleCase(e.target.value))}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-semibold text-[#111827] dark:text-white capitalize focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
+              <span className="text-[10px] text-[#94A3B8] mt-0.5 block">First letters will automatically be capitalized</span>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-                License Valid Until
-              </label>
-              <input
-                type="date"
-                value={licenseValidUntil}
-                onChange={(e) => setLicenseValidUntil(e.target.value)}
-                className="w-full h-10 px-3 py-1.5 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-bold text-[#111827] dark:text-slate-300">
@@ -218,7 +193,38 @@ export default function DriverModal({
                 className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
+          </div>
 
+          {/* Row 2: Driving License No & License Valid Until (Using DatePicker) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
+                Driving License No (DL)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. BR0120190012345"
+                value={licenseNo}
+                onChange={(e) => setLicenseNo(e.target.value.toUpperCase())}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] uppercase"
+              />
+            </div>
+
+            <div>
+              <DatePicker
+                value={licenseValidUntil}
+                onChange={(d) => setLicenseValidUntil(d)}
+                label="License Valid Until"
+                align="right"
+                direction="auto"
+                disableFutureDates={false}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Row 3: Aadhar & Residential Address */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
                 Aadhar Card Number
@@ -232,19 +238,19 @@ export default function DriverModal({
                 className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-mono font-bold text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-              Permanent / Residential Address
-            </label>
-            <textarea
-              rows={2}
-              placeholder="Village/City, District, State"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
-            />
+            <div>
+              <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
+                Permanent / Residential Address
+              </label>
+              <input
+                type="text"
+                placeholder="Village/City, District, State"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full h-10 px-3.5 py-2 border border-[#D9E2E3] dark:border-slate-700 dark:bg-slate-900 rounded-xl text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86]"
+              />
+            </div>
           </div>
 
           {/* Footer Actions */}
@@ -272,7 +278,7 @@ export default function DriverModal({
                 disabled={loading}
                 className="btn-primary"
               >
-                {loading ? "Saving..." : initialDriver ? "Update" : "Save"}
+                {loading ? "Saving..." : initialDriver ? "Update Driver" : "Save Driver"}
               </button>
             </div>
           </div>

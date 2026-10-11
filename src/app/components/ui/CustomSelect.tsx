@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Check, Search, X } from "lucide-react";
 
 export interface SelectOption {
@@ -23,6 +24,8 @@ interface CustomSelectProps {
   className?: string;
   dropdownClassName?: string;
   align?: "left" | "right";
+  direction?: "down" | "up" | "auto";
+  size?: "sm" | "md";
 }
 
 export default function CustomSelect({
@@ -37,11 +40,32 @@ export default function CustomSelect({
   className = "",
   dropdownClassName = "",
   align = "left",
+  direction = "auto",
+  size = "md",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [coords, setCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  }>({
+    left: 0,
+    width: 200,
+    maxHeight: 320,
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Find selected option
   const selectedOption = options.find((opt) => String(opt.value) === String(value));
@@ -56,10 +80,94 @@ export default function CustomSelect({
     );
   });
 
+  const isFullWidth = className.includes("w-full") || className.includes("w-");
+
+  const updateCoords = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+
+    const spaceBelow = viewportHeight - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+
+    const idealHeight = 320;
+
+    // Smart direction decision:
+    let shouldOpenUp = false;
+    if (direction === "up") {
+      shouldOpenUp = true;
+    } else if (direction === "down") {
+      shouldOpenUp = false;
+    } else {
+      // direction === "auto"
+      // If there's comfortable space below (>= 260px), always prefer opening down
+      if (spaceBelow >= 260) {
+        shouldOpenUp = false;
+      } else if (spaceAbove > spaceBelow && spaceAbove >= 200) {
+        // Open up only if there is substantially more space above and at least 200px available
+        shouldOpenUp = true;
+      } else {
+        // Otherwise, open in whichever direction offers more space
+        shouldOpenUp = spaceAbove > spaceBelow;
+      }
+    }
+    setOpenUpward(shouldOpenUp);
+
+    const triggerWidth = rect.width;
+    const popoverWidth = isFullWidth ? triggerWidth : Math.max(triggerWidth, 200);
+
+    let left = align === "right" ? rect.right - popoverWidth : rect.left;
+    if (left + popoverWidth > viewportWidth - 12) {
+      left = viewportWidth - popoverWidth - 12;
+    }
+    if (left < 12) left = 12;
+
+    if (shouldOpenUp) {
+      // Calculate available height between trigger top and top edge of viewport (leaving 16px margin)
+      const availableHeight = Math.max(140, rect.top - 16);
+      const maxHeight = Math.min(idealHeight, availableHeight);
+
+      setCoords({
+        bottom: viewportHeight - rect.top + 6,
+        left,
+        width: popoverWidth,
+        maxHeight,
+      });
+    } else {
+      // Calculate available height between trigger bottom and bottom edge of viewport (leaving 16px margin)
+      const availableHeight = Math.max(140, viewportHeight - rect.bottom - 16);
+      const maxHeight = Math.min(idealHeight, availableHeight);
+
+      setCoords({
+        top: rect.bottom + 6,
+        left,
+        width: popoverWidth,
+        maxHeight,
+      });
+    }
+  };
+
+  const handleToggleOpen = () => {
+    if (disabled) return;
+    if (!isOpen) {
+      updateCoords();
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -67,6 +175,19 @@ export default function CustomSelect({
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  // Recalculate on scroll / resize
+  useEffect(() => {
+    if (!isOpen) return;
+    updateCoords();
+    const handleScrollOrResize = () => updateCoords();
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
   }, [isOpen]);
 
   // Focus search input when opened
@@ -84,10 +205,11 @@ export default function CustomSelect({
     setIsOpen(false);
   };
 
-  const isFullWidth = className.includes("w-full") || className.includes("w-");
-
   return (
-    <div className={`relative ${isFullWidth ? "w-full" : "inline-block"} ${className}`} ref={containerRef}>
+    <div
+      className={`relative ${isFullWidth ? "w-full" : "inline-block"} ${isOpen ? "z-[70]" : "z-auto"} ${className}`}
+      ref={containerRef}
+    >
       {label && (
         <label className="block text-xs font-semibold text-[#111827] dark:text-slate-200 mb-1">
           {label}
@@ -98,8 +220,10 @@ export default function CustomSelect({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full h-10 px-3.5 py-2 rounded-lg border flex items-center justify-between gap-2 text-xs font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
+        onClick={handleToggleOpen}
+        className={`w-full ${
+          size === "sm" ? "h-9 px-2.5 py-1 text-xs" : "h-10 px-3.5 py-2 text-xs"
+        } rounded-lg border flex items-center justify-between gap-2 font-semibold transition cursor-pointer select-none bg-white dark:bg-slate-800 shadow-2xs ${
           isOpen
             ? "border-[#2F8E86] ring-1 ring-[#2F8E86]/30"
             : "border-[#D9E2E3] dark:border-slate-700 hover:border-[#2F8E86]/60"
@@ -131,16 +255,24 @@ export default function CustomSelect({
         />
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
+      {/* Dropdown Menu (Rendered in Portal at z-[99999] with clamped maxHeight and flex-col so search is NEVER clipped) */}
+      {mounted && isOpen && createPortal(
         <div
-          className={`absolute ${
-            align === "right" ? "right-0" : "left-0"
-          } top-full mt-1.5 z-50 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-[#D9E2E3] dark:border-slate-800 py-1.5 min-w-[200px] max-w-[320px] animate-in fade-in zoom-in-95 duration-150 ${dropdownClassName}`}
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            top: coords.top !== undefined ? `${coords.top}px` : "auto",
+            bottom: coords.bottom !== undefined ? `${coords.bottom}px` : "auto",
+            left: `${coords.left}px`,
+            width: `${coords.width}px`,
+            maxHeight: `${coords.maxHeight}px`,
+            zIndex: 99999,
+          }}
+          className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#D9E2E3] dark:border-slate-800 py-1.5 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${dropdownClassName}`}
         >
-          {/* Search Box if searchable */}
+          {/* Search Box - ALWAYS shrink-0 so it NEVER gets cut off or compressed */}
           {searchable && (
-            <div className="px-2.5 pb-2 pt-1 border-b border-slate-100 dark:border-slate-800">
+            <div className="shrink-0 px-2.5 pb-2 pt-1 border-b border-slate-100 dark:border-slate-800">
               <div className="relative flex items-center">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
                 <input
@@ -155,7 +287,7 @@ export default function CustomSelect({
                   <button
                     type="button"
                     onClick={() => setSearchTerm("")}
-                    className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
+                    className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -164,8 +296,8 @@ export default function CustomSelect({
             </div>
           )}
 
-          {/* Options List */}
-          <div className="max-h-60 overflow-y-auto scrollbar-thin py-1">
+          {/* Options List - fills remaining space and scrolls smoothly */}
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin py-1">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = String(opt.value) === String(value);
@@ -199,7 +331,8 @@ export default function CustomSelect({
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

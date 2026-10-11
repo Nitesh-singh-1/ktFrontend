@@ -19,6 +19,8 @@ import CustomerInvoicesTable from "./CustomerInvoicesTable";
 import CargoItemsTable from "./CargoItemsTable";
 import DynamicChargesTable from "./DynamicChargesTable";
 import SearchableSelect from "../ui/SearchableSelect";
+import CustomSelect from "../ui/CustomSelect";
+import { DatePicker } from "../ui/DatePicker";
 import { shipmentService } from "services/shipmentService";
 import { partyService } from "services/partyService";
 import { fleetService } from "services/fleetService";
@@ -110,11 +112,25 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
   // Financials & Line Items
   const [goodsValue, setGoodsValue] = useState<number>(0);
   const [paymentTerm, setPaymentTerm] = useState<PaymentTerm>(PaymentTerm.ToPay);
+  const [isPaymentTermExplicitlySet, setIsPaymentTermExplicitlySet] = useState(false);
   const [totalFreight, setTotalFreight] = useState<number>(0);
   const [totalTaxAmount, setTotalTaxAmount] = useState<number>(0);
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [remarks, setRemarks] = useState("");
   const [bookingClerk, setBookingClerk] = useState("");
+
+  const handlePaymentTermChange = (term: PaymentTerm) => {
+    setIsPaymentTermExplicitlySet(true);
+    setPaymentTerm(term);
+    if (term === PaymentTerm.Paid) {
+      const totalOther = chargeItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      const subtotal = Number(totalFreight) + totalOther;
+      const tax = taxTreatment === TaxTreatment.GST_Regular || taxTreatment === TaxTreatment.CustomTax ? Number(totalTaxAmount) : 0;
+      setPaidAmount(Math.round((subtotal + tax) * 100) / 100);
+    } else {
+      setPaidAmount(0);
+    }
+  };
 
   // Line Items
   const [items, setItems] = useState<ShipmentItem[]>([
@@ -264,8 +280,9 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       const fullAddr = [party.address, party.city, party.state, party.pincode].filter(Boolean).join(", ");
       setConsignorAddress(fullAddr);
     }
-    if (party.defaultPaymentTerm !== undefined) {
-      setPaymentTerm(party.defaultPaymentTerm);
+    // Only apply default payment term from party if the user hasn't explicitly chosen one
+    if (!isPaymentTermExplicitlySet && party.defaultPaymentTerm !== undefined && party.defaultPaymentTerm !== null) {
+      handlePaymentTermChange(party.defaultPaymentTerm);
     }
     setSaveConsignorAsParty(false);
   };
@@ -530,15 +547,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
 
           {/* Shipment Date */}
           <div>
-            <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
-              Booking Date *
-            </label>
-            <input
-              type="date"
-              required
+            <DatePicker
               value={shipmentDate}
-              onChange={(e) => setShipmentDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-medium text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+              onChange={(val) => setShipmentDate(val)}
+              label="Booking Date *"
+              className="w-full"
             />
           </div>
 
@@ -591,15 +604,16 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
             <label className="block text-xs font-bold text-[#111827] dark:text-slate-300 mb-1">
               Freight Payment Term *
             </label>
-            <select
-              value={paymentTerm}
-              onChange={(e) => setPaymentTerm(Number(e.target.value) as PaymentTerm)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold text-[#2F8E86] focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
-            >
-              <option value={PaymentTerm.ToPay}>To-Pay (Pay at Destination)</option>
-              <option value={PaymentTerm.Paid}>Paid (Prepaid at Origin)</option>
-              <option value={PaymentTerm.TBB}>TBB (To Be Billed on Account)</option>
-            </select>
+            <CustomSelect
+              value={paymentTerm.toString()}
+              onChange={(val) => handlePaymentTermChange(Number(val) as PaymentTerm)}
+              options={[
+                { label: "To-Pay (Pay at Destination)", value: PaymentTerm.ToPay.toString() },
+                { label: "Paid (Prepaid at Origin)", value: PaymentTerm.Paid.toString() },
+                { label: "TBB (To Be Billed on Account)", value: PaymentTerm.TBB.toString() },
+              ]}
+              className="w-full"
+            />
           </div>
 
           {/* Vehicle No */}
@@ -892,7 +906,7 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         totalTaxAmount={totalTaxAmount}
         onTotalTaxAmountChange={setTotalTaxAmount}
         paymentTerm={paymentTerm}
-        onPaymentTermChange={setPaymentTerm}
+        onPaymentTermChange={handlePaymentTermChange}
         paidAmount={paidAmount}
         onPaidAmountChange={setPaidAmount}
         fromLocation={fromLocation}

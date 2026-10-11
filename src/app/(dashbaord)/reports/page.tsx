@@ -18,6 +18,7 @@ import { printShipment, printMultipleShipments } from "@/utils/print/printShipme
 import { BiltyPrintOptions } from "@/utils/print/shipmentPrintTemplate";
 import PrintOptionsModal from "@/app/components/print/PrintOptionsModal";
 import { DatePicker, CustomSelect } from "@/app/components/ui";
+import TablePagination from "@/app/components/ui/TablePagination";
 import { toast } from "@/context/ToastContext";
 import {
   BarChart3,
@@ -58,6 +59,7 @@ function ReportsContent() {
   const [loading, setLoading] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [datePreset, setDatePreset] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [billTypeFilter, setBillTypeFilter] = useState<BillTypeFilter>("ALL");
   const [partyFilter, setPartyFilter] = useState<string>("ALL");
@@ -379,28 +381,31 @@ function ReportsContent() {
   };
 
   // Quick Date Preset Helpers
-  const handleSetThisMonth = () => {
+  const handleDatePresetChange = (preset: string) => {
+    setDatePreset(preset);
     const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
     const todayStr = now.toISOString().slice(0, 10);
-    setFromDate(firstDay);
-    setToDate(todayStr);
-  };
-
-  const handleSetLastMonth = () => {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
-    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
-    setFromDate(firstDay);
-    setToDate(lastDay);
-  };
-
-  const handleSetLast30Days = () => {
-    const now = new Date();
-    const past = new Date();
-    past.setDate(now.getDate() - 30);
-    setFromDate(past.toISOString().slice(0, 10));
-    setToDate(now.toISOString().slice(0, 10));
+    if (preset === "ALL") {
+      setFromDate("");
+      setToDate("");
+    } else if (preset === "TODAY") {
+      setFromDate(todayStr);
+      setToDate(todayStr);
+    } else if (preset === "THIS_MONTH") {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      setFromDate(firstDay);
+      setToDate(todayStr);
+    } else if (preset === "LAST_MONTH") {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+      const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+      setFromDate(firstDay);
+      setToDate(lastDay);
+    } else if (preset === "LAST_30_DAYS") {
+      const past = new Date();
+      past.setDate(now.getDate() - 30);
+      setFromDate(past.toISOString().slice(0, 10));
+      setToDate(todayStr);
+    }
   };
 
   // Open Print Modal for a Single Row
@@ -707,86 +712,22 @@ function ReportsContent() {
     }
   }, [visibleReportTabs, activeTab]);
 
-  // Render pagination footer control
+  // Render responsive pagination footer control
   const renderPagination = () => {
     if (activeTab === "gst" || totalRecordsCount === 0) return null;
 
-    const startIdx = (currentPage - 1) * pageSize + 1;
-    const endIdx = Math.min(currentPage * pageSize, totalRecordsCount);
-
     return (
-      <div className="px-6 py-4 bg-white dark:bg-slate-900 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-[#64748B] dark:text-slate-400">
-          <span>
-            Showing <strong className="text-[#111827] dark:text-slate-200">{startIdx}</strong> to{" "}
-            <strong className="text-[#111827] dark:text-slate-200">{endIdx}</strong> of{" "}
-            <strong className="text-[#111827] dark:text-slate-200">{totalRecordsCount}</strong> records
-          </span>
-
-          <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 dark:border-slate-700 pl-3">
-            <CustomSelect
-              value={pageSize}
-              onChange={(val) => {
-                setPageSize(Number(val));
-                setCurrentPage(1);
-              }}
-              options={[
-                { label: "10 per page", value: 10 },
-                { label: "25 per page", value: 25 },
-                { label: "50 per page", value: 50 },
-                { label: "100 per page", value: 100 },
-              ]}
-              className="w-32"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setCurrentPage(1)}
-            disabled={currentPage === 1}
-            title="First Page"
-            aria-label="First page"
-            className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            title="Previous Page"
-            aria-label="Previous page"
-            className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center gap-1 px-2">
-            <span className="text-xs font-semibold text-[#111827] dark:text-slate-200">
-              Page {currentPage} of {totalPages}
-            </span>
-          </div>
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            title="Next Page"
-            aria-label="Next page"
-            className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setCurrentPage(totalPages)}
-            disabled={currentPage === totalPages}
-            title="Last Page"
-            aria-label="Last page"
-            className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-          >
-            <ChevronsRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        page={currentPage}
+        pageSize={pageSize}
+        totalCount={totalRecordsCount}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(sz) => {
+          setPageSize(sz);
+          setCurrentPage(1);
+        }}
+        alwaysShow={true}
+      />
     );
   };
 
@@ -911,36 +852,62 @@ function ReportsContent() {
             )}
           </div>
 
-          {/* 2 Separate Date Pickers (From Date & To Date) with fixed width */}
+          {/* Date Range Controls: Quick Preset CustomSelect & 2 Uniform Date Pickers */}
           {(activeTab === "profitability" || activeTab === "gst" || activeTab === "booking") && (
             <div className="flex flex-wrap items-center gap-2 text-xs w-full lg:w-auto justify-end">
+              <CustomSelect
+                value={datePreset}
+                onChange={(val) => handleDatePresetChange(String(val))}
+                icon={<Calendar className="w-3.5 h-3.5" />}
+                options={[
+                  { label: "All Dates", value: "ALL" },
+                  { label: "Today", value: "TODAY" },
+                  { label: "This Month", value: "THIS_MONTH" },
+                  { label: "Last Month", value: "LAST_MONTH" },
+                  { label: "Last 30 Days", value: "LAST_30_DAYS" },
+                  ...(datePreset === "CUSTOM" ? [{ label: "Custom Range", value: "CUSTOM" }] : []),
+                ]}
+                className="w-full sm:w-auto min-w-[130px]"
+              />
+
               <div className="flex items-center gap-1.5">
                 <DatePicker
                   value={fromDate}
-                  onChange={(d) => setFromDate(d)}
+                  onChange={(d) => {
+                    setFromDate(d);
+                    setDatePreset("CUSTOM");
+                  }}
                   placeholder="From Date"
                   maxDate={toDate || new Date().toISOString().slice(0, 10)}
+                  direction="down"
                   align="right"
+                  disableFutureDates={true}
                   className="w-36 min-w-[140px]"
                 />
                 <span className="text-slate-400 font-semibold text-xs">to</span>
                 <DatePicker
                   value={toDate}
-                  onChange={(d) => setToDate(d)}
+                  onChange={(d) => {
+                    setToDate(d);
+                    setDatePreset("CUSTOM");
+                  }}
                   placeholder="To Date"
                   minDate={fromDate}
                   maxDate={new Date().toISOString().slice(0, 10)}
+                  direction="down"
                   align="right"
+                  disableFutureDates={true}
                   className="w-36 min-w-[140px]"
                 />
               </div>
 
-              {(fromDate || toDate || searchQuery || billTypeFilter !== "ALL" || partyFilter !== "ALL") && (
+              {(fromDate || toDate || searchQuery || billTypeFilter !== "ALL" || partyFilter !== "ALL" || datePreset !== "ALL") && (
                 <button
                   type="button"
                   onClick={() => {
                     setFromDate("");
                     setToDate("");
+                    setDatePreset("ALL");
                     setSearchQuery("");
                     setBillTypeFilter("ALL");
                     setPartyFilter("ALL");
@@ -970,7 +937,7 @@ function ReportsContent() {
       {activeTab === "booking" && !loading && (
         <div className="space-y-4">
           {/* Summary Stat Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Bookings</p>
               <p className="text-2xl font-extrabold text-[#111827] dark:text-white mt-1">
@@ -984,9 +951,32 @@ function ReportsContent() {
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Grand Total (with GST)</p>
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">GrandTotal</p>
               <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
                 {formatCurrency(filteredBookingRecords.reduce((s, r) => s + (r.grandTotal || 0), 0))}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Payment Received</p>
+              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+                {formatCurrency(
+                  filteredBookingRecords.reduce((sum, r) => {
+                    if (r.settledReceivedAmount != null && r.settledReceivedAmount > 0) {
+                      return sum + r.settledReceivedAmount;
+                    }
+                    if (r.paidAmount != null && r.paidAmount > 0) {
+                      return sum + r.paidAmount;
+                    }
+                    const isPaidTerm = r.paymentTerm === PaymentTerm.Paid || (r.paymentTerm as any) === 1;
+                    if (isPaidTerm) {
+                      return sum + (r.grandTotal || 0);
+                    }
+                    if (r.isSettled) {
+                      return sum + Math.max(0, (r.grandTotal || 0) - (r.settledDiscountAmount || 0));
+                    }
+                    return sum;
+                  }, 0)
+                )}
               </p>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">

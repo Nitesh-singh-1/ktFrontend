@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Party, PartyType, PaymentTerm } from "@/types/shipment";
 import { partyService } from "services/partyService";
 import PartyModal from "@/app/components/party/PartyModal";
+import TablePagination from "@/app/components/ui/TablePagination";
 import {
   Building2,
   Landmark,
@@ -27,6 +28,19 @@ export default function CustomersPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingParty, setEditingParty] = useState<Party | null>(null);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const paginatedParties = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return parties.slice(start, start + pageSize);
+  }, [parties, page, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, partyTypeFilter]);
 
   useEffect(() => {
     fetchParties();
@@ -235,7 +249,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5EAEB] text-xs">
-                {parties.map((party) => {
+                {paginatedParties.map((party) => {
                   const roleBadge =
                     party.partyType === PartyType.Both
                       ? { text: "Consignor & Consignee", color: "bg-[#EFF6FF] text-[#4A90E2] border-[#BFDBFE]" }
@@ -323,6 +337,19 @@ export default function CustomersPage() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {!loading && parties.length > 0 && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            totalCount={parties.length}
+            onPageChange={setPage}
+            onPageSizeChange={(sz) => {
+              setPageSize(sz);
+              setPage(1);
+            }}
+          />
         )}
       </div>
 

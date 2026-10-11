@@ -153,6 +153,13 @@ export default function DynamicChargesTable({
     }
   };
 
+  // Keep paidAmount in sync whenever grandTotal updates if Paid (Prepaid) is chosen
+  useEffect(() => {
+    if (paymentTerm === PaymentTerm.Paid && grandTotal > 0 && paidAmount !== grandTotal) {
+      onPaidAmountChange(grandTotal);
+    }
+  }, [grandTotal, paymentTerm, paidAmount, onPaidAmountChange]);
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
       {/* Header */}
