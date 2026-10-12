@@ -8,6 +8,7 @@ export const moneyReceiptService = {
     if (filter.endDate) params.append("endDate", filter.endDate);
     if (filter.search) params.append("search", filter.search);
     if (filter.paymentMode) params.append("paymentMode", filter.paymentMode);
+    if (filter.status) params.append("status", filter.status);
 
     const query = params.toString() ? `?${params.toString()}` : "";
     return baseService.get<MoneyReceiptDto[]>(`/moneyreceipt${query}`);
@@ -19,5 +20,9 @@ export const moneyReceiptService = {
 
   getReceiptByShipmentId: (shipmentId: number) => {
     return baseService.get<MoneyReceiptDto>(`/moneyreceipt/shipment/${shipmentId}`);
+  },
+
+  collectReceipt: (shipmentId: number, data: import("@/types/moneyReceipt").CollectMoneyReceiptRequest) => {
+    return baseService.post<MoneyReceiptDto>(`/moneyreceipt/collect/${shipmentId}`, data);
   },
 };

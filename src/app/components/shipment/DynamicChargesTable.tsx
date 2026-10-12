@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ShipmentChargeItem, PaymentTerm, TaxTreatment } from "@/types/shipment";
 import { numberToWords } from "@/utils/numberToWords";
-import { IndianRupee, Zap, X, Building2, MapPin, CheckCircle2, FileText, Plus } from "lucide-react";
+import { IndianRupee, Zap, X, Building2, MapPin, CheckCircle2, FileText, Plus, Clock } from "lucide-react";
 
 interface DynamicChargesTableProps {
   totalFreight: number;
@@ -17,6 +17,12 @@ interface DynamicChargesTableProps {
   onPaymentTermChange: (val: PaymentTerm) => void;
   paidAmount: number;
   onPaidAmountChange: (val: number) => void;
+  isSpotPayment?: boolean;
+  onIsSpotPaymentChange?: (val: boolean) => void;
+  paymentMode?: string;
+  onPaymentModeChange?: (val: string) => void;
+  paymentReference?: string;
+  onPaymentReferenceChange?: (val: string) => void;
   fromLocation?: string;
   toLocation?: string;
   disabled?: boolean;
@@ -50,12 +56,25 @@ export default function DynamicChargesTable({
   onPaymentTermChange,
   paidAmount,
   onPaidAmountChange,
+  isSpotPayment = true,
+  onIsSpotPaymentChange,
+  paymentMode = "Cash",
+  onPaymentModeChange,
+  paymentReference = "",
+  onPaymentReferenceChange,
   fromLocation = "",
   toLocation = "",
   disabled = false,
 }: DynamicChargesTableProps) {
   const [selectedGstRate, setSelectedGstRate] = useState<number | null>(5);
   const [customGstRate, setCustomGstRate] = useState<string>("5");
+  const [chargeAmountInputs, setChargeAmountInputs] = useState<Record<number, string>>({});
+  const [paidAmountInput, setPaidAmountInput] = useState<string>(
+    paidAmount > 0 ? paidAmount.toString() : ""
+  );
+  const [taxAmountInput, setTaxAmountInput] = useState<string>(
+    totalTaxAmount > 0 ? totalTaxAmount.toString() : ""
+  );
   const [baseFreightInput, setBaseFreightInput] = useState<string>(
     totalFreight > 0 ? totalFreight.toString() : ""
   );
@@ -65,6 +84,18 @@ export default function DynamicChargesTable({
       setBaseFreightInput(totalFreight > 0 ? totalFreight.toString() : "");
     }
   }, [totalFreight]);
+
+  useEffect(() => {
+    if (paidAmount !== parseFloat(paidAmountInput) && !isNaN(paidAmount)) {
+      setPaidAmountInput(paidAmount > 0 ? paidAmount.toString() : "");
+    }
+  }, [paidAmount]);
+
+  useEffect(() => {
+    if (totalTaxAmount !== parseFloat(taxAmountInput) && !isNaN(totalTaxAmount)) {
+      setTaxAmountInput(totalTaxAmount > 0 ? totalTaxAmount.toString() : "");
+    }
+  }, [totalTaxAmount]);
 
   const handleAddCharge = (name = "", amount = 0, isTaxable = false) => {
     const newCharge: ShipmentChargeItem = {
@@ -87,12 +118,34 @@ export default function DynamicChargesTable({
   const handleRemoveCharge = (index: number) => {
     const updated = chargeItems.filter((_, i) => i !== index);
     onChargeItemsChange(updated);
+    setChargeAmountInputs({});
   };
 
   const handleFieldChange = (index: number, field: keyof ShipmentChargeItem, value: any) => {
     const updated = [...chargeItems];
     updated[index] = { ...updated[index], [field]: value };
     onChargeItemsChange(updated);
+  };
+
+  const handleChargeAmountChange = (idx: number, val: string) => {
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) return;
+    setChargeAmountInputs((prev) => ({ ...prev, [idx]: val }));
+    const parsed = parseFloat(val) || 0;
+    handleFieldChange(idx, "amount", parsed);
+  };
+
+  const handlePaidAmountTextChange = (val: string) => {
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) return;
+    setPaidAmountInput(val);
+    const parsed = parseFloat(val) || 0;
+    onPaidAmountChange(parsed);
+  };
+
+  const handleTaxAmountTextChange = (val: string) => {
+    if (val !== "" && !/^\d*\.?\d*$/.test(val)) return;
+    setTaxAmountInput(val);
+    const parsed = parseFloat(val) || 0;
+    onTotalTaxAmountChange(parsed);
   };
 
   const handleBaseFreightTextChange = (val: string) => {
@@ -144,21 +197,34 @@ export default function DynamicChargesTable({
   const toClean = toLocation.trim().toLowerCase();
   const isInterState = fromClean && toClean && fromClean !== toClean && !fromClean.includes(toClean) && !toClean.includes(fromClean);
 
+  const handleSpotPaymentToggle = (val: boolean) => {
+    onIsSpotPaymentChange?.(val);
+    if (val) {
+      onPaidAmountChange(grandTotal);
+    } else {
+      onPaidAmountChange(0);
+    }
+  };
+
   const handlePaymentTermSelect = (term: PaymentTerm) => {
     onPaymentTermChange(term);
     if (term === PaymentTerm.Paid) {
-      onPaidAmountChange(grandTotal);
+      if (isSpotPayment) {
+        onPaidAmountChange(grandTotal);
+      } else {
+        onPaidAmountChange(0);
+      }
     } else if (term === PaymentTerm.ToPay || term === PaymentTerm.TBB) {
       onPaidAmountChange(0);
     }
   };
 
-  // Keep paidAmount in sync whenever grandTotal updates if Paid (Prepaid) is chosen
+  // Keep paidAmount in sync whenever grandTotal updates if Paid (Prepaid) is chosen and spot payment is active
   useEffect(() => {
-    if (paymentTerm === PaymentTerm.Paid && grandTotal > 0 && paidAmount !== grandTotal) {
+    if (paymentTerm === PaymentTerm.Paid && isSpotPayment && grandTotal > 0 && paidAmount !== grandTotal) {
       onPaidAmountChange(grandTotal);
     }
-  }, [grandTotal, paymentTerm, paidAmount, onPaidAmountChange]);
+  }, [grandTotal, paymentTerm, paidAmount, onPaidAmountChange, isSpotPayment]);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden space-y-4">
@@ -284,11 +350,14 @@ export default function DynamicChargesTable({
                         inputMode="decimal"
                         disabled={disabled}
                         placeholder="0.00"
-                        value={charge.amount === 0 ? "" : charge.amount}
-                        onChange={(e) => {
-                          const clean = e.target.value.replace(/[^0-9.]/g, "");
-                          handleFieldChange(idx, "amount", parseFloat(clean) || 0);
-                        }}
+                        value={
+                          chargeAmountInputs[idx] !== undefined
+                            ? chargeAmountInputs[idx]
+                            : charge.amount > 0
+                            ? charge.amount.toString()
+                            : ""
+                        }
+                        onChange={(e) => handleChargeAmountChange(idx, e.target.value)}
                         className="w-full px-2.5 py-1.5 text-right bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
                       />
                     </td>
@@ -408,8 +477,8 @@ export default function DynamicChargesTable({
                   Advance / Paid Amount (₹)
                 </label>
                 {paymentTerm === PaymentTerm.Paid && (
-                  <span className="text-[11px] font-semibold text-[#2F9E8F]">
-                    Full Settlement (Prepaid)
+                  <span className={`text-[11px] font-semibold ${isSpotPayment ? "text-[#2F9E8F]" : "text-amber-600"}`}>
+                    {isSpotPayment ? "Full Settlement (Prepaid)" : "Collection Pending (baad me)"}
                   </span>
                 )}
               </div>
@@ -417,15 +486,136 @@ export default function DynamicChargesTable({
                 type="text"
                 inputMode="decimal"
                 disabled={disabled}
-                value={paidAmount === 0 ? "" : paidAmount}
-                onChange={(e) => {
-                  const clean = e.target.value.replace(/[^0-9.]/g, "");
-                  onPaidAmountChange(parseFloat(clean) || 0);
-                }}
+                value={paidAmountInput}
+                onChange={(e) => handlePaidAmountTextChange(e.target.value)}
                 placeholder="0.00"
                 className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm font-bold font-mono text-[#111827] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
               />
             </div>
+
+            {/* Paid Bilty Collection Options */}
+            {paymentTerm === PaymentTerm.Paid && (
+              <div className="p-4 bg-teal-50/60 dark:bg-teal-950/20 rounded-xl border border-teal-200 dark:border-teal-800/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#2F8E86]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                      Payment Collection Status (Origin Hub)
+                    </span>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isSpotPayment
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
+                    }`}
+                  >
+                    {isSpotPayment ? "Spot Payment (Paid Now)" : "Payment Pending (MR Baad Me)"}
+                  </span>
+                </div>
+
+                {/* Spot vs Pending Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => handleSpotPaymentToggle(true)}
+                    className={`p-2.5 rounded-lg border text-left flex items-start gap-2.5 transition cursor-pointer ${
+                      isSpotPayment
+                        ? "bg-white dark:bg-slate-900 border-[#2F8E86] shadow-xs"
+                        : "bg-[#F7F8F8] dark:bg-slate-800 border-transparent hover:border-slate-300"
+                    }`}
+                  >
+                    <div
+                      className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        isSpotPayment ? "border-[#2F8E86] bg-[#2F8E86]" : "border-slate-300"
+                      }`}
+                    >
+                      {isSpotPayment && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Spot Payment</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Cash/UPI received now</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => handleSpotPaymentToggle(false)}
+                    className={`p-2.5 rounded-lg border text-left flex items-start gap-2.5 transition cursor-pointer ${
+                      !isSpotPayment
+                        ? "bg-white dark:bg-slate-900 border-amber-500 shadow-xs"
+                        : "bg-[#F7F8F8] dark:bg-slate-800 border-transparent hover:border-slate-300"
+                    }`}
+                  >
+                    <div
+                      className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        !isSpotPayment ? "border-amber-500 bg-amber-500" : "border-slate-300"
+                      }`}
+                    >
+                      {!isSpotPayment && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Payment Pending</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Party pays 1-2 days later</div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* If Spot Payment: Mode selector & reference */}
+                {isSpotPayment ? (
+                  <div className="space-y-2 pt-2 border-t border-teal-100 dark:border-teal-900/40">
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      Payment Mode *
+                    </label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {["Cash", "UPI", "Cheque", "Bank Transfer"].map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => onPaymentModeChange?.(mode)}
+                          className={`py-1.5 px-2 rounded-lg text-xs font-bold transition text-center cursor-pointer ${
+                            paymentMode.toLowerCase() === mode.toLowerCase()
+                              ? "bg-[#2F8E86] text-white shadow-2xs"
+                              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {mode}
+                        </button>
+                      ))}
+                    </div>
+
+                    {paymentMode.toLowerCase() !== "cash" && (
+                      <div className="pt-1.5">
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1">
+                          {paymentMode} Reference / UTR / Cheque No. (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          disabled={disabled}
+                          placeholder="e.g. UPI Ref, UTR 94829392, Cheque 102934"
+                          value={paymentReference}
+                          onChange={(e) => onPaymentReferenceChange?.(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <Clock className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Bilty prints as PAID (Consignee will not be charged).</span>
+                      <p className="mt-0.5 text-[10.5px] opacity-90">
+                        Cashier will collect payment from <strong>Receipts (/receipts)</strong> and issue Money Receipt with the actual date & mode when received.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right: Real-time Calculation Ledger */}
@@ -465,11 +655,8 @@ export default function DynamicChargesTable({
                       type="text"
                       inputMode="decimal"
                       disabled={disabled}
-                      value={totalTaxAmount === 0 ? "" : totalTaxAmount}
-                      onChange={(e) => {
-                        const clean = e.target.value.replace(/[^0-9.]/g, "");
-                        onTotalTaxAmountChange(parseFloat(clean) || 0);
-                      }}
+                      value={taxAmountInput}
+                      onChange={(e) => handleTaxAmountTextChange(e.target.value)}
                       placeholder="0.00"
                       className="w-24 px-2 py-0.5 text-right bg-[#F7F8F8] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-[#2F9E8F] focus:outline-none focus:border-[#2F8E86]"
                     />

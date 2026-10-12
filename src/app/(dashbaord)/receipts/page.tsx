@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { MoneyReceiptDto } from "@/types/moneyReceipt";
+import { MoneyReceiptDto, CollectMoneyReceiptRequest } from "@/types/moneyReceipt";
 import { moneyReceiptService } from "services/moneyReceiptService";
 import { shipmentService } from "services/shipmentService";
 import { numberToWords } from "@/utils/numberToWords";
@@ -22,6 +22,10 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Download,
+  CheckCircle2,
+  Clock,
+  Check,
+  Calendar,
 } from "lucide-react";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
@@ -38,6 +42,7 @@ function MoneyReceiptsContent() {
   const [search, setSearch] = useState("");
   const [paymentModeFilter, setPaymentModeFilter] = useState("ALL");
   const [payerFilter, setPayerFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "COLLECTED" | "PENDING">("ALL");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,9 +52,18 @@ function MoneyReceiptsContent() {
   const [selectedReceipt, setSelectedReceipt] = useState<MoneyReceiptDto | null>(null);
   const printProfile = getTenantPrintProfile();
 
+  // Receive Payment Modal State
+  const [collectionModalReceipt, setCollectionModalReceipt] = useState<MoneyReceiptDto | null>(null);
+  const [collectPaymentDate, setCollectPaymentDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [collectPaymentMode, setCollectPaymentMode] = useState<string>("UPI");
+  const [collectReferenceNo, setCollectReferenceNo] = useState<string>("");
+  const [collectAmountInput, setCollectAmountInput] = useState<string>("");
+  const [collectRemarks, setCollectRemarks] = useState<string>("");
+  const [collectSubmitting, setCollectSubmitting] = useState<boolean>(false);
+
   useEffect(() => {
     fetchReceipts();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, statusFilter]);
 
   const fetchReceipts = async (searchTerm = search) => {
     try {
@@ -60,17 +74,22 @@ function MoneyReceiptsContent() {
         endDate: endDate || undefined,
         search: searchTerm || undefined,
         paymentMode: paymentModeFilter !== "ALL" ? paymentModeFilter : undefined,
+        status: statusFilter !== "ALL" ? statusFilter : undefined,
       });
       // Ensure each receipt's baseFreight is its Bilty grand total and totalAmount is baseFreight + moneyReceiptCharge (₹10)
       const enrichedReceipts = (res || []).map((r) => {
         const mrCharge = r.moneyReceiptCharge !== undefined ? Number(r.moneyReceiptCharge) : 10;
         const baseFreight = Number(r.baseFreight) || Number(r.totalAmount) || 0;
         const totalAmount = baseFreight + mrCharge;
+        const isCollected = r.isCollected !== undefined ? r.isCollected : (r.dueAmount !== undefined ? Number(r.dueAmount) <= 0 : true);
+        const dueAmount = r.dueAmount !== undefined ? Number(r.dueAmount) : (isCollected ? 0 : totalAmount);
         return {
           ...r,
           baseFreight,
           moneyReceiptCharge: mrCharge,
           totalAmount,
+          isCollected,
+          dueAmount,
         };
       });
       setReceipts(enrichedReceipts);
@@ -79,6 +98,67 @@ function MoneyReceiptsContent() {
       setError(err?.message || "Failed to load money receipts.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenCollectModal = (r: MoneyReceiptDto) => {
+    setCollectionModalReceipt(r);
+    const defaultAmt = Number(r.dueAmount) > 0 ? Number(r.dueAmount) : Number(r.totalAmount) || 0;
+    setCollectPaymentDate(new Date().toISOString().slice(0, 10));
+    setCollectPaymentMode(r.paymentMode && r.paymentMode.toUpperCase() !== "CASH" ? r.paymentMode : "UPI");
+    setCollectReferenceNo(r.transactionRef || "");
+    setCollectAmountInput(defaultAmt.toString());
+    setCollectRemarks("");
+  };
+
+  const handleCollectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!collectionModalReceipt) return;
+    const amt = parseFloat(collectAmountInput) || 0;
+    if (amt <= 0) {
+      toast.error("Please enter a valid received amount.");
+      return;
+    }
+
+    try {
+      setCollectSubmitting(true);
+      const shipmentId = collectionModalReceipt.shipmentId;
+      if (!shipmentId) {
+        toast.error("Shipment ID not found for this receipt.");
+        return;
+      }
+
+      const payload: CollectMoneyReceiptRequest = {
+        paymentDate: collectPaymentDate,
+        paymentMode: collectPaymentMode,
+        referenceNo: collectReferenceNo.trim() || undefined,
+        receivedAmount: amt,
+        remarks: collectRemarks.trim() || undefined,
+      };
+
+      const updatedMr = await moneyReceiptService.collectReceipt(shipmentId, payload);
+      toast.success(`Payment recorded! Money Receipt finalized for ${collectionModalReceipt.shipmentNo}.`);
+      
+      const receiptToPrint = updatedMr || {
+        ...collectionModalReceipt,
+        isCollected: true,
+        paymentMode: collectPaymentMode,
+        transactionRef: collectReferenceNo.trim() || undefined,
+        receiptDate: collectPaymentDate,
+        paidAmount: amt,
+        dueAmount: 0,
+      };
+
+      setCollectionModalReceipt(null);
+      await fetchReceipts();
+
+      // Automatically open Print MR preview with actual date and payment mode
+      handleSelectReceipt(receiptToPrint);
+    } catch (err: any) {
+      console.error("Collect payment error:", err);
+      toast.error(err?.message || "Failed to finalize Money Receipt.");
+    } finally {
+      setCollectSubmitting(false);
     }
   };
 
@@ -142,9 +222,16 @@ function MoneyReceiptsContent() {
       .map(([name, count]) => ({ name, count }));
   }, [receipts]);
 
-  // Client-side filtering for live search, payment mode, and payer
+  // Client-side filtering for live search, payment mode, payer, and collection status
   const filteredReceipts = useMemo(() => {
     return receipts.filter((r) => {
+      // Status filter
+      if (statusFilter === "COLLECTED" && r.isCollected === false) {
+        return false;
+      }
+      if (statusFilter === "PENDING" && r.isCollected !== false) {
+        return false;
+      }
       // Payment mode filter
       if (paymentModeFilter !== "ALL") {
         if ((r.paymentMode || "CASH").toUpperCase() !== paymentModeFilter.toUpperCase()) {
@@ -175,7 +262,7 @@ function MoneyReceiptsContent() {
       }
       return true;
     });
-  }, [receipts, paymentModeFilter, payerFilter, search]);
+  }, [receipts, statusFilter, paymentModeFilter, payerFilter, search]);
 
   // Paginated records
   const paginatedReceipts = useMemo(() => {
@@ -216,6 +303,7 @@ function MoneyReceiptsContent() {
     setSearch("");
     setPaymentModeFilter("ALL");
     setPayerFilter("ALL");
+    setStatusFilter("ALL");
   };
 
   // CSV Export for Receipts
@@ -278,11 +366,23 @@ function MoneyReceiptsContent() {
   };
 
   // KPIs
+  const totalCount = receipts.length;
+  const collectedReceipts = receipts.filter((r) => r.isCollected !== false);
+  const pendingReceipts = receipts.filter((r) => r.isCollected === false);
+
   const totalAmount = filteredReceipts.reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
-  const totalCash = filteredReceipts
-    .filter((r) => (r.paymentMode || "").toLowerCase() === "cash")
+  const totalCollectedAmount = filteredReceipts
+    .filter((r) => r.isCollected !== false)
     .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
-  const totalOnline = totalAmount - totalCash;
+  const totalPendingAmount = filteredReceipts
+    .filter((r) => r.isCollected === false)
+    .reduce((sum, r) => sum + (Number(r.dueAmount ?? r.totalAmount) || 0), 0);
+  const totalCash = filteredReceipts
+    .filter((r) => r.isCollected !== false && (r.paymentMode || "").toLowerCase() === "cash")
+    .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
+  const totalOnline = filteredReceipts
+    .filter((r) => r.isCollected !== false && (r.paymentMode || "").toLowerCase() !== "cash")
+    .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -329,37 +429,120 @@ function MoneyReceiptsContent() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
           <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Money Receipts</p>
-          <p className="text-2xl font-extrabold text-[#111827] dark:text-white mt-1">{filteredReceipts.length}</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <p className="text-2xl font-extrabold text-[#111827] dark:text-white">{filteredReceipts.length}</p>
+            <span className="text-[11px] text-emerald-600 font-bold">({collectedReceipts.length} collected)</span>
+          </div>
           <p className="text-[10px] text-[#94A3B8] mt-1">Paid Bilty transactions</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Collections</p>
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Collected Revenue (MR)</p>
           <p className="text-xl font-bold text-[#2F9E8F] font-mono mt-1">
-            {formatCurrency(totalAmount)}
+            {formatCurrency(totalCollectedAmount)}
           </p>
-          <p className="text-[10px] text-[#2F9E8F] mt-1">Across filtered criteria</p>
+          <p className="text-[10px] text-[#2F9E8F] mt-1">Cashier collected at origin</p>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-amber-200 dark:border-amber-900/60 shadow-xs bg-amber-50/20 dark:bg-amber-950/10">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">Pending Collection</p>
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+              {pendingReceipts.length}
+            </span>
+          </div>
+          <p className="text-xl font-bold text-amber-600 dark:text-amber-400 font-mono mt-1">
+            {formatCurrency(totalPendingAmount)}
+          </p>
+          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-1">Paisa Baad Me Aane Wala</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Physical Counter Cash</p>
-          <p className="text-xl font-bold text-[#111827] dark:text-slate-200 font-mono mt-1">
-            {formatCurrency(totalCash)}
-          </p>
-          <p className="text-[10px] text-[#94A3B8] mt-1">Cash collections</p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">UPI / Digital Payments</p>
-          <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
-            {formatCurrency(totalOnline)}
-          </p>
-          <p className="text-[10px] text-[#2F8E86] mt-1">Bank / Digital transfers</p>
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Mode Breakdown</p>
+          <div className="mt-1 space-y-0.5">
+            <div className="flex justify-between text-xs">
+              <span className="text-[#64748B]">Cash:</span>
+              <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{formatCurrency(totalCash)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-[#2F8E86]">UPI/Bank:</span>
+              <span className="font-mono font-bold text-[#2F8E86]">{formatCurrency(totalOnline)}</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Modern Filter Toolbar with CustomSelect & 2 DatePickers */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs space-y-4">
+        {/* Status Quick Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#E5EAEB] dark:border-slate-800 pb-3">
+          <button
+            type="button"
+            onClick={() => setStatusFilter("ALL")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              statusFilter === "ALL"
+                ? "bg-[#2F8E86] text-white shadow-xs"
+                : "bg-[#F7F8F8] dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            }`}
+          >
+            <span>All Receipts</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                statusFilter === "ALL"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {totalCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("COLLECTED")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              statusFilter === "COLLECTED"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "bg-[#F7F8F8] dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>MR Issued / Collected</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                statusFilter === "COLLECTED"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {collectedReceipts.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("PENDING")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+              statusFilter === "PENDING"
+                ? "bg-amber-600 text-white shadow-xs"
+                : "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100"
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Pending Collection</span>
+            {pendingReceipts.length > 0 && (
+              <span
+                className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                  statusFilter === "PENDING"
+                    ? "bg-white/25 text-white"
+                    : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100"
+                }`}
+              >
+                {pendingReceipts.length}
+              </span>
+            )}
+          </button>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             {/* Live Search */}
@@ -524,62 +707,118 @@ function MoneyReceiptsContent() {
                   </td>
                 </tr>
               ) : paginatedReceipts.length > 0 ? (
-                paginatedReceipts.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 transition whitespace-nowrap"
-                  >
-                    <td className="py-3 px-4">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectReceipt(r)}
-                        className="font-mono font-bold text-[#2F8E86] hover:underline cursor-pointer"
-                      >
-                        {r.receiptNo}
-                      </button>
-                    </td>
-                    <td className="py-3 px-4 text-[#64748B] dark:text-slate-400">
-                      {r.receiptDate ? formatDate(r.receiptDate) : "—"}
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold text-[#4A90E2]">
-                      {r.shipmentNo}
-                    </td>
-                    <td className="py-3 px-4 font-semibold text-[#111827] dark:text-slate-200">
-                      <div>
-                        <div>{r.payerName || "—"}</div>
-                        {r.payerGstNo && (
-                          <div className="text-[10px] text-[#94A3B8] font-mono font-normal">
-                            GST: {r.payerGstNo}
-                          </div>
+                paginatedReceipts.map((r) => {
+                  const isPending = r.isCollected === false;
+                  return (
+                    <tr
+                      key={r.id || r.receiptNo}
+                      className={`hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 transition whitespace-nowrap ${
+                        isPending ? "bg-amber-50/30 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5">
+                          {isPending ? (
+                            <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                              {r.receiptNo || "MR-PENDING"}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectReceipt(r)}
+                              className="font-mono font-bold text-[#2F8E86] hover:underline cursor-pointer"
+                            >
+                              {r.receiptNo}
+                            </button>
+                          )}
+                          {isPending && (
+                            <span className="px-1.5 py-0.2 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 text-[9px] font-bold rounded-sm uppercase">
+                              PENDING
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-[#64748B] dark:text-slate-400">
+                        <div>
+                          <span>{r.receiptDate ? formatDate(r.receiptDate) : "—"}</span>
+                          {isPending && (
+                            <span className="block text-[10px] text-amber-600 font-medium">
+                              (Booking Date)
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-[#4A90E2]">
+                        {r.shipmentNo}
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-[#111827] dark:text-slate-200">
+                        <div>
+                          <div>{r.payerName || "—"}</div>
+                          {r.payerGstNo && (
+                            <div className="text-[10px] text-[#94A3B8] font-mono font-normal">
+                              GST: {r.payerGstNo}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-[#64748B] dark:text-slate-400">
+                        {r.fromLocation || "Origin"} → {r.toLocation || "—"}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-[#111827] dark:text-slate-200 font-mono">
+                        {r.totalPackages} PKG
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {isPending ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 rounded-md uppercase">
+                            <Clock className="w-2.5 h-2.5" />
+                            <span>NOT RECEIVED</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md uppercase">
+                            {r.paymentMode || "CASH"}
+                          </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-[#64748B] dark:text-slate-400">
-                      {r.fromLocation || "Origin"} → {r.toLocation || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-center font-bold text-[#111827] dark:text-slate-200 font-mono">
-                      {r.totalPackages} PKG
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md uppercase">
-                        {r.paymentMode || "CASH"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-[#2F9E8F]">
-                      {formatCurrency(r.totalAmount || 0)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectReceipt(r)}
-                        className="px-2.5 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold shadow-2xs"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>Print MR</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono">
+                        {isPending ? (
+                          <div>
+                            <span className="text-slate-400 line-through text-[11px] block">
+                              ₹0.00
+                            </span>
+                            <span className="font-bold text-amber-600 text-xs">
+                              Due: {formatCurrency(r.dueAmount ?? r.totalAmount ?? 0)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-bold text-[#2F9E8F]">
+                            {formatCurrency(r.totalAmount || 0)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {isPending ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCollectModal(r)}
+                            className="px-3 py-1.5 rounded-lg bg-[#2F8E86] hover:bg-[#25776F] text-white transition cursor-pointer inline-flex items-center gap-1.5 text-xs font-bold shadow-xs hover:shadow-sm"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Receive Payment / Issue MR</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectReceipt(r)}
+                            className="px-2.5 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#2F8E86] hover:bg-[#E7F1F2] dark:hover:bg-slate-700 transition cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold shadow-2xs"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Print MR</span>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-[#64748B] dark:text-slate-400">
@@ -676,6 +915,176 @@ function MoneyReceiptsContent() {
         )}
       </div>
     </div>
+
+      {/* Receive Payment / Issue MR Modal */}
+      {collectionModalReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-900 dark:text-slate-100 space-y-4 border border-[#E5EAEB] dark:border-slate-800">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-950/50 flex items-center justify-center text-[#2F8E86]">
+                  <Banknote className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Receive Payment & Issue MR
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Bilty <span className="font-mono font-bold text-[#2F8E86]">#{collectionModalReceipt.shipmentNo}</span> • Payer: <span className="font-semibold">{collectionModalReceipt.payerName}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCollectionModalReceipt(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Bill Summary Banner */}
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs flex justify-between items-center">
+              <div>
+                <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Route & Cargo</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {collectionModalReceipt.fromLocation || "Origin"} → {collectionModalReceipt.toLocation || "—"} ({collectionModalReceipt.totalPackages || 1} PKG)
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Balance Due</span>
+                <span className="font-mono font-bold text-base text-[#2F8E86]">
+                  {formatCurrency(Number(collectionModalReceipt.dueAmount ?? collectionModalReceipt.totalAmount) || 0)}
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handleCollectSubmit} className="space-y-4">
+              {/* Actual Payment Date */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Actual Date of Payment *
+                </label>
+                <DatePicker
+                  value={collectPaymentDate}
+                  onChange={(d) => setCollectPaymentDate(d)}
+                  maxDate={new Date().toISOString().slice(0, 10)}
+                  placeholder="Payment Received Date"
+                  className="w-full"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  e.g. 13th Oct instead of booking date. Money receipt & daily counter register will record on this date.
+                </p>
+              </div>
+
+              {/* Payment Mode Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Payment Mode *
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {["UPI", "Cash", "Cheque", "Bank Transfer"].map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setCollectPaymentMode(mode)}
+                      className={`py-2 px-2 rounded-xl text-xs font-bold transition text-center cursor-pointer ${
+                        collectPaymentMode.toLowerCase() === mode.toLowerCase()
+                          ? "bg-[#2F8E86] text-white shadow-xs"
+                          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* UTR / Cheque / Ref No */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  {collectPaymentMode} Reference / UTR / Cheque No. {collectPaymentMode.toLowerCase() !== "cash" && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 482910394012, CHQ-10492"
+                  value={collectReferenceNo}
+                  onChange={(e) => setCollectReferenceNo(e.target.value)}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+                />
+              </div>
+
+              {/* Received Amount */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Received Amount (₹) *
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={collectAmountInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                        setCollectAmountInput(val);
+                      }
+                    }}
+                    className="w-full pl-7 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+                  />
+                </div>
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1.5">
+                  Remarks / Notes (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Received via PhonePe by cashier"
+                  value={collectRemarks}
+                  onChange={(e) => setCollectRemarks(e.target.value)}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setCollectionModalReceipt(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={collectSubmitting}
+                  className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {collectSubmitting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Recording Payment...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Finalize MR & Issue</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Printable Money Receipt Modal (Single-Copy Screen Preview + Dual-Copy on A4 Print) */}
       {selectedReceipt && (

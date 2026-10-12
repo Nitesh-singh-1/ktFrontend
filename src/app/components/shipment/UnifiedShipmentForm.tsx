@@ -116,6 +116,9 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
   const [totalFreight, setTotalFreight] = useState<number>(0);
   const [totalTaxAmount, setTotalTaxAmount] = useState<number>(0);
   const [paidAmount, setPaidAmount] = useState<number>(0);
+  const [isSpotPayment, setIsSpotPayment] = useState<boolean>(true);
+  const [paymentMode, setPaymentMode] = useState<string>("Cash");
+  const [paymentReference, setPaymentReference] = useState<string>("");
   const [remarks, setRemarks] = useState("");
   const [bookingClerk, setBookingClerk] = useState("");
 
@@ -194,6 +197,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
     setTotalFreight(data.totalFreight || 0);
     setTotalTaxAmount(data.totalTaxAmount || 0);
     setPaidAmount(data.paidAmount || 0);
+    if (data.paymentTerm === PaymentTerm.Paid) {
+      setIsSpotPayment(data.isSettled ?? ((data.paidAmount || 0) > 0));
+      setPaymentMode(data.settledPaymentMode || "Cash");
+      setPaymentReference(data.settlementReferenceNo || "");
+    }
     setRemarks(data.remarks || "");
     setBookingClerk(data.bookingClerk || "");
 
@@ -410,6 +418,18 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       totalFreight: Number(totalFreight) || 0,
       totalTaxAmount: isGstRelevant ? Number(totalTaxAmount) || 0 : 0,
       paidAmount: Number(paidAmount) || 0,
+      settledPaymentMode:
+        paymentTerm === PaymentTerm.Paid && isSpotPayment
+          ? paymentMode
+          : paymentTerm === PaymentTerm.Paid && Number(paidAmount) > 0
+          ? paymentMode
+          : undefined,
+      settlementReferenceNo:
+        paymentTerm === PaymentTerm.Paid && paymentReference.trim()
+          ? paymentReference.trim()
+          : undefined,
+      isSettled:
+        paymentTerm === PaymentTerm.Paid ? isSpotPayment : undefined,
       remarks: remarks.trim() || undefined,
       bookingClerk: bookingClerk.trim() || undefined,
       customerInvoices: validCustomerInvoices.length > 0 ? validCustomerInvoices : undefined,
@@ -909,6 +929,12 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         onPaymentTermChange={handlePaymentTermChange}
         paidAmount={paidAmount}
         onPaidAmountChange={setPaidAmount}
+        isSpotPayment={isSpotPayment}
+        onIsSpotPaymentChange={setIsSpotPayment}
+        paymentMode={paymentMode}
+        onPaymentModeChange={setPaymentMode}
+        paymentReference={paymentReference}
+        onPaymentReferenceChange={setPaymentReference}
         fromLocation={fromLocation}
         toLocation={toLocation}
       />
