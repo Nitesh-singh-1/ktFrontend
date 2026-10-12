@@ -478,7 +478,7 @@ export default function DynamicChargesTable({
                 </label>
                 {paymentTerm === PaymentTerm.Paid && (
                   <span className={`text-[11px] font-semibold ${isSpotPayment ? "text-[#2F9E8F]" : "text-amber-600"}`}>
-                    {isSpotPayment ? "Full Settlement (Prepaid)" : "Collection Pending (baad me)"}
+                    {isSpotPayment ? "Full Settlement (Prepaid)" : "Collection Pending"}
                   </span>
                 )}
               </div>
@@ -510,7 +510,7 @@ export default function DynamicChargesTable({
                         : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
                     }`}
                   >
-                    {isSpotPayment ? "Spot Payment (Paid Now)" : "Payment Pending (MR Baad Me)"}
+                    {isSpotPayment ? "Spot Payment (Paid Now)" : "Payment Pending"}
                   </span>
                 </div>
 
@@ -558,13 +558,13 @@ export default function DynamicChargesTable({
                     </div>
                     <div>
                       <div className="text-xs font-bold text-slate-900 dark:text-white">Payment Pending</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Party pays 1-2 days later</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Payment received later at origin</div>
                     </div>
                   </button>
                 </div>
 
                 {/* If Spot Payment: Mode selector & reference */}
-                {isSpotPayment ? (
+                {isSpotPayment && (
                   <div className="space-y-2 pt-2 border-t border-teal-100 dark:border-teal-900/40">
                     <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                       Payment Mode *
@@ -602,16 +602,6 @@ export default function DynamicChargesTable({
                         />
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
-                    <Clock className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-                    <div>
-                      <span className="font-bold">Bilty prints as PAID (Consignee will not be charged).</span>
-                      <p className="mt-0.5 text-[10.5px] opacity-90">
-                        Cashier will collect payment from <strong>Receipts (/receipts)</strong> and issue Money Receipt with the actual date & mode when received.
-                      </p>
-                    </div>
                   </div>
                 )}
               </div>

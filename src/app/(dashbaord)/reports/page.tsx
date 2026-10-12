@@ -44,12 +44,15 @@ import {
   CheckCircle2,
   ShieldCheck,
   Percent,
+  AlertCircle,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
 
 type ReportTab = "booking" | "vendorLedger" | "partyLedger" | "profitability" | "gst";
 
 type BillTypeFilter = "ALL" | "PAID" | "TO_PAY" | "TBB";
+
+type DueFilter = "ALL" | "RECEIVED" | "DUE";
 
 function ReportsContent() {
   const searchParams = useSearchParams();
@@ -63,6 +66,7 @@ function ReportsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [billTypeFilter, setBillTypeFilter] = useState<BillTypeFilter>("ALL");
   const [partyFilter, setPartyFilter] = useState<string>("ALL");
+  const [dueFilter, setDueFilter] = useState<DueFilter>("ALL");
 
   // Selection for bulk actions (like printing multiple bilties)
   const [selectedShipmentIds, setSelectedShipmentIds] = useState<number[]>([]);
@@ -96,13 +100,23 @@ function ReportsContent() {
       else if (tabParam.includes("vendor")) setActiveTab("vendorLedger");
       else if (tabParam.includes("booking") || tabParam.includes("consignment")) setActiveTab("booking");
     }
+
+    const paymentParam = searchParams.get("paymentFilter") || searchParams.get("dueFilter") || searchParams.get("paymentStatus");
+    if (paymentParam) {
+      const p = paymentParam.toLowerCase();
+      if (p.includes("receive") || p === "paid" || p === "zero") {
+        setDueFilter("RECEIVED");
+      } else if (p.includes("due") || p.includes("outstanding") || p.includes("pending")) {
+        setDueFilter("DUE");
+      }
+    }
   }, [searchParams]);
 
   // Reset pagination and selection on filter / tab changes
   useEffect(() => {
     setCurrentPage(1);
     setSelectedShipmentIds([]);
-  }, [activeTab, searchQuery, billTypeFilter, partyFilter, fromDate, toDate]);
+  }, [activeTab, searchQuery, billTypeFilter, partyFilter, fromDate, toDate, dueFilter]);
 
   useEffect(() => {
     fetchReportData();
@@ -246,7 +260,7 @@ function ReportsContent() {
   // -------------------------------------------------------------
   // Filtered Datasets with live search, bill type, and party filtering
   // -------------------------------------------------------------
-  const filteredBookingRecords = useMemo(() => {
+  const baseBookingRecords = useMemo(() => {
     const records = booking?.records || [];
     return records.filter((r) => {
       // Bill type filter
@@ -286,6 +300,16 @@ function ReportsContent() {
       return true;
     });
   }, [booking, billTypeFilter, partyFilter, searchQuery]);
+
+  const filteredBookingRecords = useMemo(() => {
+    if (dueFilter === "RECEIVED") {
+      return baseBookingRecords.filter((r) => (r.dueAmount || 0) <= 0);
+    }
+    if (dueFilter === "DUE") {
+      return baseBookingRecords.filter((r) => (r.dueAmount || 0) > 0);
+    }
+    return baseBookingRecords;
+  }, [baseBookingRecords, dueFilter]);
 
   const filteredVendorLedger = useMemo(() => {
     return vendorLedger.filter((v) => {
@@ -901,7 +925,7 @@ function ReportsContent() {
                 />
               </div>
 
-              {(fromDate || toDate || searchQuery || billTypeFilter !== "ALL" || partyFilter !== "ALL" || datePreset !== "ALL") && (
+              {(fromDate || toDate || searchQuery || billTypeFilter !== "ALL" || partyFilter !== "ALL" || datePreset !== "ALL" || dueFilter !== "ALL") && (
                 <button
                   type="button"
                   onClick={() => {
@@ -911,6 +935,7 @@ function ReportsContent() {
                     setSearchQuery("");
                     setBillTypeFilter("ALL");
                     setPartyFilter("ALL");
+                    setDueFilter("ALL");
                   }}
                   title="Clear all filters"
                   className="p-2 text-xs text-[#D95C5C] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer flex items-center gap-1 border border-rose-200 dark:border-rose-900/50"
@@ -938,29 +963,65 @@ function ReportsContent() {
         <div className="space-y-4">
           {/* Summary Stat Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Bookings</p>
+            {/* Total Bookings Card */}
+            <div
+              onClick={() => setDueFilter("ALL")}
+              className={`bg-white dark:bg-slate-900 rounded-2xl p-5 border transition-all cursor-pointer ${
+                dueFilter === "ALL"
+                  ? "border-[#2F8E86] shadow-sm ring-1 ring-[#2F8E86]"
+                  : "border-[#E5EAEB] dark:border-slate-800 shadow-xs hover:border-[#D9E2E3]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Bookings</p>
+                {dueFilter === "ALL" && (
+                  <span className="text-[10px] font-bold text-[#2F8E86] bg-[#E7F1F2] px-1.5 py-0.5 rounded">All</span>
+                )}
+              </div>
               <p className="text-2xl font-extrabold text-[#111827] dark:text-white mt-1">
-                {filteredBookingRecords.length}
+                {baseBookingRecords.length}
               </p>
             </div>
+
+            {/* Total Freight Card */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Freight</p>
               <p className="text-xl font-bold text-[#111827] dark:text-slate-200 font-mono mt-1">
-                {formatCurrency(filteredBookingRecords.reduce((s, r) => s + (r.totalFreight || 0), 0))}
+                {formatCurrency(baseBookingRecords.reduce((s, r) => s + (r.totalFreight || 0), 0))}
               </p>
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+
+            {/* GrandTotal Card */}
+            <div
+              onClick={() => setDueFilter("ALL")}
+              className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs hover:border-[#D9E2E3] transition-all cursor-pointer"
+            >
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">GrandTotal</p>
               <p className="text-xl font-bold text-[#2F8E86] font-mono mt-1">
-                {formatCurrency(filteredBookingRecords.reduce((s, r) => s + (r.grandTotal || 0), 0))}
+                {formatCurrency(baseBookingRecords.reduce((s, r) => s + (r.grandTotal || 0), 0))}
               </p>
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Payment Received</p>
+
+            {/* Payment Received Card (Clickable Filter for Due == 0) */}
+            <div
+              onClick={() => setDueFilter(dueFilter === "RECEIVED" ? "ALL" : "RECEIVED")}
+              className={`bg-white dark:bg-slate-900 rounded-2xl p-5 border transition-all cursor-pointer select-none group ${
+                dueFilter === "RECEIVED"
+                  ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-950/20"
+                  : "border-[#E5EAEB] dark:border-slate-800 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Payment Received</p>
+                {dueFilter === "RECEIVED" && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                    Active
+                  </span>
+                )}
+              </div>
               <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">
                 {formatCurrency(
-                  filteredBookingRecords.reduce((sum, r) => {
+                  baseBookingRecords.reduce((sum, r) => {
                     if (r.settledReceivedAmount != null && r.settledReceivedAmount > 0) {
                       return sum + r.settledReceivedAmount;
                     }
@@ -978,14 +1039,61 @@ function ReportsContent() {
                   }, 0)
                 )}
               </p>
+              <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-1">
+                {baseBookingRecords.filter((r) => (r.dueAmount || 0) <= 0).length} bilties with zero due
+              </p>
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Outstanding Due</p>
+
+            {/* Outstanding Due Card (Clickable Filter for Due > 0) */}
+            <div
+              onClick={() => setDueFilter(dueFilter === "DUE" ? "ALL" : "DUE")}
+              className={`bg-white dark:bg-slate-900 rounded-2xl p-5 border transition-all cursor-pointer select-none group ${
+                dueFilter === "DUE"
+                  ? "border-[#D95C5C] shadow-md ring-2 ring-rose-500/20 bg-rose-50/30 dark:bg-rose-950/20"
+                  : "border-[#E5EAEB] dark:border-slate-800 shadow-xs hover:border-rose-300 dark:hover:border-rose-700 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-[#D95C5C]">Outstanding Due</p>
+                {dueFilter === "DUE" && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#D95C5C] text-white">
+                    Active
+                  </span>
+                )}
+              </div>
               <p className="text-xl font-bold text-[#D95C5C] font-mono mt-1">
-                {formatCurrency(filteredBookingRecords.reduce((s, r) => s + (r.dueAmount || 0), 0))}
+                {formatCurrency(baseBookingRecords.reduce((s, r) => s + (r.dueAmount || 0), 0))}
+              </p>
+              <p className="text-[11px] text-[#64748B] dark:text-slate-400 mt-1">
+                {baseBookingRecords.filter((r) => (r.dueAmount || 0) > 0).length} bilties with pending due
               </p>
             </div>
           </div>
+
+          {/* Active Due Filter Status Indicator */}
+          {dueFilter !== "ALL" && (
+            <div className="flex items-center gap-2 p-2.5 px-4 bg-slate-50 dark:bg-slate-850 rounded-xl border border-[#E5EAEB] dark:border-slate-800 text-xs">
+              <span className="font-semibold text-[#64748B] dark:text-slate-400">Filtered View:</span>
+              {dueFilter === "RECEIVED" ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Payment Received (Due = ₹0) • Showing {filteredBookingRecords.length} of {baseBookingRecords.length} records
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-xs bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Outstanding Due (Due &gt; ₹0) • Showing {filteredBookingRecords.length} of {baseBookingRecords.length} records
+                </span>
+              )}
+              <button
+                onClick={() => setDueFilter("ALL")}
+                className="ml-auto text-xs font-semibold text-[#2F8E86] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <span>Reset to All</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
             {/* Table Header Bar with Bulk Print Bilties Action */}

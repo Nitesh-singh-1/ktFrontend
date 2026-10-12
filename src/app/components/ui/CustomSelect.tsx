@@ -80,7 +80,7 @@ export default function CustomSelect({
     );
   });
 
-  const isFullWidth = className.includes("w-full") || className.includes("w-");
+  const isFullWidth = className.includes("w-full");
 
   const updateCoords = () => {
     if (!containerRef.current) return;

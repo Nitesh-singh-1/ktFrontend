@@ -63,18 +63,15 @@ function MoneyReceiptsContent() {
 
   useEffect(() => {
     fetchReceipts();
-  }, [startDate, endDate, statusFilter]);
+  }, [startDate, endDate]);
 
-  const fetchReceipts = async (searchTerm = search) => {
+  const fetchReceipts = async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await moneyReceiptService.getReceipts({
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        search: searchTerm || undefined,
-        paymentMode: paymentModeFilter !== "ALL" ? paymentModeFilter : undefined,
-        status: statusFilter !== "ALL" ? statusFilter : undefined,
       });
       // Ensure each receipt's baseFreight is its Bilty grand total and totalAmount is baseFreight + moneyReceiptCharge (₹10)
       const enrichedReceipts = (res || []).map((r) => {
@@ -208,7 +205,7 @@ function MoneyReceiptsContent() {
   // Reset pagination on filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [startDate, endDate, search, paymentModeFilter, payerFilter]);
+  }, [startDate, endDate, search, paymentModeFilter, payerFilter, statusFilter]);
 
   // Unique Payers List for the Party Filter
   const uniquePayers = useMemo(() => {
@@ -271,6 +268,13 @@ function MoneyReceiptsContent() {
   }, [filteredReceipts, currentPage, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filteredReceipts.length / pageSize));
+
+  // Clamp current page if totalPages shrinks
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   // Preset Date Handlers
   const handleSetThisMonth = () => {
@@ -370,17 +374,17 @@ function MoneyReceiptsContent() {
   const collectedReceipts = receipts.filter((r) => r.isCollected !== false);
   const pendingReceipts = receipts.filter((r) => r.isCollected === false);
 
-  const totalAmount = filteredReceipts.reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
-  const totalCollectedAmount = filteredReceipts
+  const totalAmount = receipts.reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
+  const totalCollectedAmount = receipts
     .filter((r) => r.isCollected !== false)
     .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
-  const totalPendingAmount = filteredReceipts
+  const totalPendingAmount = receipts
     .filter((r) => r.isCollected === false)
     .reduce((sum, r) => sum + (Number(r.dueAmount ?? r.totalAmount) || 0), 0);
-  const totalCash = filteredReceipts
+  const totalCash = receipts
     .filter((r) => r.isCollected !== false && (r.paymentMode || "").toLowerCase() === "cash")
     .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
-  const totalOnline = filteredReceipts
+  const totalOnline = receipts
     .filter((r) => r.isCollected !== false && (r.paymentMode || "").toLowerCase() !== "cash")
     .reduce((sum, r) => sum + (Number(r.totalAmount) || 0), 0);
 
@@ -430,7 +434,7 @@ function MoneyReceiptsContent() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
           <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Money Receipts</p>
           <div className="flex items-baseline gap-2 mt-1">
-            <p className="text-2xl font-extrabold text-[#111827] dark:text-white">{filteredReceipts.length}</p>
+            <p className="text-2xl font-extrabold text-[#111827] dark:text-white">{totalCount}</p>
             <span className="text-[11px] text-emerald-600 font-bold">({collectedReceipts.length} collected)</span>
           </div>
           <p className="text-[10px] text-[#94A3B8] mt-1">Paid Bilty transactions</p>
@@ -454,7 +458,7 @@ function MoneyReceiptsContent() {
           <p className="text-xl font-bold text-amber-600 dark:text-amber-400 font-mono mt-1">
             {formatCurrency(totalPendingAmount)}
           </p>
-          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-1">Paisa Baad Me Aane Wala</p>
+          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-1">Awaiting cashier collection</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
@@ -473,7 +477,7 @@ function MoneyReceiptsContent() {
       </div>
 
       {/* Modern Filter Toolbar with CustomSelect & 2 DatePickers */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 p-4 shadow-xs space-y-3.5">
         {/* Status Quick Filter Tabs */}
         <div className="flex flex-wrap items-center gap-2 border-b border-[#E5EAEB] dark:border-slate-800 pb-3">
           <button
@@ -507,7 +511,7 @@ function MoneyReceiptsContent() {
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>MR Issued / Collected</span>
+            <span>Collected</span>
             <span
               className={`px-1.5 py-0.5 rounded-full text-[10px] ${
                 statusFilter === "COLLECTED"
@@ -529,136 +533,127 @@ function MoneyReceiptsContent() {
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>Pending Collection</span>
-            {pendingReceipts.length > 0 && (
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                  statusFilter === "PENDING"
-                    ? "bg-white/25 text-white"
-                    : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100"
-                }`}
-              >
-                {pendingReceipts.length}
-              </span>
-            )}
+            <span>Pending</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                statusFilter === "PENDING"
+                  ? "bg-white/25 text-white"
+                  : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100"
+              }`}
+            >
+              {pendingReceipts.length}
+            </span>
           </button>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            {/* Live Search */}
-            <div className="relative min-w-[220px] flex-1 sm:flex-initial">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-              <input
-                type="text"
-                placeholder="Search MR No, Bilty No, Payer..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-[#F7F8F8] dark:bg-slate-800/80 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2F8E86] focus:ring-1 focus:ring-[#2F8E86] transition"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  aria-label="Clear search"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
 
-            {/* Payer / Customer Filter Dropdown */}
-            <CustomSelect
-              value={payerFilter}
-              onChange={(val) => setPayerFilter(String(val))}
-              icon={<Building2 className="w-3.5 h-3.5" />}
-              searchable={true}
-              options={[
-                { label: `All Payers (${uniquePayers.length})`, value: "ALL" },
-                ...uniquePayers.map((p) => ({
-                  label: p.name,
-                  value: p.name,
-                  badge: p.count,
-                })),
-              ]}
-              className="w-full sm:w-auto min-w-[180px]"
+        {/* All Filters on a Single Line */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full">
+          {/* Live Search */}
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <input
+              type="text"
+              placeholder="Search MR No, Bilty No, Payer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 bg-[#F7F8F8] dark:bg-slate-800/80 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs text-[#111827] dark:text-slate-100 placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2F8E86] focus:ring-1 focus:ring-[#2F8E86] transition"
             />
-
-            {/* Payment Mode Filter Dropdown */}
-            <CustomSelect
-              value={paymentModeFilter}
-              onChange={(val) => setPaymentModeFilter(String(val))}
-              icon={<CreditCard className="w-3.5 h-3.5" />}
-              options={[
-                { label: "All Modes", value: "ALL" },
-                { label: "CASH", value: "CASH" },
-                { label: "UPI", value: "UPI" },
-                { label: "CHEQUE", value: "CHEQUE" },
-                { label: "NEFT / RTGS", value: "NEFT" },
-                { label: "BANK TRANSFER", value: "BANK_TRANSFER" },
-              ]}
-              className="w-full sm:w-auto min-w-[140px]"
-            />
-          </div>
-
-          {/* 2 Separate DatePickers (From Date & To Date) */}
-          <div className="flex flex-wrap items-center gap-2 text-xs w-full lg:w-auto justify-end">
-            <div className="flex items-center gap-1.5">
-              <DatePicker
-                value={startDate}
-                onChange={(d) => setStartDate(d)}
-                placeholder="From Date"
-                maxDate={endDate || todayStr}
-                align="right"
-              />
-              <span className="text-slate-400 font-semibold text-xs">to</span>
-              <DatePicker
-                value={endDate}
-                onChange={(d) => setEndDate(d)}
-                placeholder="To Date"
-                minDate={startDate}
-                maxDate={todayStr}
-                align="right"
-              />
-            </div>
-
-            {/* Quick Presets */}
-            <div className="hidden sm:flex items-center gap-1">
+            {search && (
               <button
                 type="button"
-                onClick={handleSetThisMonth}
-                className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-              >
-                This Month
-              </button>
-              <button
-                type="button"
-                onClick={handleSetLastMonth}
-                className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-              >
-                Last Month
-              </button>
-              <button
-                type="button"
-                onClick={handleSetLast30Days}
-                className="px-2.5 py-1.5 rounded-xl border border-[#D9E2E3] dark:border-slate-700 bg-[#F7F8F8] dark:bg-slate-800 text-[11px] font-semibold text-[#64748B] dark:text-slate-300 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 hover:text-[#25776F] transition cursor-pointer"
-              >
-                Last 30 Days
-              </button>
-            </div>
-
-            {(startDate || endDate || search || paymentModeFilter !== "ALL" || payerFilter !== "ALL") && (
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                title="Clear all filters"
-                className="p-2 text-xs text-[#D95C5C] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer flex items-center gap-1 border border-rose-200 dark:border-rose-900/50"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
-                <span className="text-[11px] font-bold">Clear</span>
               </button>
             )}
           </div>
+
+          {/* Payer Filter Dropdown */}
+          <CustomSelect
+            value={payerFilter}
+            onChange={(val) => setPayerFilter(String(val))}
+            icon={<Building2 className="w-3.5 h-3.5" />}
+            searchable={true}
+            options={[
+              { label: `All Payers (${uniquePayers.length})`, value: "ALL" },
+              ...uniquePayers.map((p) => ({
+                label: p.name,
+                value: p.name,
+                badge: p.count,
+              })),
+            ]}
+            className="w-40 shrink-0"
+          />
+
+          {/* Payment Mode Filter Dropdown */}
+          <CustomSelect
+            value={paymentModeFilter}
+            onChange={(val) => setPaymentModeFilter(String(val))}
+            icon={<CreditCard className="w-3.5 h-3.5" />}
+            options={[
+              { label: "All Modes", value: "ALL" },
+              { label: "CASH", value: "CASH" },
+              { label: "UPI", value: "UPI" },
+              { label: "CHEQUE", value: "CHEQUE" },
+              { label: "NEFT / RTGS", value: "NEFT" },
+              { label: "BANK TRANSFER", value: "BANK_TRANSFER" },
+            ]}
+            className="w-32 shrink-0"
+          />
+
+          {/* 2 Separate DatePickers (From Date & To Date) */}
+          <div className="flex items-center gap-1.5 shrink-0 text-xs">
+            <DatePicker
+              value={startDate}
+              onChange={(d) => setStartDate(d)}
+              placeholder="From Date"
+              maxDate={endDate || todayStr}
+              align="right"
+              className="w-32"
+            />
+            <span className="text-slate-400 font-semibold text-xs">to</span>
+            <DatePicker
+              value={endDate}
+              onChange={(d) => setEndDate(d)}
+              placeholder="To Date"
+              minDate={startDate}
+              maxDate={todayStr}
+              align="right"
+              className="w-32"
+            />
+          </div>
+
+          {/* Quick Presets */}
+          <CustomSelect
+            value=""
+            onChange={(val) => {
+              if (val === "this_month") handleSetThisMonth();
+              else if (val === "last_month") handleSetLastMonth();
+              else if (val === "last_30") handleSetLast30Days();
+            }}
+            placeholder="Presets"
+            options={[
+              { label: "This Month", value: "this_month" },
+              { label: "Last Month", value: "last_month" },
+              { label: "Last 30 Days", value: "last_30" },
+            ]}
+            className="w-28 shrink-0 hidden xl:block"
+          />
+
+          {/* Clear Button */}
+          {(startDate || endDate || search || paymentModeFilter !== "ALL" || payerFilter !== "ALL") && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              title="Clear all filters"
+              className="p-2 text-xs text-[#D95C5C] hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer flex items-center gap-1 border border-rose-200 dark:border-rose-900/50 shrink-0"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-bold">Clear</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -719,9 +714,13 @@ function MoneyReceiptsContent() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5">
                           {isPending ? (
-                            <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                              {r.receiptNo || "MR-PENDING"}
-                            </span>
+                            r.receiptNo && !r.receiptNo.toUpperCase().includes("PENDING") ? (
+                              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                                {r.receiptNo}
+                              </span>
+                            ) : (
+                              <span className="text-[#94A3B8] font-normal">—</span>
+                            )
                           ) : (
                             <button
                               type="button"
@@ -730,11 +729,6 @@ function MoneyReceiptsContent() {
                             >
                               {r.receiptNo}
                             </button>
-                          )}
-                          {isPending && (
-                            <span className="px-1.5 py-0.2 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 text-[9px] font-bold rounded-sm uppercase">
-                              PENDING
-                            </span>
                           )}
                         </div>
                       </td>
@@ -769,9 +763,9 @@ function MoneyReceiptsContent() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         {isPending ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 rounded-md uppercase">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 rounded-md">
                             <Clock className="w-2.5 h-2.5" />
-                            <span>NOT RECEIVED</span>
+                            <span>Pending</span>
                           </span>
                         ) : (
                           <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md uppercase">
@@ -803,7 +797,7 @@ function MoneyReceiptsContent() {
                             className="px-3 py-1.5 rounded-lg bg-[#2F8E86] hover:bg-[#25776F] text-white transition cursor-pointer inline-flex items-center gap-1.5 text-xs font-bold shadow-xs hover:shadow-sm"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Receive Payment / Issue MR</span>
+                            <span>Issue MR</span>
                           </button>
                         ) : (
                           <button
@@ -839,7 +833,7 @@ function MoneyReceiptsContent() {
           <div className="px-6 py-4 bg-white dark:bg-slate-900 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs text-[#64748B] dark:text-slate-400">
               <span>
-                Showing <strong className="text-[#111827] dark:text-slate-200">{(currentPage - 1) * pageSize + 1}</strong> to{" "}
+                Showing <strong className="text-[#111827] dark:text-slate-200">{filteredReceipts.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}</strong> to{" "}
                 <strong className="text-[#111827] dark:text-slate-200">{Math.min(currentPage * pageSize, filteredReceipts.length)}</strong> of{" "}
                 <strong className="text-[#111827] dark:text-slate-200">{filteredReceipts.length}</strong> receipts
               </span>
@@ -852,12 +846,14 @@ function MoneyReceiptsContent() {
                     setCurrentPage(1);
                   }}
                   options={[
-                    { label: "10 per page", value: 10 },
-                    { label: "25 per page", value: 25 },
-                    { label: "50 per page", value: 50 },
-                    { label: "100 per page", value: 100 },
+                    { label: "10 / page", value: 10 },
+                    { label: "25 / page", value: 25 },
+                    { label: "50 / page", value: 50 },
+                    { label: "100 / page", value: 100 },
                   ]}
-                  className="w-32"
+                  size="sm"
+                  direction="up"
+                  className="w-28"
                 />
               </div>
             </div>
