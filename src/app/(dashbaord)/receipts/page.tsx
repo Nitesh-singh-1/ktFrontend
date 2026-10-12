@@ -400,17 +400,17 @@ function MoneyReceiptsContent() {
             <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-slate-800 flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs">
               <Banknote className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
-                  Money Receipts (MR) & Counter Collections
+                  Receipts
                 </h1>
                 <span className="text-[11px] font-extrabold px-2.5 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-full">
                   Paid Bilties
                 </span>
               </div>
               <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
-                Official legal money receipts generated for Paid Bilties (including Freight, Hamali, D.D. Charge, Stationery, and GST).
+                Money receipts for paid bilties — freight, hamali, D.D. charge and GST.
               </p>
             </div>
           </div>
@@ -667,13 +667,13 @@ function MoneyReceiptsContent() {
 
       {/* Money Receipts Table (Single-Line Horizontally Scrollable) */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
-        <div className="px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200">
-              Money Receipts Ledger
+              Receipts
             </span>
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
-              ({filteredReceipts.length} receipt{filteredReceipts.length === 1 ? "" : "s"})
+              ({filteredReceipts.length})
             </span>
           </div>
         </div>

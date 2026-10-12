@@ -71,7 +71,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
 
   if (!isAllowed) {
     return (
-      <div className="max-w-2xl mx-auto my-12 p-8 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs text-center space-y-5">
+      <div className="max-w-2xl mx-auto my-8 sm:my-12 p-5 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs text-center space-y-5">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#2F8E86]">
           <Lock className="w-8 h-8" />
         </div>
@@ -79,30 +79,29 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
         <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-[#B76E32] text-xs font-bold uppercase">
             <Shield className="w-3.5 h-3.5" />
-            <span>Subscription or Role Protected</span>
+            <span>Access Restricted</span>
           </div>
           <h2 className="text-xl font-bold text-[#111827] dark:text-white">
-            {moduleName ? `${moduleName} Access Restricted` : "Module Access Restricted"}
+            {moduleName ? `${moduleName} not available` : "Module not available"}
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400 max-w-md mx-auto">
-            Your current client subscription plan tier or user dedicated page permissions do not grant access to this page (
-            <code className="text-[#25776F] font-mono text-xs bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{permission}</code>).
+            Your current plan or role doesn&apos;t include this module. Ask your admin to grant access, or upgrade your plan.
           </p>
+          {isSuperUser && (
+            <p className="text-[11px] text-[#94A3B8] dark:text-slate-500 max-w-md mx-auto">
+              Permission key:{" "}
+              <code className="text-[#25776F] font-mono bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{permission}</code>
+            </p>
+          )}
         </div>
 
-        <div className="pt-2 flex items-center justify-center gap-3">
-          <Link
-            href="/dashboard"
-            className="btn-secondary"
-          >
+        <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+          <Link href="/dashboard" className="btn-secondary !h-auto !min-h-10 py-2">
             Dashboard
           </Link>
           {isSuperUser && (
-            <Link
-              href="/settings"
-              className="btn-primary"
-            >
-              Manage Permissions & Plan
+            <Link href="/settings" className="btn-primary !h-auto !min-h-10 py-2">
+              Manage Access
             </Link>
           )}
         </div>

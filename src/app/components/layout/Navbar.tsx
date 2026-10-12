@@ -70,7 +70,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
   return (
     <header className="h-16 bg-white dark:bg-slate-900 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
       {/* Left: active organization + plan */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
         {/* Mobile hamburger — opens the nav drawer */}
         <button
           onClick={onMenuClick}
@@ -82,8 +82,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void } = {
         <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#2F8E86] shrink-0">
           <Building2 className="w-4 h-4" />
         </div>
-        <div className="min-w-0">
-          <h1 className="text-sm font-bold text-[#111827] dark:text-white leading-tight truncate max-w-[40vw]">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-sm font-bold text-[#111827] dark:text-white leading-tight truncate" title={companyTitle}>
             {companyTitle}
           </h1>
           {planTier && (

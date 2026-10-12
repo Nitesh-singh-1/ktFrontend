@@ -687,24 +687,24 @@ export default function UsersManagementPage() {
 
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#2F8E86] dark:text-teal-400 mb-1">
               <ShieldCheck className="w-4 h-4" />
-              <span>Superadmin Control Center</span>
+              <span>Admin</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] dark:text-white tracking-tight">
-              User Accounts & Role Permissions
+              Users &amp; Roles
             </h1>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400 mt-1">
-              Create sub-users with default standard rights, reset user passwords, and manage granular feature access.
+              Create users, reset passwords, and manage feature access.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
             <button
               onClick={loadUsers}
               disabled={loading}
-              className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh</span>
@@ -712,18 +712,18 @@ export default function UsersManagementPage() {
 
             <button
               onClick={() => setShowInviteModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Invite by Email</span>
+              <span>Invite</span>
             </button>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center gap-2 cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add Directly</span>
+              <span>Add User</span>
             </button>
           </div>
         </div>

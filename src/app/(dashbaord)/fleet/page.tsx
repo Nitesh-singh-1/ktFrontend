@@ -158,17 +158,17 @@ export default function FleetMasterPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
       <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl font-bold text-[#111827] tracking-tight">
-              Stations, Drivers & Fleet Master
+              Fleet
             </h1>
             <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
-              Operations Directory
+              Directory
             </span>
           </div>
           <p className="text-xs text-[#64748B] mt-1">
-            Maintain master records for operating stations/hubs, commercial drivers, and fleet vehicles.
+            Stations, drivers and vehicles.
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export default function FleetMasterPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-[#64748B]">1. Stations & Operating Hubs</p>
+              <p className="text-xs font-semibold text-[#64748B]">Stations &amp; Hubs</p>
               <p className="text-2xl font-black text-[#111827] mt-1">{locations.length}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-white text-[#2F8E86] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
@@ -247,7 +247,7 @@ export default function FleetMasterPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-[#64748B]">2. Fleet Drivers</p>
+              <p className="text-xs font-semibold text-[#64748B]">Drivers</p>
               <p className="text-2xl font-black text-[#111827] mt-1">{drivers.length}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-white text-[#2F8E86] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
@@ -267,7 +267,7 @@ export default function FleetMasterPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-[#64748B]">3. Fleet Vehicles (Trucks)</p>
+              <p className="text-xs font-semibold text-[#64748B]">Vehicles</p>
               <p className="text-2xl font-black text-[#111827] mt-1">{vehicles.length}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-white text-[#2F8E86] border border-[#D9E2E3] flex items-center justify-center font-bold text-lg">
@@ -280,11 +280,11 @@ export default function FleetMasterPage() {
       {/* Tab Selector & Search Toolbar */}
       <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation Tabs (Ordered: Station/Hub -> Driver -> Vehicle) */}
-        <div className="flex items-center gap-1.5 w-full md:w-auto">
+        <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto scrollbar-thin -mx-1 px-1">
           {[
-            { id: "locations", label: "Stations & Hubs", icon: MapPin, count: locations.length },
+            { id: "locations", label: "Stations", icon: MapPin, count: locations.length },
             { id: "drivers", label: "Drivers", icon: User, count: drivers.length },
-            { id: "vehicles", label: "Vehicles (Trucks)", icon: Truck, count: vehicles.length },
+            { id: "vehicles", label: "Vehicles", icon: Truck, count: vehicles.length },
           ].map((tab) => {
             const isSelected = activeTab === tab.id;
             const Icon = tab.icon;
@@ -295,7 +295,7 @@ export default function FleetMasterPage() {
                   setActiveTab(tab.id as MasterTab);
                   setSearch("");
                 }}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
                   isSelected
                     ? "bg-[#2F8E86] text-white shadow-xs"
                     : "bg-white text-[#64748B] hover:bg-[#E7F1F2] border border-[#E5EAEB]"

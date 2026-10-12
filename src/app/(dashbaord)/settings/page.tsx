@@ -888,33 +888,33 @@ export default function SettingsPage() {
           <div className="w-12 h-12 rounded-xl bg-[#2F8E86] flex items-center justify-center shadow-xs text-white font-bold text-xl shrink-0">
             <Settings className="w-6 h-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
-                {isPlatformAdmin ? "SaaS Configuration & Permission Engine" : "Organization Settings"}
+                {isPlatformAdmin ? "Platform Settings" : "Settings"}
               </h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700">
                 {menuEntitlements.planTier || "Enterprise"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400">
-              Manage client menus, subscription plan tiers, dedicated user pages, document sequences, and tax policies
+              Branding, tax, sequences and integrations.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
           <button
             onClick={handleResetDefaults}
             disabled={saving}
-            className="px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
+            className="flex-1 md:flex-none px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
           >
             Reset
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>
