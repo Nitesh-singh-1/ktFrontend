@@ -156,6 +156,59 @@ describe("Bilty print templates", () => {
     expect(denseHtml).not.toContain('<div class="charge-label">GST / Tax</div>');
   });
 
+  it("Without GST hides logo, replaces Transporter Name with RECEIPT COPY, hides phone/email, and shows Authorized Signatory", () => {
+    const shipmentWithoutGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.NonTaxable,
+      totalTaxAmount: 0,
+    } as unknown as Shipment;
+
+    // --- Dense Preset ---
+    const denseHtml = renderBiltyBodyDense(shipmentWithoutGst);
+    // Header should use no-logo grid
+    expect(denseHtml).toContain('class="header no-logo"');
+    expect(denseHtml).not.toContain('class="logo-box"');
+    expect(denseHtml).not.toContain('class="logo-circle"');
+    // Transporter name replaced with RECEIPT COPY
+    expect(denseHtml).toContain('<div class="company-name">RECEIPT COPY</div>');
+    // Transporter phone, email, and GSTIN hidden
+    expect(denseHtml).not.toContain('class="company-contact"');
+    expect(denseHtml).not.toContain('class="company-gstin"');
+    // Address remains visible
+    expect(denseHtml).toContain('<div class="company-subtitle">H.O.:');
+    // Signature replaced with Authorized Signatory
+    expect(denseHtml).toContain("Authorized Signatory");
+
+    // --- Standard Preset ---
+    const standardHtml = renderBiltyBodyStandard(shipmentWithoutGst);
+    expect(standardHtml).toContain('<div class="brand-title">RECEIPT COPY</div>');
+    expect(standardHtml).not.toContain("Fleet &amp; Logistics Management Platform");
+    expect(standardHtml).not.toContain("• Ph:");
+    expect(standardHtml).not.toContain("• GSTIN:");
+    expect(standardHtml).toContain("Head Office:");
+    expect(standardHtml).toContain("Authorized Signatory");
+  });
+
+  it("With GST preserves logo, transporter name, contact info, and company signature", () => {
+    const shipmentWithGst = {
+      ...mockShipmentSingleItem,
+      taxTreatment: TaxTreatment.GST_Regular,
+      totalTaxAmount: 60,
+    } as unknown as Shipment;
+
+    // --- Dense Preset ---
+    const denseHtml = renderBiltyBodyDense(shipmentWithGst);
+    expect(denseHtml).not.toContain('class="header no-logo"');
+    expect(denseHtml).toContain('class="logo-box"');
+    expect(denseHtml).not.toContain('<div class="company-name">RECEIPT COPY</div>');
+    expect(denseHtml).toContain("Auth. Signatory");
+
+    // --- Standard Preset ---
+    const standardHtml = renderBiltyBodyStandard(shipmentWithGst);
+    expect(standardHtml).not.toContain('<div class="brand-title">RECEIPT COPY</div>');
+    expect(standardHtml).toContain("(Auth Sign)");
+  });
+
   describe("Station strip rules", () => {
     it("shows up to 5 stations WITH phone number when stations count is <= 5", () => {
       const stations = [

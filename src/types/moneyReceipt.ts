@@ -27,6 +27,9 @@ export interface MoneyReceiptDto {
   collectedBy?: string;
   remarks?: string;
   createdAt: string;
+  isCollected?: boolean;
+  paidAmount?: number;
+  dueAmount?: number;
 }
 
 export interface MoneyReceiptFilterRequest {
@@ -34,4 +37,13 @@ export interface MoneyReceiptFilterRequest {
   endDate?: string;
   search?: string;
   paymentMode?: string;
+  status?: string;
+}
+
+export interface CollectMoneyReceiptRequest {
+  paymentDate: string;
+  paymentMode: string;
+  referenceNo?: string;
+  receivedAmount?: number;
+  remarks?: string;
 }

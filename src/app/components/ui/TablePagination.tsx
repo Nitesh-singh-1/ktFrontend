@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import CustomSelect from "./CustomSelect";
 
 export interface TablePaginationProps {
   page: number;
@@ -51,17 +52,17 @@ export function TablePagination({
         {onPageSizeChange && (
           <div className="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-3">
             <span className="text-[11px] text-[#94A3B8]">Per page:</span>
-            <select
+            <CustomSelect
               value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="h-7 px-2 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-md text-[11px] font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2F8E86]"
-            >
-              {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => onPageSizeChange(Number(val))}
+              options={pageSizeOptions.map((opt) => ({
+                label: `${opt} / page`,
+                value: opt,
+              }))}
+              size="sm"
+              direction="up"
+              className="w-28"
+            />
           </div>
         )}
       </div>

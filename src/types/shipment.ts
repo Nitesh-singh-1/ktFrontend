@@ -451,6 +451,10 @@ export interface CreateShipmentRequest {
   totalFreight: number;
   totalTaxAmount: number;
   paidAmount: number;
+  settledPaymentMode?: string;
+  settlementReferenceNo?: string;
+  isSettled?: boolean;
+  deliveryDate?: string;
   remarks?: string;
   bookingClerk?: string;
   customerInvoices?: CreateConsignmentInvoiceReferenceRequest[];

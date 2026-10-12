@@ -15,27 +15,38 @@ import { toast } from "@/context/ToastContext";
  * Returns an HTML string; callers embed it at the top of their print document and must include
  * PRINT_HEADER_CSS once in their <style>.
  */
-export function renderPrintHeaderHtml(profile?: TenantPrintProfile): string {
+export function renderPrintHeaderHtml(
+  profile?: TenantPrintProfile,
+  options?: { withoutGst?: boolean },
+): string {
   const p = profile ?? getTenantPrintProfile();
+  const withoutGst = options?.withoutGst ?? false;
 
-  const contactBits = [
-    p.phone ? `Phone: ${p.phone}` : "",
-    p.email ? `Email: ${p.email}` : "",
-    p.gstin ? `GSTIN: ${p.gstin}` : "",
-    p.panNumber ? `PAN: ${p.panNumber}` : "",
-  ].filter(Boolean).join("  |  ");
+  const contactBits = withoutGst
+    ? ""
+    : [
+        p.phone ? `Phone: ${p.phone}` : "",
+        p.email ? `Email: ${p.email}` : "",
+        p.gstin ? `GSTIN: ${p.gstin}` : "",
+        p.panNumber ? `PAN: ${p.panNumber}` : "",
+      ]
+        .filter(Boolean)
+        .join("  |  ");
 
-  const logoHtml = p.logoUrl
-    ? `<div class="kt-ph-logobox"><img class="kt-ph-logo" src="${p.logoUrl}" alt="Logo" onerror="this.parentNode.style.display='none'" /></div>`
-    : "";
+  const logoHtml =
+    !withoutGst && p.logoUrl
+      ? `<div class="kt-ph-logobox"><img class="kt-ph-logo" src="${p.logoUrl}" alt="Logo" onerror="this.parentNode.style.display='none'" /></div>`
+      : "";
+
+  const title = withoutGst ? "RECEIPT COPY" : escapeHtml(p.companyName);
 
   return `
     <div class="kt-ph">
       ${logoHtml}
       <div class="kt-ph-info">
-        <div class="kt-ph-name">${escapeHtml(p.companyName)}</div>
-        ${p.tagline || p.address ? `<div class="kt-ph-sub">${escapeHtml(p.tagline || p.address || "")}</div>` : ""}
-        ${p.address && p.tagline ? `<div class="kt-ph-sub">${escapeHtml(p.address)}</div>` : ""}
+        <div class="kt-ph-name">${title}</div>
+        ${!withoutGst && p.tagline ? `<div class="kt-ph-sub">${escapeHtml(p.tagline)}</div>` : ""}
+        ${p.address ? `<div class="kt-ph-sub">${escapeHtml(p.address)}</div>` : ""}
         ${contactBits ? `<div class="kt-ph-contact">${escapeHtml(contactBits)}</div>` : ""}
       </div>
     </div>`;

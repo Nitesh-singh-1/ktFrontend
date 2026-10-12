@@ -14,9 +14,7 @@ import ShipmentStatusBadge from "@/app/components/shipment/ShipmentStatusBadge";
 import StatusTransitionModal from "@/app/components/shipment/StatusTransitionModal";
 import { printShipment } from "@/utils/print/printShipment";
 import PrintOptionsModal from "@/app/components/print/PrintOptionsModal";
-import { DataTable } from "@/app/components/ui/DataTable";
 import CustomSelect from "@/app/components/ui/CustomSelect";
-import TablePagination from "@/app/components/ui/TablePagination";
 import { useNavigation } from "@/context/NavigationContext";
 import {
   Plus,
@@ -31,6 +29,11 @@ import {
   Truck,
   RotateCcw,
   Filter,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 
 const TAX_FILTER_CHIPS = [
@@ -225,120 +228,290 @@ export default function ShipmentsListPage() {
         </div>
       )}
 
-      {/* Shipments Table */}
-      <DataTable<Shipment>
-        title={`Consignment Records (${totalCount})`}
-        headerRight={`Page ${page} of ${totalPages}`}
-        data={shipments}
-        loading={loading}
-        loadingText="Loading consignments…"
-        rowKey={(s) => s.id}
-        emptyIcon={<Package className="w-8 h-8" />}
-        emptyTitle="No consignments found"
-        emptyMessage="Try adjusting your filters or create a new consignment."
-        emptyAction={
-          hasPermission("consignments.create.create") ? (
-            <Link href="/shipments/create" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs">
+      {/* Shipments / All Bilty Table (Money Receipts Matching Design) */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
+        <div className="px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200">
+              Consignment Records (All Bilties)
+            </span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
+              ({totalCount} {totalCount === 1 ? "consignment" : "consignments"})
+            </span>
+          </div>
+
+          {hasPermission("consignments.create.create") && (
+            <Link
+              href="/shipments/create"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs shadow-xs transition"
+            >
               <Plus className="w-3.5 h-3.5" /> Book Consignment
             </Link>
-          ) : undefined
-        }
-        footer={
-          <TablePagination
-            page={page}
-            pageSize={pageSize}
-            totalCount={totalCount}
-            onPageChange={setPage}
-            onPageSizeChange={(sz) => {
-              setPageSize(sz);
-              setPage(1);
-            }}
-          />
-        }
-        columns={[
-          {
-            key: "shipmentNo",
-            header: "GR / Waybill No",
-            render: (s) => (
-              <div className="whitespace-nowrap">
-                <Link href={`/shipments/details?id=${s.id}`} className="font-mono font-bold text-[#2F8E86] dark:text-teal-400 hover:text-[#25776F] hover:underline block">{s.shipmentNo}</Link>
-                {s.invoiceNo && <span className="text-[10px] text-[#94A3B8] block mt-0.5">Inv: {s.invoiceNo}</span>}
+          )}
+        </div>
+
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left border-collapse text-xs whitespace-nowrap">
+            <thead>
+              <tr className="bg-[#F7F8F8] dark:bg-slate-800/40 border-b border-[#E5EAEB] dark:border-slate-800 text-[10px] font-bold text-[#64748B] dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                <th className="py-3 px-4">GR / Waybill No</th>
+                <th className="py-3 px-4">Invoice No</th>
+                <th className="py-3 px-4">Booking Date</th>
+                <th className="py-3 px-4">Route</th>
+                <th className="py-3 px-4">Consignor (Sender)</th>
+                <th className="py-3 px-4">Consignee (Receiver)</th>
+                <th className="py-3 px-4 text-center">Bill Type</th>
+                <th className="py-3 px-4">Vehicle</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Grand Total (₹)</th>
+                <th className="py-3 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800">
+              {loading ? (
+                <tr>
+                  <td colSpan={11} className="py-12 text-center text-[#64748B] dark:text-slate-400">
+                    <div className="w-6 h-6 mx-auto border-2 border-[#2F8E86] border-t-transparent rounded-full animate-spin mb-2" />
+                    Loading consignments...
+                  </td>
+                </tr>
+              ) : shipments.length > 0 ? (
+                shipments.map((s) => {
+                  const term = s.paymentTerm;
+                  const isPaid = term === PaymentTerm.Paid;
+                  const isTbb = term === PaymentTerm.TBB;
+                  return (
+                    <tr
+                      key={s.id}
+                      className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/60 transition whitespace-nowrap"
+                    >
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/shipments/details?id=${s.id}`}
+                          className="font-mono font-bold text-[#2F8E86] dark:text-teal-400 hover:text-[#25776F] hover:underline whitespace-nowrap block"
+                        >
+                          {s.shipmentNo}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-mono text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {s.invoiceNo || <span className="text-[#94A3B8] font-normal">—</span>}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-[#64748B] dark:text-slate-400 font-medium">
+                        {new Date(s.shipmentDate || s.createdAt).toLocaleDateString("en-IN")}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5 font-bold text-[#111827] dark:text-slate-200 whitespace-nowrap">
+                          <span>{s.fromLocation}</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-[#4A90E2] shrink-0" />
+                          <span>{s.toLocation}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div
+                          className="font-semibold text-[#111827] dark:text-white truncate max-w-[150px]"
+                          title={s.consignorName}
+                        >
+                          {s.consignorName || <span className="text-[#94A3B8] font-normal">—</span>}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div
+                          className="font-semibold text-[#111827] dark:text-white truncate max-w-[150px]"
+                          title={s.consigneeName}
+                        >
+                          {s.consigneeName || <span className="text-[#94A3B8] font-normal">—</span>}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span
+                          className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-md border uppercase whitespace-nowrap ${
+                            isPaid
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                              : isTbb
+                              ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                              : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                          }`}
+                        >
+                          {isPaid ? "PAID" : isTbb ? "TBB" : "TO PAY"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="whitespace-nowrap font-mono font-bold text-[#111827] dark:text-slate-300">
+                          {s.truckNo || <span className="text-[#94A3B8] font-normal">—</span>}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <ShipmentStatusBadge status={s.status} />
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-[#111827] dark:text-white">
+                        ₹{(s.grandTotal || 0).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Link
+                            href={`/shipments/details?id=${s.id}`}
+                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] dark:bg-slate-800 dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md font-semibold text-[11px] transition shadow-2xs"
+                            title="View Details & Timeline"
+                          >
+                            View
+                          </Link>
+                          {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedForStatus(s)}
+                              className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] dark:bg-slate-800 dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md font-semibold text-[11px] transition cursor-pointer shadow-2xs"
+                              title="Update Status Stage"
+                            >
+                              Status
+                            </button>
+                          )}
+                          {(hasPermission("consignments.all.print") || hasPermission("consignments.create.print")) && (
+                            <button
+                              type="button"
+                              onClick={() => setPrintTarget(s)}
+                              className="p-1.5 bg-white hover:bg-[#E7F1F2] dark:bg-slate-800 dark:hover:bg-slate-700 text-[#64748B] dark:text-slate-300 border border-[#D9E2E3] dark:border-slate-700 rounded-md transition cursor-pointer shadow-2xs"
+                              title="Print Waybill"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
+                            <Link
+                              href={`/shipments/create?id=${s.id}`}
+                              className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700 rounded-md transition"
+                              title="Edit Consignment"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </Link>
+                          )}
+                          {s.status !== ShipmentStatus.Cancelled &&
+                            (hasPermission("consignments.all.delete") || hasPermission("consignments.create.delete")) && (
+                              <button
+                                type="button"
+                                onClick={() => handleCancelShipment(s.id, s.shipmentNo)}
+                                className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition cursor-pointer"
+                                title="Cancel Consignment"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={11} className="py-12 text-center text-[#64748B] dark:text-slate-400">
+                    <Package className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                    <p className="font-bold text-slate-700 dark:text-slate-300">No Consignments Found</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Try adjusting your filters or create a new consignment.
+                    </p>
+                    {hasPermission("consignments.create.create") && (
+                      <div className="mt-4 flex justify-center">
+                        <Link
+                          href="/shipments/create"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Book Consignment
+                        </Link>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Footer (Matching Money Receipts) */}
+        {totalCount > 0 && (
+          <div className="px-6 py-4 bg-white dark:bg-slate-900 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-[#64748B] dark:text-slate-400">
+              <span>
+                Showing <strong className="text-[#111827] dark:text-slate-200">{(page - 1) * pageSize + 1}</strong> to{" "}
+                <strong className="text-[#111827] dark:text-slate-200">{Math.min(page * pageSize, totalCount)}</strong> of{" "}
+                <strong className="text-[#111827] dark:text-slate-200">{totalCount}</strong> consignments
+              </span>
+
+              <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 dark:border-slate-700 pl-3">
+                <CustomSelect
+                  value={pageSize}
+                  onChange={(val) => {
+                    setPageSize(Number(val));
+                    setPage(1);
+                  }}
+                  options={[
+                    { label: "10 / page", value: 10 },
+                    { label: "25 / page", value: 25 },
+                    { label: "50 / page", value: 50 },
+                    { label: "100 / page", value: 100 },
+                  ]}
+                  size="sm"
+                  direction="up"
+                  className="w-28"
+                />
               </div>
-            ),
-          },
-          {
-            key: "date",
-            header: "Booking Date",
-            render: (s) => <span className="whitespace-nowrap text-[#64748B] dark:text-slate-400 font-medium">{new Date(s.shipmentDate || s.createdAt).toLocaleDateString('en-IN')}</span>,
-          },
-          {
-            key: "route",
-            header: "Route",
-            render: (s) => (
-              <div className="flex items-center gap-1.5 font-bold text-[#111827] dark:text-slate-200 whitespace-nowrap">
-                <span>{s.fromLocation}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#4A90E2] shrink-0" />
-                <span>{s.toLocation}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(1)}
+                disabled={page <= 1}
+                title="First Page"
+                aria-label="First page"
+                className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                title="Previous Page"
+                aria-label="Previous page"
+                className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-xs font-semibold text-[#111827] dark:text-slate-200">
+                  Page {page} of {totalPages}
+                </span>
               </div>
-            ),
-          },
-          {
-            key: "parties",
-            header: "Consignor & Receiver",
-            render: (s) => (
-              <div>
-                <div className="font-semibold text-[#111827] dark:text-white">{s.consignorName}</div>
-                <div className="text-[#64748B] dark:text-slate-400 text-[11px] mt-0.5">To: {s.consigneeName}</div>
-              </div>
-            ),
-          },
-          {
-            key: "vehicle",
-            header: "Vehicle",
-            render: (s) => <span className="whitespace-nowrap font-mono font-bold text-[#111827] dark:text-slate-300">{s.truckNo || <span className="text-[#94A3B8] font-normal">—</span>}</span>,
-          },
-          {
-            key: "status",
-            header: "Status",
-            render: (s) => <ShipmentStatusBadge status={s.status} />,
-          },
-          {
-            key: "grandTotal",
-            header: "Grand Total (₹)",
-            align: "right",
-            render: (s) => (
-              <div className="whitespace-nowrap font-mono font-bold text-[#111827] dark:text-white">
-                <div>₹{(s.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                <div className={`text-[10px] font-semibold ${s.paymentTerm === PaymentTerm.Paid ? "text-[#2F9E8F]" : "text-[#F4A261]"}`}>
-                  {s.paymentTerm === PaymentTerm.Paid ? "PAID" : s.paymentTerm === PaymentTerm.TBB ? "TBB" : "TO PAY"}
-                </div>
-              </div>
-            ),
-          },
-          {
-            key: "actions",
-            header: "Actions",
-            align: "center",
-            render: (s) => (
-              <div className="flex items-center justify-center gap-1.5">
-                <Link href={`/shipments/details?id=${s.id}`} className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition" title="View Details & Timeline">View</Link>
-                {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
-                  <button type="button" onClick={() => setSelectedForStatus(s)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] rounded-md font-semibold text-[11px] transition cursor-pointer" title="Update Status Stage">Status</button>
-                )}
-                {(hasPermission("consignments.all.print") || hasPermission("consignments.create.print")) && (
-                  <button type="button" onClick={() => setPrintTarget(s)} className="p-1.5 bg-white hover:bg-[#E7F1F2] text-[#64748B] border border-[#D9E2E3] rounded-md transition cursor-pointer" title="Print Waybill"><Printer className="w-3.5 h-3.5" /></button>
-                )}
-                {(hasPermission("consignments.create.edit") || hasPermission("consignments.all.edit")) && (
-                  <Link href={`/shipments/create?id=${s.id}`} className="p-1.5 text-[#64748B] hover:text-[#111827] hover:bg-[#E7F1F2] rounded-md transition" title="Edit Consignment"><Edit className="w-3.5 h-3.5" /></Link>
-                )}
-                {s.status !== ShipmentStatus.Cancelled && (hasPermission("consignments.all.delete") || hasPermission("consignments.create.delete")) && (
-                  <button type="button" onClick={() => handleCancelShipment(s.id, s.shipmentNo)} className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] hover:bg-red-50 rounded-md transition cursor-pointer" title="Cancel Consignment"><Trash2 className="w-3.5 h-3.5" /></button>
-                )}
-              </div>
-            ),
-          },
-        ]}
-      />
+
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                title="Next Page"
+                aria-label="Next page"
+                className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(totalPages)}
+                disabled={page >= totalPages}
+                title="Last Page"
+                aria-label="Last page"
+                className="p-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#64748B] dark:text-slate-300 hover:bg-[#F7F8F8] dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Status Transition Modal */}
       {selectedForStatus && (
