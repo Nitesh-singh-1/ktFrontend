@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Rounded square tile in FleetPulse brand teal -->
+  <rect width="64" height="64" rx="14" fill="#2F8E86"/>
+  <!-- Subtle top highlight for depth, keeps the mark from looking flat at larger sizes -->
+  <rect x="0" y="0" width="64" height="24" rx="14" fill="url(#topGloss)"/>
+  <defs>
+    <linearGradient id="topGloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Bold geometric F lettermark, slightly rounded corners to echo app radii -->
+  <path d="
+    M20 14
+    H46
+    A2 2 0 0 1 48 16
+    V22
+    A2 2 0 0 1 46 24
+    H30
+    V30
+    H42
+    A2 2 0 0 1 44 32
+    V38
+    A2 2 0 0 1 42 40
+    H30
+    V48
+    A2 2 0 0 1 28 50
+    H20
+    A2 2 0 0 1 18 48
+    V16
+    A2 2 0 0 1 20 14
+    Z
+  " fill="#FFFFFF"/>
+</svg>
