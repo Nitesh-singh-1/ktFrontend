@@ -764,12 +764,12 @@ function ReportsContent() {
             <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-slate-800 flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs">
               <BarChart3 className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
-                Operational & Financial Reports Suite
+                Reports
               </h1>
               <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
-                Consignment registers, vendor payable ledgers, customer balances, trip profitability & GST liabilities
+                Booking register, vendor payables, customer balances, trip P&amp;L and GST.
               </p>
             </div>
           </div>
@@ -894,7 +894,7 @@ function ReportsContent() {
                 className="w-full sm:w-auto min-w-[130px]"
               />
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
                 <DatePicker
                   value={fromDate}
                   onChange={(d) => {
@@ -906,9 +906,9 @@ function ReportsContent() {
                   direction="down"
                   align="right"
                   disableFutureDates={true}
-                  className="w-36 min-w-[140px]"
+                  className="flex-1 min-w-0 sm:flex-none sm:w-36 sm:min-w-[140px]"
                 />
-                <span className="text-slate-400 font-semibold text-xs">to</span>
+                <span className="text-slate-400 font-semibold text-xs shrink-0">to</span>
                 <DatePicker
                   value={toDate}
                   onChange={(d) => {
@@ -921,7 +921,7 @@ function ReportsContent() {
                   direction="down"
                   align="right"
                   disableFutureDates={true}
-                  className="w-36 min-w-[140px]"
+                  className="flex-1 min-w-0 sm:flex-none sm:w-36 sm:min-w-[140px]"
                 />
               </div>
 
@@ -1072,7 +1072,7 @@ function ReportsContent() {
 
           {/* Active Due Filter Status Indicator */}
           {dueFilter !== "ALL" && (
-            <div className="flex items-center gap-2 p-2.5 px-4 bg-slate-50 dark:bg-slate-850 rounded-xl border border-[#E5EAEB] dark:border-slate-800 text-xs">
+            <div className="flex items-center gap-2 p-2.5 px-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-[#E5EAEB] dark:border-slate-800 text-xs">
               <span className="font-semibold text-[#64748B] dark:text-slate-400">Filtered View:</span>
               {dueFilter === "RECEIVED" ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">
@@ -1097,14 +1097,14 @@ function ReportsContent() {
 
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
             {/* Table Header Bar with Bulk Print Bilties Action */}
-            <div className="px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200">
-                  Consignment Booking Register
+                  Booking Register
                 </span>
                 <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
-                  ({filteredBookingRecords.length} bill{filteredBookingRecords.length === 1 ? "" : "s"}
-                  {partyFilter !== "ALL" ? ` for ${partyFilter}` : ""})
+                  ({filteredBookingRecords.length}
+                  {partyFilter !== "ALL" ? ` · ${partyFilter}` : ""})
                 </span>
               </div>
 

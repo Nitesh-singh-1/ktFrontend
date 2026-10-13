@@ -102,19 +102,16 @@ export default function TripsPage() {
   return (
     <div className="space-y-6 w-full pb-12">
       {/* Header Banner - FleetPulse Solid Style */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-bold text-[#111827] dark:text-white tracking-tight flex items-center gap-2">
               <Truck className="w-5 h-5 text-[#2F8E86]" />
-              <span>Manifest & Dispatch (LR / Truck Challans)</span>
+              <span>Truck Challans</span>
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
-              Step 4 & 5: Manifest → Dispatch
-            </span>
           </div>
           <p className="text-xs text-[#64748B] dark:text-slate-400 mt-1">
-            Consolidate booked Bilties into vehicle loading sheets (Manifest), assign driver/truck, and dispatch directly onto the road.
+            Consolidate booked Bilties into vehicle loading challans and dispatch vehicles.
           </p>
         </div>
 
@@ -124,7 +121,7 @@ export default function TripsPage() {
             className="px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Create Manifest & Challan</span>
+            <span>Create Challan</span>
           </button>
         )}
       </div>
@@ -133,7 +130,7 @@ export default function TripsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Metric */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
-          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Manifests / Challans</p>
+          <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total Challans</p>
           <p className="text-2xl font-bold text-[#111827] dark:text-white mt-1">{trips.length}</p>
           <p className="text-[10px] text-[#94A3B8] mt-1">{draftCount} loading / pending dispatch</p>
         </div>
@@ -160,7 +157,7 @@ export default function TripsPage() {
           <p className="text-xl font-bold text-[#2F9E8F] font-mono mt-1">
             ₹{totalMargin.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[10px] text-[#64748B] mt-1">After driver advances & fuel</p>
+          <p className="text-[10px] text-[#64748B] mt-1 dark:text-slate-400">After driver advances & fuel</p>
         </div>
       </div>
 
@@ -323,7 +320,7 @@ export default function TripsPage() {
                     </button>
                   )}
                   {isInTransit && hasPermission("trips.edit") && (
-                    <button onClick={() => handleRowArrival(t.id, t.startOdometer)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1" title="Record Hub Arrival">
+                    <button onClick={() => handleRowArrival(t.id, t.startOdometer)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1 dark:text-teal-300 dark:bg-slate-800 dark:border-slate-700" title="Record Hub Arrival">
                       <Flag className="w-3 h-3" /> Arrived
                     </button>
                   )}
@@ -344,7 +341,7 @@ export default function TripsPage() {
                       setSelectedTripId(t.id);
                       setInitialShowPrint(false);
                     }}
-                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1"
+                    className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-semibold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1 dark:text-teal-300 dark:bg-slate-900 dark:border-slate-700"
                     title="Inspect Manifest, Add Fuel/Expenses & Manage Challan"
                   >
                     <FileText className="w-3 h-3 text-[#2F8E86]" /> Details

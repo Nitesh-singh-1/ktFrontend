@@ -103,20 +103,20 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6 w-full pb-12">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 dark:bg-slate-900 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#111827] tracking-tight">Business Analytics</h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <h1 className="text-xl font-bold text-[#111827] tracking-tight whitespace-nowrap dark:text-white">Business Analytics</h1>
+            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full whitespace-nowrap dark:text-teal-300 dark:bg-slate-800 dark:border-slate-700">
               {data.periodLabel || "KPIs"}
             </span>
           </div>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#64748B] mt-1 dark:text-slate-400">
             Sales vs recovery, gross margin, monthly revenue trend and your top customers — the numbers that drive the business.
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-0.5 sm:pb-0">
           {WINDOWS.map((w) => {
             const active = months === w.value;
             return (
@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2 dark:bg-red-950/40 dark:border-red-900/60">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -146,9 +146,9 @@ export default function AnalyticsPage() {
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.title} className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs">
+            <div key={k.title} className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs dark:bg-slate-900 dark:border-slate-800">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-[#64748B]">{k.title}</p>
+                <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{k.title}</p>
                 <Icon className={`w-4 h-4 ${k.color}`} />
               </div>
               <p className={`text-2xl font-black font-mono mt-1 ${k.color}`}>{loading ? "…" : k.value}</p>
@@ -161,10 +161,10 @@ export default function AnalyticsPage() {
       {/* Collection rate + payment status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Collection rate gauge */}
-        <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs">
+        <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs dark:bg-slate-900 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-3">
             <IndianRupee className="w-4 h-4 text-[#2F8E86]" />
-            <h3 className="text-sm font-bold text-[#111827]">Recovery Rate</h3>
+            <h3 className="text-sm font-bold text-[#111827] dark:text-white">Recovery Rate</h3>
           </div>
           <div className="flex items-end gap-2">
             <span className="text-4xl font-black text-[#2F8E86]">{data.collectionRatePct}</span>
@@ -176,16 +176,16 @@ export default function AnalyticsPage() {
               style={{ width: `${Math.min(100, Math.max(0, data.collectionRatePct))}%` }}
             />
           </div>
-          <p className="text-[11px] text-[#64748B] mt-2">
+          <p className="text-[11px] text-[#64748B] mt-2 dark:text-slate-400">
             {inr(data.totalCollected)} collected of {inr(data.totalBilled)} billed.
           </p>
         </div>
 
         {/* Payment status breakdown */}
-        <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs lg:col-span-2">
+        <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs lg:col-span-2 dark:bg-slate-900 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="w-4 h-4 text-[#2F8E86]" />
-            <h3 className="text-sm font-bold text-[#111827]">Invoice Payment Status</h3>
+            <h3 className="text-sm font-bold text-[#111827] dark:text-white">Invoice Payment Status</h3>
           </div>
           {data.paymentStatusBreakdown.length === 0 ? (
             <p className="text-xs text-[#94A3B8]">No invoices in this period.</p>
@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
                       <span className="font-semibold text-[#334155]">
                         {label} <span className="text-[#94A3B8] font-normal">· {s.count}</span>
                       </span>
-                      <span className="font-mono font-bold text-[#111827]">{inr(s.amount)}</span>
+                      <span className="font-mono font-bold text-[#111827] dark:text-white">{inr(s.amount)}</span>
                     </div>
                     <div className="h-2 w-full bg-[#EEF2F2] rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${STATUS_COLOR[s.status] || "bg-slate-400"}`} style={{ width: `${pct}%` }} />
@@ -215,15 +215,15 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Monthly trend: billed vs collected */}
-      <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#2F8E86]" />
-            <h3 className="text-sm font-bold text-[#111827]">Sales vs Recovery — Monthly</h3>
+      <div className="bg-white rounded-2xl border border-[#E5EAEB] p-4 sm:p-5 shadow-2xs dark:bg-slate-900 dark:border-slate-800">
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <TrendingUp className="w-4 h-4 text-[#2F8E86] shrink-0" />
+            <h3 className="text-xs sm:text-sm font-bold text-[#111827] whitespace-nowrap dark:text-white">Monthly Trend</h3>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-semibold">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#2F8E86]" /> Billed</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-400" /> Collected</span>
+          <div className="flex items-center gap-2.5 sm:gap-4 text-[10px] sm:text-[11px] font-semibold shrink-0 whitespace-nowrap">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-xs bg-[#2F8E86]" /> Billed</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-xs bg-emerald-400" /> Collected</span>
           </div>
         </div>
 
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
                     style={{ height: `${Math.max(2, (m.collected / maxTrend) * 100)}%` }}
                   />
                 </div>
-                <span className="text-[10px] font-semibold text-[#64748B] truncate w-full text-center">{m.label}</span>
+                <span className="text-[10px] font-semibold text-[#64748B] truncate w-full text-center dark:text-slate-400">{m.label}</span>
               </div>
             ))}
           </div>
@@ -253,15 +253,15 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Cash & bank flow */}
-      <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs">
+      <div className="bg-white rounded-2xl border border-[#E5EAEB] p-5 shadow-2xs dark:bg-slate-900 dark:border-slate-800">
         <div className="flex items-center gap-2 mb-4">
           <Scale className="w-4 h-4 text-[#2F8E86]" />
-          <h3 className="text-sm font-bold text-[#111827]">Cash & Bank Flow</h3>
+          <h3 className="text-sm font-bold text-[#111827] dark:text-white">Cash & Bank Flow</h3>
           <span className="text-[11px] text-[#94A3B8] font-medium">collections in · expenses out, by payment mode</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5">
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5 dark:bg-emerald-950/30">
             <div className="flex items-center gap-1.5 text-emerald-700"><ArrowDownCircle className="w-4 h-4" /><span className="text-xs font-semibold">Inflow (Collections)</span></div>
             <p className="text-xl font-black font-mono text-emerald-700 mt-1">{inr(data.totalInflow)}</p>
           </div>
@@ -269,8 +269,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center gap-1.5 text-red-600"><ArrowUpCircle className="w-4 h-4" /><span className="text-xs font-semibold">Outflow (Expenses)</span></div>
             <p className="text-xl font-black font-mono text-red-600 mt-1">{inr(data.totalOutflow)}</p>
           </div>
-          <div className="rounded-xl border border-[#D9E2E3] bg-[#F6FBFB] p-3.5">
-            <div className="flex items-center gap-1.5 text-[#25776F]"><Scale className="w-4 h-4" /><span className="text-xs font-semibold">Net Position</span></div>
+          <div className="rounded-xl border border-[#D9E2E3] bg-[#F6FBFB] p-3.5 dark:border-slate-700">
+            <div className="flex items-center gap-1.5 text-[#25776F] dark:text-teal-300"><Scale className="w-4 h-4" /><span className="text-xs font-semibold">Net Position</span></div>
             <p className={`text-xl font-black font-mono mt-1 ${data.netCashFlow >= 0 ? "text-[#25776F]" : "text-red-600"}`}>{inr(data.netCashFlow)}</p>
           </div>
         </div>
@@ -320,15 +320,15 @@ export default function AnalyticsPage() {
             header: "Customer",
             render: (c, i) => (
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] text-xs font-bold flex items-center justify-center shrink-0 dark:text-teal-300 dark:bg-slate-800">
                   {i + 1}
                 </span>
-                <span className="font-bold text-[#111827]">{c.name}</span>
+                <span className="font-bold text-[#111827] dark:text-white">{c.name}</span>
               </div>
             ),
           },
-          { key: "invoiceCount", header: "Invoices", align: "center", render: (c) => <span className="font-semibold text-[#64748B]">{c.invoiceCount}</span> },
-          { key: "billed", header: "Billed", align: "right", render: (c) => <span className="font-mono font-bold text-[#111827]">{inr2(c.billed)}</span> },
+          { key: "invoiceCount", header: "Invoices", align: "center", render: (c) => <span className="font-semibold text-[#64748B] dark:text-slate-400">{c.invoiceCount}</span> },
+          { key: "billed", header: "Billed", align: "right", render: (c) => <span className="font-mono font-bold text-[#111827] dark:text-white">{inr2(c.billed)}</span> },
           { key: "collected", header: "Collected", align: "right", render: (c) => <span className="font-mono text-emerald-600">{inr2(c.collected)}</span> },
           { key: "outstanding", header: "Outstanding", align: "right", render: (c) => <span className={`font-mono font-semibold ${c.outstanding > 0 ? "text-[#4A90E2]" : "text-[#94A3B8]"}`}>{inr2(c.outstanding)}</span> },
         ]}
@@ -355,16 +355,16 @@ export default function AnalyticsPage() {
             header: "Vehicle",
             render: (v) => (
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] flex items-center justify-center shrink-0">
+                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] flex items-center justify-center shrink-0 dark:text-teal-300 dark:bg-slate-800">
                   <Truck className="w-3.5 h-3.5" />
                 </span>
-                <span className="font-mono font-bold text-[#111827]">{v.vehicleNo}</span>
+                <span className="font-mono font-bold text-[#111827] dark:text-white">{v.vehicleNo}</span>
               </div>
             ),
           },
-          { key: "trips", header: "Trips", align: "center", render: (v) => <span className="font-semibold text-[#64748B]">{v.trips}</span> },
-          { key: "revenue", header: "Revenue", align: "right", render: (v) => <span className="font-mono text-[#111827]">{inr2(v.revenue)}</span> },
-          { key: "expenses", header: "Expenses", align: "right", render: (v) => <span className="font-mono text-[#64748B]">{inr2(v.expenses)}</span> },
+          { key: "trips", header: "Trips", align: "center", render: (v) => <span className="font-semibold text-[#64748B] dark:text-slate-400">{v.trips}</span> },
+          { key: "revenue", header: "Revenue", align: "right", render: (v) => <span className="font-mono text-[#111827] dark:text-white">{inr2(v.revenue)}</span> },
+          { key: "expenses", header: "Expenses", align: "right", render: (v) => <span className="font-mono text-[#64748B] dark:text-slate-400">{inr2(v.expenses)}</span> },
           { key: "profit", header: "Profit", align: "right", render: (v) => <span className={`font-mono font-bold ${v.profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>{inr2(v.profit)}</span> },
           {
             key: "marginPct",
@@ -402,16 +402,16 @@ export default function AnalyticsPage() {
             header: "Branch / Origin",
             render: (b) => (
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] flex items-center justify-center shrink-0">
+                <span className="w-6 h-6 rounded-lg bg-[#E7F1F2] text-[#25776F] flex items-center justify-center shrink-0 dark:text-teal-300 dark:bg-slate-800">
                   <Building2 className="w-3.5 h-3.5" />
                 </span>
-                <span className="font-bold text-[#111827]">{b.branch}</span>
+                <span className="font-bold text-[#111827] dark:text-white">{b.branch}</span>
               </div>
             ),
           },
-          { key: "trips", header: "Trips", align: "center", render: (b) => <span className="font-semibold text-[#64748B]">{b.trips}</span> },
-          { key: "revenue", header: "Revenue", align: "right", render: (b) => <span className="font-mono text-[#111827]">{inr2(b.revenue)}</span> },
-          { key: "expenses", header: "Expenses", align: "right", render: (b) => <span className="font-mono text-[#64748B]">{inr2(b.expenses)}</span> },
+          { key: "trips", header: "Trips", align: "center", render: (b) => <span className="font-semibold text-[#64748B] dark:text-slate-400">{b.trips}</span> },
+          { key: "revenue", header: "Revenue", align: "right", render: (b) => <span className="font-mono text-[#111827] dark:text-white">{inr2(b.revenue)}</span> },
+          { key: "expenses", header: "Expenses", align: "right", render: (b) => <span className="font-mono text-[#64748B] dark:text-slate-400">{inr2(b.expenses)}</span> },
           { key: "profit", header: "Profit", align: "right", render: (b) => <span className={`font-mono font-bold ${b.profit >= 0 ? "text-emerald-600" : "text-red-600"}`}>{inr2(b.profit)}</span> },
           {
             key: "marginPct",

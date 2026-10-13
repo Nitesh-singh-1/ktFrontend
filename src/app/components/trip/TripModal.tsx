@@ -555,7 +555,7 @@ export default function TripModal({ isOpen, onClose, onSaved }: TripModalProps) 
                           addShipmentById(bilty.id);
                           setBiltySearchQuery("");
                         }}
-                        className="p-2.5 bg-white dark:bg-slate-850 hover:bg-[#E7F1F2]/50 dark:hover:bg-slate-800 border border-[#E5EAEB] dark:border-slate-700 rounded-lg text-left flex items-center justify-between transition cursor-pointer"
+                        className="p-2.5 bg-white dark:bg-slate-800/60 hover:bg-[#E7F1F2]/50 dark:hover:bg-slate-800 border border-[#E5EAEB] dark:border-slate-700 rounded-lg text-left flex items-center justify-between transition cursor-pointer"
                       >
                         <div>
                           <div className="font-mono font-bold text-xs text-[#2F8E86]">

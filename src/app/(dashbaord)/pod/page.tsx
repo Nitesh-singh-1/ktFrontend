@@ -80,18 +80,15 @@ export default function PodPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white rounded-xl p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 border border-[#E5EAEB] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 dark:bg-slate-900 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#111827] tracking-tight">
-              Proof of Delivery (POD) & Verification
+            <h1 className="text-lg sm:text-xl font-bold text-[#111827] tracking-tight dark:text-white">
+              Proof of Delivery (POD)
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full">
-              Delivery Assurance
-            </span>
           </div>
-          <p className="text-xs text-[#64748B] mt-1">
-            Capture electronic signatures, verify scanned delivery receipts, and formally transition consignments to &ldquo;Delivered&rdquo; stage.
+          <p className="text-xs text-[#64748B] mt-1 dark:text-slate-400">
+            Upload scanned delivery receipts, verify acknowledgments, and confirm consignment delivery.
           </p>
         </div>
 
@@ -106,19 +103,19 @@ export default function PodPage() {
 
       {/* KPI Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between dark:bg-slate-900 dark:border-slate-800">
           <div>
-            <p className="text-xs font-semibold text-[#64748B]">Total POD Records</p>
-            <p className="text-2xl font-black text-[#111827] mt-1">{totalPods}</p>
+            <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Total POD Records</p>
+            <p className="text-2xl font-black text-[#111827] mt-1 dark:text-white">{totalPods}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold dark:bg-slate-800">
             <ClipboardList className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between dark:bg-slate-900 dark:border-slate-800">
           <div>
-            <p className="text-xs font-semibold text-[#64748B]">Awaiting Verification</p>
+            <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Awaiting Verification</p>
             <p className="text-2xl font-black text-[#F4A261] mt-1">{pendingCount}</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-[#FDF3E7] text-[#F4A261] flex items-center justify-center font-bold">
@@ -126,26 +123,26 @@ export default function PodPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-xl p-4 border border-[#E5EAEB] shadow-2xs flex items-center justify-between dark:bg-slate-900 dark:border-slate-800">
           <div>
-            <p className="text-xs font-semibold text-[#64748B]">Verified & Delivered</p>
+            <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Verified & Delivered</p>
             <p className="text-2xl font-black text-[#2F9E8F] mt-1">{verifiedCount}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F9E8F] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F9E8F] flex items-center justify-center font-bold dark:bg-slate-800">
             <CheckCircle2 className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4 dark:bg-slate-900 dark:border-slate-800">
         <div className="relative w-full md:w-96">
           <input
             type="text"
             placeholder="Search consignment no, receiver name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-[#D9E2E3] rounded-lg text-xs font-medium text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86] dark:text-white dark:bg-slate-900 dark:border-slate-700"
           />
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#94A3B8]" />
         </div>
@@ -176,23 +173,23 @@ export default function PodPage() {
 
       {/* Error Notice */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-[#D95C5C] text-xs font-semibold flex items-center gap-2 dark:bg-red-950/40 dark:border-red-900/60">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* POD Table */}
-      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E5EAEB] shadow-2xs overflow-hidden dark:bg-slate-900 dark:border-slate-800">
         {loading ? (
-          <div className="p-16 text-center text-[#64748B] text-xs font-medium">Loading Proof of Delivery records...</div>
+          <div className="p-16 text-center text-[#64748B] text-xs font-medium dark:text-slate-400">Loading Proof of Delivery records...</div>
         ) : pods.length === 0 ? (
           <div className="p-16 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#F7F8F8] flex items-center justify-center mx-auto text-[#94A3B8]">
+            <div className="w-12 h-12 rounded-2xl bg-[#F7F8F8] flex items-center justify-center mx-auto text-[#94A3B8] dark:bg-slate-800">
               <FileCheck className="w-6 h-6" />
             </div>
-            <p className="text-sm font-bold text-[#111827]">No POD Records Found</p>
-            <p className="text-xs text-[#64748B] max-w-sm mx-auto">
+            <p className="text-sm font-bold text-[#111827] dark:text-white">No POD Records Found</p>
+            <p className="text-xs text-[#64748B] max-w-sm mx-auto dark:text-slate-400">
               Upload delivery receipts or electronic signatures for in-transit consignments to formally verify delivery.
             </p>
             <button
@@ -207,7 +204,7 @@ export default function PodPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+                <tr className="bg-[#F7F8F8] border-b border-[#E5EAEB] text-[11px] font-bold text-[#64748B] uppercase tracking-wider dark:text-slate-400 dark:bg-slate-800 dark:border-slate-800">
                   <th className="py-3 px-4">Waybill / LR No</th>
                   <th className="py-3 px-4">Delivery Date</th>
                   <th className="py-3 px-4">Receiver / Signatory</th>
@@ -228,18 +225,18 @@ export default function PodPage() {
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 font-medium text-[#111827]">
+                      <td className="py-3.5 px-4 font-medium text-[#111827] dark:text-white">
                         {p.deliveryDate ? p.deliveryDate.split("T")[0] : "—"}
                       </td>
 
                       {/* Receiver */}
-                      <td className="py-3.5 px-4 font-bold text-[#111827]">
+                      <td className="py-3.5 px-4 font-bold text-[#111827] dark:text-white">
                         {p.receiverName}
                       </td>
 
                       {/* ID / Mobile */}
                       <td className="py-3.5 px-4">
-                        {p.receiverMobile && <div className="font-mono text-[#111827]">{p.receiverMobile}</div>}
+                        {p.receiverMobile && <div className="font-mono text-[#111827] dark:text-white">{p.receiverMobile}</div>}
                         {p.receiverAadharOrId && <div className="text-[10px] text-[#94A3B8]">ID: {p.receiverAadharOrId}</div>}
                       </td>
 
@@ -278,7 +275,7 @@ export default function PodPage() {
                           {p.status !== PodStatus.Rejected && p.status !== PodStatus.Verified && (
                             <button
                               onClick={() => handleReject(p)}
-                              className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-red-50 hover:border-red-200 text-[#64748B] hover:text-[#D95C5C] font-bold rounded-lg text-xs transition cursor-pointer"
+                              className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-red-50 hover:border-red-200 text-[#64748B] hover:text-[#D95C5C] font-bold rounded-lg text-xs transition cursor-pointer dark:text-slate-400 dark:bg-slate-900 dark:border-slate-700"
                             >
                               Reject
                             </button>
@@ -297,25 +294,25 @@ export default function PodPage() {
       {/* Signature Preview Modal */}
       {selectedPodForPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 border border-[#E5EAEB] shadow-xl">
-            <div className="flex justify-between items-center pb-2 border-b border-[#E5EAEB]">
-              <h3 className="text-sm font-bold text-[#111827]">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 border border-[#E5EAEB] shadow-xl dark:bg-slate-900 dark:border-slate-800">
+            <div className="flex justify-between items-center pb-2 border-b border-[#E5EAEB] dark:border-slate-800">
+              <h3 className="text-sm font-bold text-[#111827] dark:text-white">
                 Signature for {selectedPodForPreview.shipmentNo}
               </h3>
               <button onClick={() => setSelectedPodForPreview(null)} className="text-[#94A3B8] hover:text-[#111827] p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#D9E2E3] flex items-center justify-center">
+            <div className="p-4 bg-[#F7F8F8] rounded-xl border border-[#D9E2E3] flex items-center justify-center dark:bg-slate-800 dark:border-slate-700">
               {selectedPodForPreview.signatureUrl ? (
                 <img src={selectedPodForPreview.signatureUrl} alt="Signature" className="max-h-32 object-contain" />
               ) : (
                 <span className="text-xs text-[#94A3B8]">No signature image available</span>
               )}
             </div>
-            <p className="text-xs text-[#64748B]">Signatory: <span className="font-bold text-[#111827]">{selectedPodForPreview.receiverName}</span></p>
+            <p className="text-xs text-[#64748B] dark:text-slate-400">Signatory: <span className="font-bold text-[#111827] dark:text-white">{selectedPodForPreview.receiverName}</span></p>
             <div className="flex justify-end">
-              <button onClick={() => setSelectedPodForPreview(null)} className="px-4 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] text-xs font-bold rounded-lg cursor-pointer">
+              <button onClick={() => setSelectedPodForPreview(null)} className="px-4 py-1.5 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] text-xs font-bold rounded-lg cursor-pointer dark:text-teal-300 dark:bg-slate-900 dark:border-slate-700">
                 Close
               </button>
             </div>

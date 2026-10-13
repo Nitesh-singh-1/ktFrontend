@@ -137,11 +137,11 @@ export default function ShipmentsListPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Consignments & Waybills (GR)
+              Bilties
             </h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Manage multi-tenant freight consignments, cargo items, and dispatch stages.
+            All GR bookings — create, track and update dispatch status.
           </p>
         </div>
 
@@ -151,7 +151,7 @@ export default function ShipmentsListPage() {
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>New Consignment</span>
+            <span>New Bilty</span>
           </Link>
         )}
       </div>
@@ -230,22 +230,22 @@ export default function ShipmentsListPage() {
 
       {/* Shipments / All Bilty Table (Money Receipts Matching Design) */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
-        <div className="px-6 py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200">
-              Consignment Records (All Bilties)
+              All Bilties
             </span>
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
-              ({totalCount} {totalCount === 1 ? "consignment" : "consignments"})
+              ({totalCount})
             </span>
           </div>
 
           {hasPermission("consignments.create.create") && (
             <Link
               href="/shipments/create"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs shadow-xs transition"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs shadow-xs transition w-full sm:w-auto"
             >
-              <Plus className="w-3.5 h-3.5" /> Book Consignment
+              <Plus className="w-3.5 h-3.5" /> New Bilty
             </Link>
           )}
         </div>
@@ -419,7 +419,7 @@ export default function ShipmentsListPage() {
                           href="/shipments/create"
                           className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold rounded-lg text-xs"
                         >
-                          <Plus className="w-3.5 h-3.5" /> Book Consignment
+                          <Plus className="w-3.5 h-3.5" /> New Bilty
                         </Link>
                       </div>
                     )}

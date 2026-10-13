@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Truck } from "lucide-react";
+import Image from "next/image";
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -16,41 +16,16 @@ interface BrandLogoProps {
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = "md",
   variant = "auto",
-  accent = "teal",
   showTagline = true,
   name = "FleetPulse",
   tagline = "Enterprise Cloud TMS",
   className = "",
 }) => {
   const sizeConfig = {
-    sm: {
-      iconBox: "w-8 h-8 rounded-lg",
-      iconSize: "w-4 h-4",
-      titleText: "text-sm",
-      taglineText: "text-[10px]",
-      gap: "gap-2.5",
-    },
-    md: {
-      iconBox: "w-10 h-10 rounded-xl",
-      iconSize: "w-5 h-5",
-      titleText: "text-lg",
-      taglineText: "text-[11px]",
-      gap: "gap-3",
-    },
-    lg: {
-      iconBox: "w-12 h-12 rounded-2xl",
-      iconSize: "w-6 h-6",
-      titleText: "text-xl",
-      taglineText: "text-xs",
-      gap: "gap-3.5",
-    },
-    xl: {
-      iconBox: "w-14 h-14 rounded-2xl",
-      iconSize: "w-7 h-7",
-      titleText: "text-2xl",
-      taglineText: "text-xs",
-      gap: "gap-4",
-    },
+    sm: { markPx: 32, titleText: "text-sm",  taglineText: "text-[10px]", gap: "gap-2.5" },
+    md: { markPx: 40, titleText: "text-lg",  taglineText: "text-[11px]", gap: "gap-3" },
+    lg: { markPx: 48, titleText: "text-xl",  taglineText: "text-xs",     gap: "gap-3.5" },
+    xl: { markPx: 56, titleText: "text-2xl", taglineText: "text-xs",     gap: "gap-4" },
   }[size];
 
   const textColor = {
@@ -64,16 +39,24 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     light: "text-white/80",
     dark: "text-[#25776F]",
     teal: "text-[#25776F]",
-    auto: "text-[#25776F]",
+    auto: "text-[#25776F] dark:text-teal-300",
   }[variant];
-
-  const iconBg = "bg-[#2F8E86]";
 
   return (
     <div className={`flex items-center ${sizeConfig.gap} select-none ${className}`}>
-      {/* Brand Icon Mark */}
-      <div className={`relative ${sizeConfig.iconBox} ${iconBg} rounded-xl shadow-xs flex items-center justify-center shrink-0`}>
-        <Truck className={`${sizeConfig.iconSize} text-white`} />
+      {/* Brand Mark — hex logistics logo, served from /logo.png */}
+      <div
+        className="relative shrink-0"
+        style={{ width: sizeConfig.markPx, height: sizeConfig.markPx }}
+      >
+        <Image
+          src="/logo.png"
+          alt="FleetPulse"
+          width={sizeConfig.markPx}
+          height={sizeConfig.markPx}
+          priority
+          className="block"
+        />
       </div>
 
       {/* Brand Text */}
@@ -82,7 +65,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <span className={`font-bold tracking-tight ${sizeConfig.titleText} ${textColor}`}>
             {name}
           </span>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3]">
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700">
             TMS
           </span>
         </div>

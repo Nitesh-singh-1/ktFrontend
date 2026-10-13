@@ -888,33 +888,33 @@ export default function SettingsPage() {
           <div className="w-12 h-12 rounded-xl bg-[#2F8E86] flex items-center justify-center shadow-xs text-white font-bold text-xl shrink-0">
             <Settings className="w-6 h-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
-                {isPlatformAdmin ? "SaaS Configuration & Permission Engine" : "Organization Settings"}
+                {isPlatformAdmin ? "Platform Settings" : "Settings"}
               </h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700">
                 {menuEntitlements.planTier || "Enterprise"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400">
-              Manage client menus, subscription plan tiers, dedicated user pages, document sequences, and tax policies
+              Branding, tax, sequences and integrations.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
           <button
             onClick={handleResetDefaults}
             disabled={saving}
-            className="px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
+            className="flex-1 md:flex-none px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
           >
             Reset
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -1062,7 +1062,7 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Starter Plan */}
-                <div className="p-5 rounded-2xl border-2 border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-850 dark:border-slate-800 space-y-4 hover:border-[#2F8E86] transition">
+                <div className="p-5 rounded-2xl border-2 border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-800/60 dark:border-slate-800 space-y-4 hover:border-[#2F8E86] transition">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-[#2F8E86] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-2 py-0.5 rounded flex items-center gap-1">
                       <Rocket className="w-3.5 h-3.5" />
@@ -1104,7 +1104,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Professional Plan */}
-                <div className="p-5 rounded-2xl border-2 border-[#2F8E86] bg-[#E7F1F2]/40 dark:bg-slate-850 dark:border-teal-700 space-y-4 shadow-xs">
+                <div className="p-5 rounded-2xl border-2 border-[#2F8E86] bg-[#E7F1F2]/40 dark:bg-slate-800/60 dark:border-teal-700 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-white bg-[#2F8E86] px-2 py-0.5 rounded flex items-center gap-1">
                       <Star className="w-3.5 h-3.5" />
@@ -1146,7 +1146,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Enterprise Plan */}
-                <div className="p-5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-slate-850 dark:border-slate-700 space-y-4 hover:border-[#2F8E86] transition">
+                <div className="p-5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-slate-800/60 dark:border-slate-700 space-y-4 hover:border-[#2F8E86] transition">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase text-emerald-800 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded flex items-center gap-1">
                       <Crown className="w-3.5 h-3.5" />
@@ -1276,7 +1276,7 @@ export default function SettingsPage() {
                         </span>
                       </div>
                     )}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-black text-sm">
                           {selectedUserId.charAt(0).toUpperCase()}
@@ -1325,7 +1325,7 @@ export default function SettingsPage() {
               })()}
 
               {/* Organization Subscribed Features Notice */}
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span>
@@ -1365,7 +1365,7 @@ export default function SettingsPage() {
                         key={menu.key}
                         className={`p-3.5 rounded-xl border transition-all ${
                           isChecked
-                            ? "bg-[#E7F1F2]/40 dark:bg-slate-850 border-[#2F8E86]/30 dark:border-slate-700"
+                            ? "bg-[#E7F1F2]/40 dark:bg-slate-800/60 border-[#2F8E86]/30 dark:border-slate-700"
                             : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800"
                         }`}
                       >
@@ -1609,7 +1609,7 @@ export default function SettingsPage() {
                       onClick={() => toggleModuleCode(mod.code)}
                       className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                         isChecked
-                          ? "bg-white dark:bg-slate-850 border-[#2F8E86]/40 dark:border-slate-700 shadow-2xs"
+                          ? "bg-white dark:bg-slate-800/60 border-[#2F8E86]/40 dark:border-slate-700 shadow-2xs"
                           : "bg-slate-50/60 dark:bg-slate-900 border-slate-200/60 dark:border-slate-800 opacity-60"
                       }`}
                     >
@@ -1664,7 +1664,7 @@ export default function SettingsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {fullMenuCatalog.map((menu) => (
-                      <tr key={menu.key} className="hover:bg-slate-50 dark:hover:bg-slate-850">
+                      <tr key={menu.key} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
                         <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
                           <span className="inline-flex items-center gap-2">
                             {renderCatalogIcon(menu.key, "w-4 h-4 text-[#2F8E86] dark:text-teal-400")}
@@ -1716,7 +1716,7 @@ export default function SettingsPage() {
                     onClick={() => toggleReportItem(report.reportKey)}
                     className={`p-4 rounded-2xl border flex items-start justify-between gap-4 cursor-pointer transition ${
                       report.isEnabled
-                        ? "bg-white dark:bg-slate-850 border-emerald-300 dark:border-emerald-800 shadow-2xs"
+                        ? "bg-white dark:bg-slate-800/60 border-emerald-300 dark:border-emerald-800 shadow-2xs"
                         : "bg-slate-50 border-slate-200 opacity-50 dark:bg-slate-900"
                     }`}
                   >
@@ -2005,7 +2005,7 @@ export default function SettingsPage() {
               <h3 className="text-sm font-bold text-[#111827] dark:text-white uppercase tracking-wider">
                 Live Branding Preview
               </h3>
-              <div className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-850 space-y-3">
+              <div className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-800/60 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#2F8E86] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                     {formData.general.companyName ? formData.general.companyName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "FP"}
@@ -2180,7 +2180,7 @@ export default function SettingsPage() {
             {formData.documentSequences.map((seq, idx) => (
               <div
                 key={seq.docType}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
+                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/60 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
               >
                 <div>
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">{seq.docType}</span>
@@ -2274,7 +2274,7 @@ export default function SettingsPage() {
                   }
                   className={`p-4 rounded-xl border flex items-center justify-between gap-4 cursor-pointer transition ${
                     isChecked
-                      ? "bg-[#E7F1F2]/40 border-[#2F8E86]/30 dark:bg-slate-850 dark:border-slate-700"
+                      ? "bg-[#E7F1F2]/40 border-[#2F8E86]/30 dark:bg-slate-800/60 dark:border-slate-700"
                       : "bg-white border-slate-200 dark:bg-slate-900"
                   }`}
                 >
@@ -2309,7 +2309,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Vehicles Quota</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentVehicles || 8} / {subscription?.maxVehicles || 25}
@@ -2324,7 +2324,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Active Users</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentUsers || 3} / {subscription?.maxUsers || 10}
@@ -2339,7 +2339,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Monthly Shipments</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentMonthlyShipments || 120} / {subscription?.maxMonthlyShipments || 1000}
