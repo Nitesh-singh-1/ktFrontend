@@ -32,17 +32,30 @@ import {
   ArrowRight,
   Receipt,
   Download,
+  Share2,
+  Copy,
+  Truck,
+  Percent,
+  Layers,
+  ChevronDown,
+  Check,
+  Send,
 } from "lucide-react";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 
 function BillBookContent() {
   const [parties, setParties] = useState<PartyUnbilledSummary[]>([]);
   const [selectedParty, setSelectedParty] = useState<string>("");
+  const [partySearch, setPartySearch] = useState<string>("");
   const [unbilledShipments, setUnbilledShipments] = useState<UnbilledShipment[]>([]);
   const [selectedShipmentIds, setSelectedShipmentIds] = useState<number[]>([]);
   const [loadingParties, setLoadingParties] = useState(true);
   const [loadingShipments, setLoadingShipments] = useState(false);
   const [generating, setGenerating] = useState(false);
+
+  // Filter & Search within Party's Bilties
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>("ALL");
+  const [biltySearchFilter, setBiltySearchFilter] = useState<string>("");
 
   // Billing Configuration Form
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -83,6 +96,7 @@ function BillBookContent() {
 
   useEffect(() => {
     loadUnbilledParties();
+    loadHistoryInvoices();
   }, []);
 
   const loadHistoryInvoices = async (searchTerm = historySearch, status = historyStatusFilter) => {
@@ -188,6 +202,8 @@ function BillBookContent() {
   const handleSelectParty = async (partyName: string) => {
     setSelectedParty(partyName);
     setSelectedShipmentIds([]);
+    setSelectedMonthFilter("ALL");
+    setBiltySearchFilter("");
     try {
       setLoadingShipments(true);
       const shipments = await invoiceService.getUnbilledByParty(partyName);
@@ -205,7 +221,106 @@ function BillBookContent() {
     }
   };
 
-  // Toggle Bilty Selection (ghatana / badhana)
+  // Distinct months detected from this party's unbilled bilties
+  const availableMonths = useMemo(() => {
+    const monthsSet = new Set<string>();
+    unbilledShipments.forEach((s) => {
+      if (s.shipmentDate) {
+        try {
+          const d = new Date(s.shipmentDate);
+          if (!isNaN(d.getTime())) {
+            monthsSet.add(
+              d.toLocaleString("default", { month: "long", year: "numeric" })
+            );
+          }
+        } catch {}
+      }
+    });
+    return Array.from(monthsSet);
+  }, [unbilledShipments]);
+
+  // Filtered shipments based on selected month filter and search term
+  const filteredShipments = useMemo(() => {
+    return unbilledShipments.filter((s) => {
+      if (selectedMonthFilter !== "ALL" && s.shipmentDate) {
+        try {
+          const d = new Date(s.shipmentDate);
+          const m = d.toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          });
+          if (m !== selectedMonthFilter) return false;
+        } catch {}
+      }
+      if (biltySearchFilter.trim()) {
+        const q = biltySearchFilter.toLowerCase();
+        const no = (s.shipmentNo || "").toLowerCase();
+        const from = (s.fromLocation || "").toLowerCase();
+        const to = (s.toLocation || "").toLowerCase();
+        if (!no.includes(q) && !from.includes(q) && !to.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [unbilledShipments, selectedMonthFilter, biltySearchFilter]);
+
+  // Aggregate monthly work summary for this party in the selected month
+  const partyMonthlyWorkSummary = useMemo(() => {
+    const target =
+      selectedMonthFilter === "ALL"
+        ? unbilledShipments
+        : unbilledShipments.filter((s) => {
+            if (!s.shipmentDate) return false;
+            try {
+              const d = new Date(s.shipmentDate);
+              return (
+                d.toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                }) === selectedMonthFilter
+              );
+            } catch {
+              return false;
+            }
+          });
+
+    const count = target.length;
+    const pkgs = target.reduce((sum, s) => sum + (s.totalPackages || 1), 0);
+    const weight = target.reduce((sum, s) => sum + (s.totalWeightKg || 0), 0);
+    const amount = target.reduce(
+      (sum, s) => sum + (s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0),
+      0
+    );
+    return { count, pkgs, weight, amount };
+  }, [unbilledShipments, selectedMonthFilter]);
+
+  // Handle month filter change
+  const handleSelectMonthFilter = (month: string) => {
+    setSelectedMonthFilter(month);
+    if (month !== "ALL") {
+      setBillingMonth(month);
+      const matchingIds = unbilledShipments
+        .filter((s) => {
+          if (!s.shipmentDate) return false;
+          try {
+            const d = new Date(s.shipmentDate);
+            return (
+              d.toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              }) === month
+            );
+          } catch {
+            return false;
+          }
+        })
+        .map((s) => s.id);
+      setSelectedShipmentIds(matchingIds);
+    } else {
+      setSelectedShipmentIds(unbilledShipments.map((s) => s.id));
+    }
+  };
+
+  // Toggle Bilty Selection
   const handleToggleShipment = (id: number) => {
     if (selectedShipmentIds.includes(id)) {
       setSelectedShipmentIds(selectedShipmentIds.filter((x) => x !== id));
@@ -215,12 +330,40 @@ function BillBookContent() {
   };
 
   const handleSelectAll = () => {
-    if (selectedShipmentIds.length === unbilledShipments.length) {
-      setSelectedShipmentIds([]);
+    const currentFilteredIds = filteredShipments.map((s) => s.id);
+    const allFilteredSelected = currentFilteredIds.every((id) =>
+      selectedShipmentIds.includes(id)
+    );
+    if (allFilteredSelected) {
+      setSelectedShipmentIds(
+        selectedShipmentIds.filter((id) => !currentFilteredIds.includes(id))
+      );
     } else {
-      setSelectedShipmentIds(unbilledShipments.map((s) => s.id));
+      const combined = Array.from(
+        new Set([...selectedShipmentIds, ...currentFilteredIds])
+      );
+      setSelectedShipmentIds(combined);
     }
   };
+
+  // Filtered party list for party dropdown / search
+  const filteredParties = useMemo(() => {
+    if (!partySearch.trim()) return parties;
+    const q = partySearch.toLowerCase();
+    return parties.filter((p) => p.partyName.toLowerCase().includes(q));
+  }, [parties, partySearch]);
+
+  // Overall KPIs
+  const totalUnbilledParties = parties.length;
+  const totalPendingBilties = useMemo(
+    () => parties.reduce((sum, p) => sum + (p.unbilledCount || 0), 0),
+    [parties]
+  );
+  const totalPendingFreight = useMemo(
+    () => parties.reduce((sum, p) => sum + (p.totalUnbilledAmount || 0), 0),
+    [parties]
+  );
+  const totalGeneratedBills = historyInvoices.length;
 
   // Selected Bilties
   const activeSelectedShipments = useMemo(() => {
@@ -272,9 +415,7 @@ function BillBookContent() {
     return { pkgTotal, wtTotal };
   }, [billedShipmentsForPrint]);
 
-  // Dynamic per-charge column set — one column per distinct chargeName that
-  // appears on ANY of the selected bilties. Alphabetical for deterministic
-  // print layout. A bilty with no entry for a given charge shows a blank cell.
+  // Dynamic per-charge column set
   const dynamicChargeCols = useMemo(() => {
     const names = new Set<string>();
     billedShipmentsForPrint.forEach((s) =>
@@ -285,7 +426,7 @@ function BillBookContent() {
     return Array.from(names).sort();
   }, [billedShipmentsForPrint]);
 
-  // Per-charge-column totals for the tfoot row (blank cells count as 0).
+  // Per-charge-column totals for the tfoot row
   const dynamicChargeTotals = useMemo(() => {
     const totals: Record<string, number> = {};
     dynamicChargeCols.forEach((name) => {
@@ -296,7 +437,6 @@ function BillBookContent() {
     });
     return totals;
   }, [dynamicChargeCols, billedShipmentsForPrint]);
-
 
   // Selected Party Metadata
   const currentPartyInfo = useMemo(() => {
@@ -314,7 +454,7 @@ function BillBookContent() {
     if (e) e.preventDefault();
 
     if (!selectedParty) {
-      toast.error("Please select a billing party.");
+      toast.error("Please select a billing customer / party.");
       return;
     }
 
@@ -379,597 +519,873 @@ function BillBookContent() {
     window.print();
   };
 
+  // Share Statement via WhatsApp & Clipboard
+  const handleShareBill = () => {
+    if (!generatedInvoice) return;
+    const billText = `*FREIGHT BILL STATEMENT - ${printProfile.companyName || "KESHRI TRANSPORT"}*\n` +
+      `----------------------------------------\n` +
+      `Bill No: ${generatedInvoice.invoiceNo}\n` +
+      `Customer / Messers: ${generatedInvoice.partyName}\n` +
+      `Billing Month: ${billingMonth}\n` +
+      `Bill Date: ${formatDate(generatedInvoice.invoiceDate)}\n` +
+      `Total Bilties: ${billedShipmentsForPrint.length}\n` +
+      `Total Weight: ${printTotals.wtTotal} Kg | Packages: ${printTotals.pkgTotal}\n` +
+      `Total Amount: ${formatCurrency(generatedInvoice.grandTotal)}\n` +
+      `Payment Due Date: ${generatedInvoice.dueDate ? formatDate(generatedInvoice.dueDate) : "Within 10 Days"}\n` +
+      `----------------------------------------\n` +
+      `Nb:- Payment should be made within 10 days on receipt of this bill.\n` +
+      `Thank you for your business!`;
+
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(billText);
+      toast.success("Bill summary copied to clipboard! Ready to share on WhatsApp or Email.");
+    }
+
+    try {
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(billText)}`;
+      window.open(waUrl, "_blank");
+    } catch {}
+  };
+
   return (
     <>
-      <div className={`p-6 max-w-7xl mx-auto space-y-6 ${isPrintModalOpen ? "print:hidden" : ""}`}>
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <BookOpen className="w-7 h-7 text-indigo-600" />
-            Bill Book — Consolidated Freight Billing
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Generate party-wise consolidated freight bills across multiple unbilled bilties, view history, and print authentic Freight Bills.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {activeTab === "generate" ? (
-            <button
-              onClick={loadUnbilledParties}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" /> Refresh Unbilled
-            </button>
-          ) : (
-            <button
-              onClick={() => loadHistoryInvoices()}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" /> Refresh History
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab("generate")}
-          className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${
-            activeTab === "generate"
-              ? "bg-indigo-600 text-white shadow-sm"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          <Plus className="w-4 h-4" />
-          Create Freight Bill
-          {parties.length > 0 && (
-            <span className="ml-1 px-2 py-0.5 text-xs bg-indigo-500 text-white rounded-full font-mono">
-              {parties.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("history");
-            loadHistoryInvoices();
-          }}
-          className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${
-            activeTab === "history"
-              ? "bg-indigo-600 text-white shadow-sm"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          Bill Book Registry & History
-        </button>
-      </div>
-
-      {/* TAB 1: GENERATE FREIGHT BILL */}
-      {activeTab === "generate" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Party Selection & Bilties Checklist (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Party Selector Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-indigo-600" />
-                Select Party / Customer to Bill:
-              </label>
-              <span className="text-xs text-gray-500">
-                {parties.length} parties with pending bilties
-              </span>
+      <div className={`space-y-6 w-full max-w-7xl mx-auto pb-12 ${isPrintModalOpen ? "print:hidden" : ""}`}>
+        {/* Page Header Banner */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] dark:bg-slate-800 flex items-center justify-center text-[#2F8E86] font-bold text-lg shadow-xs shrink-0">
+              <BookOpen className="w-5 h-5 text-[#2F8E86]" />
             </div>
-
-            {loadingParties ? (
-              <div className="py-4 text-center text-xs text-gray-500">
-                Loading unbilled parties...
-              </div>
-            ) : parties.length === 0 ? (
-              <div className="py-6 text-center text-sm text-gray-500 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                🎉 No unbilled consignments pending. All bilties have been billed!
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <select
-                  value={selectedParty}
-                  onChange={(e) => handleSelectParty(e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm font-semibold bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
-                >
-                  {parties.map((p, idx) => (
-                    <option key={idx} value={p.partyName}>
-                      {p.partyName} ({p.unbilledCount} unbilled bilties —{" "}
-                      {formatCurrency(p.totalUnbilledAmount)})
-                    </option>
-                  ))}
-                </select>
-
-                {currentPartyInfo && (
-                  <div className="p-3 bg-indigo-50/60 dark:bg-indigo-950/20 rounded-lg border border-indigo-100 dark:border-indigo-900/40 text-xs flex justify-between items-center text-indigo-950 dark:text-indigo-200">
-                    <div>
-                      <span className="font-semibold">{currentPartyInfo.partyName}</span>
-                      {currentPartyInfo.partyGstNo && (
-                        <span className="ml-2 font-mono text-gray-600 dark:text-gray-400">
-                          GST: {currentPartyInfo.partyGstNo}
-                        </span>
-                      )}
-                      {currentPartyInfo.partyAddress && (
-                        <div className="text-[11px] text-gray-500 truncate max-w-md">
-                          📍 {currentPartyInfo.partyAddress}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                        {unbilledShipments.length} Bilties Available
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Bilties Selection Matrix */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleSelectAll}
-                  className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700"
-                >
-                  {selectedShipmentIds.length === unbilledShipments.length &&
-                  unbilledShipments.length > 0 ? (
-                    <CheckSquare className="w-4 h-4" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
-                  {selectedShipmentIds.length === unbilledShipments.length
-                    ? "Deselect All"
-                    : "Select All Bilties"}
-                </button>
-                <span className="text-xs text-gray-500">
-                  ({selectedShipmentIds.length} of {unbilledShipments.length} selected)
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold text-[#111827] dark:text-white tracking-tight">
+                  Bill Book
+                </h1>
+                <span className="text-[11px] font-extrabold px-2.5 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-full">
+                  Monthly Consolidated Billing
                 </span>
               </div>
-
-              <div className="text-xs font-mono font-bold text-gray-800 dark:text-gray-200">
-                Subtotal: {formatCurrency(calculations.subTotal)}
-              </div>
+              <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
+                Party-wise monthly consolidated billing & customer statements
+              </p>
             </div>
-
-            {loadingShipments ? (
-              <div className="py-16 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-3"></div>
-                Loading unbilled consignments for {selectedParty}...
-              </div>
-            ) : unbilledShipments.length === 0 ? (
-              <div className="py-12 text-center text-sm text-gray-500">
-                No unbilled bilties found for this party.
-              </div>
-            ) : (
-              <div className="max-h-[460px] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
-                {unbilledShipments.map((s) => {
-                  const isChecked = selectedShipmentIds.includes(s.id);
-                  const biltyAmount = s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
-
-                  return (
-                    <div
-                      key={s.id}
-                      onClick={() => handleToggleShipment(s.id)}
-                      className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${
-                        isChecked
-                          ? "bg-indigo-50/40 dark:bg-indigo-950/20"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800/40"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          className="text-indigo-600"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleShipment(s.id);
-                          }}
-                        >
-                          {isChecked ? (
-                            <CheckSquare className="w-5 h-5 text-indigo-600" />
-                          ) : (
-                            <Square className="w-5 h-5 text-gray-400" />
-                          )}
-                        </button>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-sm text-gray-900 dark:text-gray-100">
-                              GR #{s.shipmentNo}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              ({formatDate(s.shipmentDate)})
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                            <span>{s.fromLocation || "Origin"}</span>
-                            <ArrowRight className="w-3 h-3 text-gray-400" />
-                            <span className="font-medium text-gray-800 dark:text-gray-200">
-                              {s.toLocation || "Destination"}
-                            </span>
-                            <span className="ml-2 font-mono text-gray-500">
-                              Pkg: {s.totalPackages} | Wt: {s.totalWeightKg}kg
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="font-mono font-bold text-sm text-gray-900 dark:text-gray-100">
-                          {formatCurrency(biltyAmount)}
-                        </div>
-                        {s.remarks && (
-                          <div className="text-[11px] text-gray-400 truncate max-w-xs">
-                            {s.remarks}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
-        </div>
 
-        {/* Right Column: Invoice Generation & Configuration (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <form
-            onSubmit={handleGenerateFreightBill}
-            className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-4"
-          >
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                Freight Bill Details
-              </h3>
-              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-2 py-1 rounded">
-                {selectedShipmentIds.length} Bilties Added
-              </span>
-            </div>
-
-            {/* Bill Date */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Bill Date *
-              </label>
-              <input
-                type="date"
-                required
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
-              />
-            </div>
-
-            {/* Billing Month & Payment Term Due Date */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Billing Month *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={billingMonth}
-                  onChange={(e) => setBillingMonth(e.target.value)}
-                  placeholder="e.g. October 2026"
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Due Date (10 Days Std)
-                </label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Tax & Discount */}
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  GST Rate (%)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={taxRate}
-                  onChange={(e) => setTaxRate(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-2 py-1.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg font-mono text-center"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Other Charges (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={otherCharges}
-                  onChange={(e) => setOtherCharges(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-2 py-1.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg font-mono text-center"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Discount (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-2 py-1.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg font-mono text-center"
-                />
-              </div>
-            </div>
-
-            {/* Prepared By & Checked By */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Prepared By
-                </label>
-                <input
-                  type="text"
-                  value={preparedBy}
-                  onChange={(e) => setPreparedBy(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Checked By
-                </label>
-                <input
-                  type="text"
-                  value={checkedBy}
-                  onChange={(e) => setCheckedBy(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg"
-                />
-              </div>
-            </div>
-
-            {/* Remarks */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Bill Remarks / Instructions
-              </label>
-              <textarea
-                rows={2}
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                placeholder="Notes for party, bank transfer details, etc."
-                className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg"
-              />
-            </div>
-
-            {/* Financial Totals Breakdown Card */}
-            <div className="p-4 bg-gray-900 text-white rounded-xl space-y-2 font-mono text-xs">
-              <div className="flex justify-between text-gray-400">
-                <span>Selected Bilties Count:</span>
-                <span className="text-white font-bold">{selectedShipmentIds.length}</span>
-              </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Total Packages:</span>
-                <span className="text-white">{calculations.totalPackages}</span>
-              </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Total Weight:</span>
-                <span className="text-white">{calculations.totalWeight} Kg</span>
-              </div>
-              <div className="flex justify-between text-gray-300 pt-1 border-t border-gray-800">
-                <span>Freight SubTotal:</span>
-                <span>{formatCurrency(calculations.subTotal)}</span>
-              </div>
-              {Number(taxRate) > 0 && (
-                <div className="flex justify-between text-gray-400">
-                  <span>GST ({taxRate}%):</span>
-                  <span>{formatCurrency(calculations.taxAmount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm font-bold text-emerald-400 pt-2 border-t border-gray-800">
-                <span>Grand Total:</span>
-                <span>{formatCurrency(calculations.grandTotal)}</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-2">
+          {/* Tab Switcher & Actions */}
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="grid grid-cols-2 p-1 bg-[#F1F5F5] dark:bg-slate-800/80 rounded-xl border border-[#E5EAEB] dark:border-slate-800 flex-1 sm:flex-initial">
               <button
-                type="submit"
-                disabled={generating || selectedShipmentIds.length === 0}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                type="button"
+                onClick={() => setActiveTab("generate")}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab === "generate"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "text-[#64748B] hover:text-[#111827] dark:text-slate-400 dark:hover:text-white"
+                }`}
               >
-                {generating ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Generating Freight Bill...
-                  </>
-                ) : (
-                  <>
-                    <Printer className="w-5 h-5" />
-                    Generate & Print Freight Bill
-                  </>
+                <Plus className="w-3.5 h-3.5 shrink-0" />
+                <span>New Bill</span>
+                {parties.length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-mono">
+                    {parties.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("history");
+                  loadHistoryInvoices();
+                }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab === "history"
+                    ? "bg-[#2F8E86] text-white shadow-xs"
+                    : "text-[#64748B] hover:text-[#111827] dark:text-slate-400 dark:hover:text-white"
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 shrink-0" />
+                <span>History</span>
+                {historyInvoices.length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-[#111827] dark:text-white font-mono">
+                    {historyInvoices.length}
+                  </span>
                 )}
               </button>
             </div>
-          </form>
+
+            <button
+              onClick={() => (activeTab === "generate" ? loadUnbilledParties() : loadHistoryInvoices())}
+              title="Refresh Records"
+              className="p-2 border border-[#E5EAEB] dark:border-slate-800 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#111827] dark:text-slate-300 dark:hover:text-white hover:bg-[#F7F8F8] dark:hover:bg-slate-800 transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
         </div>
-      </div>
-      )}
 
-      {/* TAB 2: BILL BOOK REGISTRY & HISTORY */}
-      {activeTab === "history" && (
-        <div className="space-y-4">
-          {/* History Search & Filters */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                value={historySearch}
-                onChange={(e) => {
-                  setHistorySearch(e.target.value);
-                  loadHistoryInvoices(e.target.value, historyStatusFilter);
-                }}
-                placeholder="Search generated bills by Bill No, Party Name..."
-                className="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
-              />
+        {/* 4 Financial KPI Overview Cards (FleetPulse Standard) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400 mb-1">
+              <span className="text-xs font-semibold truncate">Unbilled Parties</span>
+              <Building2 className="w-4 h-4 text-[#2F8E86] shrink-0" />
             </div>
-
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <select
-                value={historyStatusFilter}
-                onChange={(e) => {
-                  setHistoryStatusFilter(e.target.value);
-                  loadHistoryInvoices(historySearch, e.target.value);
-                }}
-                className="px-3 py-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100"
-              >
-                <option value="">All Payment Statuses</option>
-                <option value="0">Unpaid</option>
-                <option value="1">Partially Paid</option>
-                <option value="2">Paid</option>
-              </select>
+            <div className="flex items-baseline gap-2">
+              <p className="text-xl sm:text-2xl font-extrabold text-[#111827] dark:text-white">
+                {totalUnbilledParties}
+              </p>
             </div>
+            <p className="text-[10px] text-[#94A3B8] mt-1 truncate">Customers pending</p>
           </div>
 
-          {/* History Invoices Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            {loadingHistory ? (
-              <div className="py-16 text-center text-xs text-gray-500">
-                Loading bill book registry...
-              </div>
-            ) : historyInvoices.length === 0 ? (
-              <div className="py-16 text-center space-y-2">
-                <FileText className="w-10 h-10 text-gray-300 mx-auto" />
-                <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  No generated freight bills found.
-                </p>
-                <p className="text-xs text-gray-400">
-                  Create your first Freight Bill from the &quot;Create Freight Bill&quot; tab.
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-gray-50 dark:bg-gray-900/60 text-gray-600 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-gray-700">
-                    <tr>
-                      <th className="py-3.5 px-4">Bill No</th>
-                      <th className="py-3.5 px-4">Bill Date</th>
-                      <th className="py-3.5 px-4">Party Name</th>
-                      <th className="py-3.5 px-4 text-center">Bilties</th>
-                      <th className="py-3.5 px-4 text-right">Grand Total</th>
-                      <th className="py-3.5 px-4 text-right">Paid / Balance</th>
-                      <th className="py-3.5 px-4 text-center">Status</th>
-                      <th className="py-3.5 px-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {historyInvoices.map((inv) => {
-                      const biltyCount =
-                        inv.items?.length || inv.linkedShipmentNos?.length || 1;
-                      const isPaid = inv.paymentStatus === 2 || inv.paymentStatus === "Paid";
-                      const isPartial = inv.paymentStatus === 1 || inv.paymentStatus === "PartiallyPaid";
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400 mb-1">
+              <span className="text-xs font-semibold truncate">Pending Bilties</span>
+              <Truck className="w-4 h-4 text-[#4A90E2] shrink-0" />
+            </div>
+            <p className="text-xl sm:text-2xl font-extrabold text-[#111827] dark:text-white">
+              {totalPendingBilties}
+            </p>
+            <p className="text-[10px] text-[#94A3B8] mt-1 truncate">Awaiting billing</p>
+          </div>
 
-                      return (
-                        <tr
-                          key={inv.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400 mb-1">
+              <span className="text-xs font-semibold truncate">Unbilled Freight</span>
+              <IndianRupee className="w-4 h-4 text-[#2F8E86] shrink-0" />
+            </div>
+            <p className="text-base sm:text-xl font-bold text-[#2F8E86] font-mono truncate">
+              {formatCurrency(totalPendingFreight)}
+            </p>
+            <p className="text-[10px] text-[#2F8E86]/80 mt-1 truncate">Ledger pending</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-[#64748B] dark:text-slate-400 mb-1">
+              <span className="text-xs font-semibold truncate">Generated Bills</span>
+              <FileText className="w-4 h-4 text-[#F4A261] shrink-0" />
+            </div>
+            <p className="text-xl sm:text-2xl font-extrabold text-[#111827] dark:text-white">
+              {totalGeneratedBills}
+            </p>
+            <p className="text-[10px] text-[#94A3B8] mt-1 truncate">Ready to share</p>
+          </div>
+        </div>
+
+        {/* TAB 1: GENERATE CONSOLIDATED FREIGHT BILL */}
+        {activeTab === "generate" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column: Party Selection & Bilties DataTable (7 cols) */}
+            <div className="lg:col-span-7 space-y-5">
+              {/* Step 1: Party Selector & Monthly Overview Card */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#E5EAEB] dark:border-slate-800 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building2 className="w-4 h-4 text-[#2F8E86] shrink-0" />
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 truncate">
+                      1. Select Party
+                    </h2>
+                  </div>
+                  <span className="text-xs text-[#25776F] dark:text-teal-300 font-bold bg-[#E7F1F2] dark:bg-slate-800 px-2 py-0.5 rounded-full border border-[#D9E2E3] dark:border-slate-700 shrink-0 whitespace-nowrap">
+                    {parties.length} Pending
+                  </span>
+                </div>
+
+                {loadingParties ? (
+                  <div className="py-8 text-center text-xs text-[#64748B] dark:text-slate-400">
+                    <div className="w-6 h-6 border-2 border-[#2F8E86] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading unbilled customers...
+                  </div>
+                ) : parties.length === 0 ? (
+                  <div className="py-8 text-center text-xs font-medium text-[#64748B] dark:text-slate-400 bg-[#F7F8F8] dark:bg-slate-800/40 rounded-xl border border-dashed border-[#D9E2E3] dark:border-slate-700">
+                    No unbilled consignments pending. All booked bilties have been settled or billed.
+                  </div>
+                ) : (
+                  <div className="space-y-3.5">
+                    {/* Search & Select Party */}
+                    <div className="space-y-1.5">
+                      <div className="relative">
+                        <select
+                          value={selectedParty}
+                          onChange={(e) => handleSelectParty(e.target.value)}
+                          className="w-full pl-3.5 pr-10 py-2.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86] focus:border-[#2F8E86] transition-all cursor-pointer shadow-2xs"
                         >
-                          <td className="py-3 px-4 font-mono font-bold text-indigo-600">
-                            {inv.invoiceNo}
-                          </td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                            {formatDate(inv.invoiceDate)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="font-semibold text-gray-900 dark:text-gray-100">
-                              {inv.partyName || "Direct Party"}
-                            </div>
-                            {inv.partyGstNo && (
-                              <div className="text-[10px] font-mono text-gray-400">
-                                GST: {inv.partyGstNo}
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full font-mono text-xs font-semibold">
-                              {biltyCount}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(inv.grandTotal)}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono">
-                            <div className="text-emerald-600 font-semibold">
-                              Paid: {formatCurrency(inv.paidAmount || 0)}
-                            </div>
-                            <div className="text-amber-600 text-[11px]">
-                              Due: {formatCurrency(inv.dueAmount || 0)}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <span
-                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                                isPaid
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  : isPartial
-                                  ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200"
+                          {filteredParties.map((p, idx) => (
+                            <option key={idx} value={p.partyName}>
+                              {p.partyName} — {p.unbilledCount} Bilties ({formatCurrency(p.totalUnbilledAmount)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Quick Party Chips for top 3 parties */}
+                      {parties.length > 1 && (
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                          <span className="text-[11px] text-[#64748B] font-medium mr-1 dark:text-slate-400">Quick Select:</span>
+                          {parties.slice(0, 3).map((p, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleSelectParty(p.partyName)}
+                              className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg border transition cursor-pointer ${
+                                selectedParty === p.partyName
+                                  ? "bg-[#2F8E86] text-white border-[#2F8E86] shadow-2xs"
+                                  : "bg-[#F7F8F8] dark:bg-slate-800 text-[#111827] dark:text-slate-300 border-[#D9E2E3] dark:border-slate-700 hover:border-[#2F8E86]"
                               }`}
                             >
-                              {isPaid ? "PAID" : isPartial ? "PARTIAL" : "UNPAID"}
+                              {p.partyName} ({p.unbilledCount})
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Selected Party Business Snapshot Card */}
+                    {currentPartyInfo && (
+                      <div className="p-3.5 sm:p-4 bg-[#E7F1F2]/50 dark:bg-slate-800/80 rounded-xl border border-[#D9E2E3] dark:border-slate-700 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-extrabold text-sm text-[#111827] dark:text-white">
+                                {currentPartyInfo.partyName}
+                              </span>
+                              {currentPartyInfo.partyGstNo && (
+                                <span className="font-mono text-[11px] font-bold text-[#25776F] dark:text-[#2F8E86] bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-[#D9E2E3] dark:border-slate-700">
+                                  GST: {currentPartyInfo.partyGstNo}
+                                </span>
+                              )}
+                            </div>
+                            {currentPartyInfo.partyAddress && (
+                              <div className="text-[11px] text-[#64748B] dark:text-slate-400 mt-0.5 truncate max-w-lg">
+                                📍 {currentPartyInfo.partyAddress}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-left sm:text-right shrink-0">
+                            <span className="font-bold text-[11px] sm:text-xs text-[#2F8E86] bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700 shadow-2xs">
+                              {unbilledShipments.length} Available
                             </span>
-                          </td>
-                          <td className="py-3 px-4 text-center">
+                          </div>
+                        </div>
+
+                        {/* Month Filter Selector & Monthly Work Indicator */}
+                        <div className="pt-2.5 border-t border-[#D9E2E3]/80 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[11px] font-bold text-[#111827] dark:text-slate-300 mr-1 flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-[#2F8E86]" />
+                              Month:
+                            </span>
                             <button
                               type="button"
-                              onClick={() => handleViewHistoryInvoice(inv.id)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:hover:bg-indigo-900 dark:text-indigo-300 rounded-lg font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                              onClick={() => handleSelectMonthFilter("ALL")}
+                              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition cursor-pointer ${
+                                selectedMonthFilter === "ALL"
+                                  ? "bg-[#2F8E86] text-white shadow-2xs"
+                                  : "bg-white dark:bg-slate-900 text-[#64748B] border border-[#D9E2E3] dark:border-slate-700 hover:text-[#111827]"
+                              }`}
                             >
-                              <Printer className="w-3.5 h-3.5" />
-                              Print / View
+                              All Unbilled
                             </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            {availableMonths.map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => handleSelectMonthFilter(m)}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition cursor-pointer ${
+                                  selectedMonthFilter === m
+                                    ? "bg-[#2F8E86] text-white shadow-2xs"
+                                    : "bg-white dark:bg-slate-900 text-[#64748B] border border-[#D9E2E3] dark:border-slate-700 hover:text-[#111827]"
+                                }`}
+                              >
+                                {m}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Live Monthly Work Total Banner */}
+                          <div className="text-xs font-mono font-bold text-[#111827] dark:text-white bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2">
+                            <span>Month Work: <span className="text-[#2F8E86]">{formatCurrency(partyMonthlyWorkSummary.amount)}</span></span>
+                            <span className="text-[10px] text-[#64748B] font-sans font-medium dark:text-slate-400">
+                              ({partyMonthlyWorkSummary.count} GR • {partyMonthlyWorkSummary.weight}kg)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Step 2: Bilties DataTable Checklist */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
+                {/* DataTable Action Bar */}
+                <div className="p-3 sm:p-4 bg-[#F7F8F8] dark:bg-slate-850 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      className="flex items-center gap-1.5 text-xs font-bold text-[#2F8E86] hover:text-[#25776F] cursor-pointer whitespace-nowrap"
+                    >
+                      {filteredShipments.length > 0 &&
+                      filteredShipments.every((s) => selectedShipmentIds.includes(s.id)) ? (
+                        <CheckSquare className="w-4 h-4 text-[#2F8E86]" />
+                      ) : (
+                        <Square className="w-4 h-4 text-slate-400" />
+                      )}
+                      <span>
+                        {filteredShipments.length > 0 &&
+                        filteredShipments.every((s) => selectedShipmentIds.includes(s.id))
+                          ? "Deselect All"
+                          : "Select All"}
+                      </span>
+                    </button>
+                    <span className="text-xs text-[#64748B] dark:text-slate-400 font-medium">
+                      ({selectedShipmentIds.length}/{filteredShipments.length})
+                    </span>
+                  </div>
+
+                  {/* Bilty Search Input */}
+                  <div className="relative w-full sm:w-48">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      value={biltySearchFilter}
+                      onChange={(e) => setBiltySearchFilter(e.target.value)}
+                      placeholder="Filter GR No / City..."
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                    />
+                  </div>
+                </div>
+
+                {loadingShipments ? (
+                  <div className="py-16 text-center text-xs text-[#64748B] dark:text-slate-400">
+                    <div className="w-6 h-6 border-2 border-[#2F8E86] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading consignments for {selectedParty}...
+                  </div>
+                ) : filteredShipments.length === 0 ? (
+                  <div className="py-12 text-center text-xs font-medium text-[#64748B] dark:text-slate-400">
+                    No unbilled bilties found matching the current filters.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto max-h-[460px] overflow-y-auto">
+                    <table className="w-full text-left text-xs min-w-[660px]">
+                      <thead className="bg-[#F7F8F8] dark:bg-slate-800/80 text-[#64748B] dark:text-slate-400 font-semibold border-b border-[#E5EAEB] dark:border-slate-800 uppercase text-[11px] sticky top-0 z-10 whitespace-nowrap">
+                        <tr>
+                          <th className="py-2.5 px-3 w-10 text-center">Sel</th>
+                          <th className="py-2.5 px-3">GR No & Date</th>
+                          <th className="py-2.5 px-3">Route (Origin → Destination)</th>
+                          <th className="py-2.5 px-3 text-center">Cargo (Pkg / Wt)</th>
+                          <th className="py-2.5 px-3 text-right">Freight (₹)</th>
+                          <th className="py-2.5 px-3 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800 whitespace-nowrap">
+                        {filteredShipments.map((s) => {
+                          const isChecked = selectedShipmentIds.includes(s.id);
+                          const biltyAmount =
+                            s.grandTotal > 0 ? s.grandTotal : s.totalFreight || 0;
+
+                          return (
+                            <tr
+                              key={s.id}
+                              onClick={() => handleToggleShipment(s.id)}
+                              className={`cursor-pointer transition-colors ${
+                                isChecked
+                                  ? "bg-[#E7F1F2]/40 dark:bg-slate-800/60"
+                                  : "hover:bg-[#F9FAFB] dark:hover:bg-slate-800/40"
+                              }`}
+                            >
+                              <td className="py-2.5 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleShipment(s.id);
+                                  }}
+                                  className="text-[#2F8E86]"
+                                >
+                                  {isChecked ? (
+                                    <CheckSquare className="w-4 h-4 text-[#2F8E86]" />
+                                  ) : (
+                                    <Square className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                                  )}
+                                </button>
+                              </td>
+
+                              <td className="py-2.5 px-3">
+                                <div className="font-mono font-bold text-[#2F8E86]">
+                                  GR #{s.shipmentNo}
+                                </div>
+                                <div className="text-[10px] text-[#64748B] dark:text-slate-400">
+                                  {formatDate(s.shipmentDate)}
+                                </div>
+                              </td>
+
+                              <td className="py-2.5 px-3">
+                                <div className="flex items-center gap-1.5 font-medium text-[#111827] dark:text-slate-200">
+                                  <span>{s.fromLocation || "Origin"}</span>
+                                  <ArrowRight className="w-3 h-3 text-[#4A90E2] shrink-0" />
+                                  <span>{s.toLocation || "Destination"}</span>
+                                </div>
+                                {s.customerInvoiceNo && (
+                                  <div className="text-[10px] font-mono text-slate-400">
+                                    Inv: {s.customerInvoiceNo}
+                                  </div>
+                                )}
+                              </td>
+
+                              <td className="py-2.5 px-3 text-center font-mono">
+                                <span className="font-bold text-[#111827] dark:text-white">
+                                  {s.totalPackages} Pkg
+                                </span>
+                                <span className="text-slate-400 text-[11px] ml-1">
+                                  ({s.totalWeightKg} Kg)
+                                </span>
+                              </td>
+
+                              <td className="py-2.5 px-3 text-right font-mono font-bold text-[#111827] dark:text-white">
+                                {formatCurrency(biltyAmount)}
+                              </td>
+
+                              <td className="py-2.5 px-3 text-center">
+                                {s.deliveryDate ? (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60">
+                                    Delivered
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/60">
+                                    In Transit
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Subtotal Sticky Bar (Clean 2-row on mobile, 1-row on desktop) */}
+                <div className="p-3 bg-[#F7F8F8] dark:bg-slate-850 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs font-mono">
+                  <div className="text-[#64748B] dark:text-slate-400 font-sans flex items-center gap-1.5 flex-wrap">
+                    <span>Selected:</span>
+                    <span className="text-[#111827] dark:text-white font-bold">{selectedShipmentIds.length} Bilties</span>
+                    <span className="text-slate-400">•</span>
+                    <span>{calculations.totalPackages} Pkg</span>
+                    <span className="text-slate-400">•</span>
+                    <span>{calculations.totalWeight} Kg</span>
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t sm:border-0 border-[#E5EAEB] dark:border-slate-800 font-bold">
+                    <span className="text-[11px] text-[#64748B] font-sans font-medium dark:text-slate-400">Freight Subtotal:</span>
+                    <span className="text-[#2F8E86] text-sm sm:text-base font-bold">{formatCurrency(calculations.subTotal)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Invoice Generation & Configuration (5 cols) */}
+            <div className="lg:col-span-5 space-y-5">
+              <form
+                onSubmit={handleGenerateFreightBill}
+                className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-4"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#E5EAEB] dark:border-slate-800 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="w-4 h-4 text-[#2F8E86] shrink-0" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-white truncate">
+                      2. Bill Details
+                    </h3>
+                  </div>
+                  <span className="text-xs font-bold text-[#25776F] bg-[#E7F1F2] dark:bg-slate-800 px-2 py-0.5 rounded-full border border-[#D9E2E3] dark:border-slate-700 shrink-0 whitespace-nowrap dark:text-teal-300">
+                    {selectedShipmentIds.length} Bilties
+                  </span>
+                </div>
+
+                {/* Bill Date */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                    Bill Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={invoiceDate}
+                    onChange={(e) => setInvoiceDate(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl focus:ring-1 focus:ring-[#2F8E86] font-mono text-[#111827] dark:text-white"
+                  />
+                </div>
+
+                {/* Billing Month & Payment Term Due Date */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Billing Month *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={billingMonth}
+                      onChange={(e) => setBillingMonth(e.target.value)}
+                      placeholder="e.g. October 2026"
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl focus:ring-1 focus:ring-[#2F8E86] text-[#111827] dark:text-white font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider">
+                        Due Date
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const d = new Date(invoiceDate || new Date());
+                          d.setDate(d.getDate() + 10);
+                          setDueDate(d.toISOString().split("T")[0]);
+                        }}
+                        className="text-[10px] text-[#2F8E86] font-bold hover:underline cursor-pointer"
+                      >
+                        +10 Days
+                      </button>
+                    </div>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl focus:ring-1 focus:ring-[#2F8E86] font-mono text-[#111827] dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* GST Rate (%) with Preset Chips */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider">
+                      GST Rate (%)
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {[
+                        { label: "0%", val: 0 },
+                        { label: "5%", val: 5 },
+                        { label: "12%", val: 12 },
+                        { label: "18%", val: 18 },
+                      ].map((chip) => (
+                        <button
+                          key={chip.val}
+                          type="button"
+                          onClick={() => setTaxRate(chip.val)}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                            Number(taxRate) === chip.val
+                              ? "bg-[#2F8E86] text-white border-[#2F8E86]"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                          }`}
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={taxRate}
+                    onChange={(e) => setTaxRate(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl font-mono text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                  />
+                </div>
+
+                {/* Other Charges & Discount */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Other Charges (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={otherCharges}
+                      onChange={(e) => setOtherCharges(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl font-mono text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Discount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={discount}
+                      onChange={(e) => setDiscount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl font-mono text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                    />
+                  </div>
+                </div>
+
+                {/* Prepared By & Checked By */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Prepared By
+                    </label>
+                    <input
+                      type="text"
+                      value={preparedBy}
+                      onChange={(e) => setPreparedBy(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Checked By
+                    </label>
+                    <input
+                      type="text"
+                      value={checkedBy}
+                      onChange={(e) => setCheckedBy(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                    />
+                  </div>
+                </div>
+
+                {/* Remarks */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#111827] dark:text-slate-300 uppercase tracking-wider mb-1">
+                    Bill Remarks / Instructions
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="Notes for party, bank transfer details, payment terms..."
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-white focus:ring-1 focus:ring-[#2F8E86]"
+                  />
+                </div>
+
+                {/* Financial Totals Breakdown Card */}
+                <div className="p-4 bg-[#F7F8F8] dark:bg-slate-800/80 rounded-xl border border-[#E5EAEB] dark:border-slate-700 space-y-2 font-mono text-xs">
+                  <div className="flex justify-between text-[#64748B] dark:text-slate-400">
+                    <span>Selected Bilties:</span>
+                    <span className="text-[#111827] dark:text-white font-bold">{selectedShipmentIds.length}</span>
+                  </div>
+                  <div className="flex justify-between text-[#64748B] dark:text-slate-400">
+                    <span>Total Packages:</span>
+                    <span className="text-[#111827] dark:text-white">{calculations.totalPackages}</span>
+                  </div>
+                  <div className="flex justify-between text-[#64748B] dark:text-slate-400">
+                    <span>Total Weight:</span>
+                    <span className="text-[#111827] dark:text-white">{calculations.totalWeight} Kg</span>
+                  </div>
+                  <div className="flex justify-between text-[#111827] dark:text-slate-200 pt-1.5 border-t border-[#E5EAEB] dark:border-slate-700 font-bold">
+                    <span>Freight SubTotal:</span>
+                    <span>{formatCurrency(calculations.subTotal)}</span>
+                  </div>
+                  {Number(taxRate) > 0 && (
+                    <div className="flex justify-between text-[#64748B] dark:text-slate-400">
+                      <span>GST ({taxRate}%):</span>
+                      <span>+ {formatCurrency(calculations.taxAmount)}</span>
+                    </div>
+                  )}
+                  {Number(otherCharges) > 0 && (
+                    <div className="flex justify-between text-[#64748B] dark:text-slate-400">
+                      <span>Other Charges:</span>
+                      <span>+ {formatCurrency(Number(otherCharges))}</span>
+                    </div>
+                  )}
+                  {Number(discount) > 0 && (
+                    <div className="flex justify-between text-[#D95C5C]">
+                      <span>Discount:</span>
+                      <span>- {formatCurrency(Number(discount))}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-base font-extrabold text-[#2F8E86] pt-2 border-t border-[#E5EAEB] dark:border-slate-700">
+                    <span>Net Grand Total:</span>
+                    <span>{formatCurrency(calculations.grandTotal)}</span>
+                  </div>
+                  <div className="text-[11px] font-sans italic text-[#64748B] dark:text-slate-400 pt-1">
+                    {numberToWords(Math.round(calculations.grandTotal))}
+                  </div>
+                </div>
+
+                {/* Primary Action Button */}
+                <div className="pt-1">
+                  <button
+                    type="submit"
+                    disabled={generating || selectedShipmentIds.length === 0}
+                    className="w-full py-3.5 bg-[#2F8E86] hover:bg-[#25776F] active:bg-[#20635c] disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    {generating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Generating Bill...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Printer className="w-4 h-4" />
+                        <span>Generate & Print Bill</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* TAB 2: BILL BOOK REGISTRY & HISTORY */}
+        {activeTab === "history" && (
+          <div className="space-y-4">
+            {/* History Search & Filters */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="relative flex-1 w-full">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  value={historySearch}
+                  onChange={(e) => {
+                    setHistorySearch(e.target.value);
+                    loadHistoryInvoices(e.target.value, historyStatusFilter);
+                  }}
+                  placeholder="Search generated bills by Bill No, Party Name..."
+                  className="w-full pl-10 pr-4 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl focus:ring-1 focus:ring-[#2F8E86] text-[#111827] dark:text-white"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <select
+                  value={historyStatusFilter}
+                  onChange={(e) => {
+                    setHistoryStatusFilter(e.target.value);
+                    loadHistoryInvoices(historySearch, e.target.value);
+                  }}
+                  className="px-3.5 py-2 text-xs bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-[#111827] dark:text-white cursor-pointer"
+                >
+                  <option value="">All Payment Statuses</option>
+                  <option value="0">Unpaid</option>
+                  <option value="1">Partially Paid</option>
+                  <option value="2">Paid</option>
+                </select>
+              </div>
+            </div>
+
+            {/* History Invoices Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
+              {loadingHistory ? (
+                <div className="py-16 text-center text-xs text-[#64748B] dark:text-slate-400">
+                  <div className="w-6 h-6 border-2 border-[#2F8E86] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  Loading bill book registry...
+                </div>
+              ) : historyInvoices.length === 0 ? (
+                <div className="py-16 text-center space-y-2">
+                  <FileText className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
+                  <p className="text-sm font-semibold text-[#111827] dark:text-slate-200">
+                    No generated freight bills found.
+                  </p>
+                  <p className="text-xs text-[#64748B] dark:text-slate-400">
+                    Create your first consolidated freight bill from the &quot;New Consolidated Bill&quot; tab.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[760px]">
+                    <thead className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-400 font-semibold border-b border-[#E5EAEB] dark:border-slate-800 uppercase text-[11px] whitespace-nowrap">
+                      <tr>
+                        <th className="py-3.5 px-4">Bill No</th>
+                        <th className="py-3.5 px-4">Bill Date</th>
+                        <th className="py-3.5 px-4">Party Name</th>
+                        <th className="py-3.5 px-4 text-center">Bilties</th>
+                        <th className="py-3.5 px-4 text-right">Grand Total</th>
+                        <th className="py-3.5 px-4 text-right">Paid / Balance</th>
+                        <th className="py-3.5 px-4 text-center">Status</th>
+                        <th className="py-3.5 px-4 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800 whitespace-nowrap">
+                      {historyInvoices.map((inv) => {
+                        const biltyCount =
+                          inv.items?.length || inv.linkedShipmentNos?.length || 1;
+                        const isPaid = inv.paymentStatus === 2 || inv.paymentStatus === "Paid";
+                        const isPartial = inv.paymentStatus === 1 || inv.paymentStatus === "PartiallyPaid";
+
+                        return (
+                          <tr
+                            key={inv.id}
+                            className="hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50 transition-colors"
+                          >
+                            <td className="py-3 px-4 font-mono font-bold text-[#2F8E86]">
+                              {inv.invoiceNo}
+                            </td>
+                            <td className="py-3 px-4 text-[#64748B] dark:text-slate-400">
+                              {formatDate(inv.invoiceDate)}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="font-semibold text-[#111827] dark:text-white">
+                                {inv.partyName || "Direct Party"}
+                              </div>
+                              {inv.partyGstNo && (
+                                <div className="text-[10px] font-mono text-[#64748B] dark:text-slate-400">
+                                  GST: {inv.partyGstNo}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="px-2 py-0.5 bg-[#E7F1F2] dark:bg-slate-800 text-[#25776F] dark:text-[#2F8E86] rounded-full font-mono text-xs font-semibold">
+                                {biltyCount}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-[#111827] dark:text-white">
+                              {formatCurrency(inv.grandTotal)}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono">
+                              <div className="text-emerald-600 font-semibold">
+                                Paid: {formatCurrency(inv.paidAmount || 0)}
+                              </div>
+                              <div className="text-amber-600 text-[11px]">
+                                Due: {formatCurrency(inv.dueAmount || 0)}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                                  isPaid
+                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+                                    : isPartial
+                                    ? "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
+                                    : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800"
+                                }`}
+                              >
+                                {isPaid ? "PAID" : isPartial ? "PARTIAL" : "UNPAID"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleViewHistoryInvoice(inv.id)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7F1F2] hover:bg-[#D9E2E3] text-[#25776F] dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-[#2F8E86] rounded-lg font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                                <span>Print / View</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ========================================================================= */}
@@ -977,7 +1393,7 @@ function BillBookContent() {
       {/* ========================================================================= */}
       {isPrintModalOpen && generatedInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm print:static print:block print:p-0 print:m-0 print:w-full print:bg-white print:backdrop-blur-none print:overflow-visible">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-5xl w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0 print:m-0 print:w-full print:rounded-none">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full p-6 shadow-2xl border border-[#E5EAEB] dark:border-slate-800 max-h-[92vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0 print:m-0 print:w-full print:rounded-none">
             {/* Global Print Styles for Perfect Top-of-Page A4 Landscape Rendering */}
             <style jsx global>{`
               @media print {
@@ -1009,28 +1425,46 @@ function BillBookContent() {
             `}</style>
 
             {/* Modal Controls (Hidden in Print) */}
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-200 dark:border-gray-800 print:hidden">
-              <div className="flex items-center gap-2">
-                <Printer className="w-6 h-6 text-indigo-600" />
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                    Freight Bill Preview — #{generatedInvoice.invoiceNo}
-                  </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Formatted for A4 Landscape print — starts right at top of page
-                  </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-[#E5EAEB] dark:border-slate-800 gap-3 print:hidden">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Printer className="w-5 h-5 text-[#2F8E86] shrink-0" />
+                  <div className="min-w-0">
+                    <h2 className="text-sm sm:text-base font-bold text-[#111827] dark:text-white truncate">
+                      Bill Preview #{generatedInvoice.invoiceNo}
+                    </h2>
+                    <p className="text-[11px] text-[#64748B] dark:text-slate-400 truncate">
+                      A4 Landscape format & WhatsApp sharing
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setIsPrintModalOpen(false)}
+                  className="sm:hidden p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={handlePrint}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow transition-colors cursor-pointer"
+                  type="button"
+                  onClick={handleShareBill}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                  title="Share bill details on WhatsApp / Copy to clipboard"
                 >
-                  <Printer className="w-4 h-4" /> Print Bill (A4 Landscape)
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Share Bill</span>
+                </button>
+                <button
+                  onClick={handlePrint}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] active:bg-[#20635c] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print (A4)</span>
                 </button>
                 <button
                   onClick={() => setIsPrintModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                  className="hidden sm:inline-flex p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1038,7 +1472,7 @@ function BillBookContent() {
             </div>
 
             {/* PRINTABLE FREIGHT BILL CONTAINER */}
-            <div className="bill-book-print-container bg-white text-black p-6 font-serif border border-gray-800 print:border-none print:p-0 print:w-full">
+            <div className="bill-book-print-container bg-white text-black p-6 font-serif border border-gray-800 print:border-none print:p-0 print:w-full dark:bg-slate-900">
               {/* Top Header */}
               <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-2">
                 <div className="text-left">
@@ -1054,7 +1488,7 @@ function BillBookContent() {
                   <h1 className="text-2xl font-bold uppercase tracking-wider font-sans">
                     {printProfile.companyName || "KESHRI TRANSPORT"}
                   </h1>
-                  <p className="text-xs text-gray-800 font-sans mt-0.5">
+                  <p className="text-xs text-gray-800 font-sans mt-0.5 dark:text-slate-100">
                     {printProfile.address || "Zero Mile, Pahari, Patna-7"}
                     {printProfile.phone ? ` | Phone: ${printProfile.phone}` : ""}
                   </p>
@@ -1202,7 +1636,7 @@ function BillBookContent() {
 
               {/* Mandatory Bottom Notice & Signatures */}
               <div className="pt-2 text-xs font-sans space-y-4">
-                <div className="font-bold text-[11px] text-gray-900 border-l-2 border-black pl-2">
+                <div className="font-bold text-[11px] text-gray-900 border-l-2 border-black pl-2 dark:text-white">
                   Nb:- Payment should be made within 10 days on receipt of this bill , otherwise interest will be charged @ 20%.
                 </div>
 
@@ -1219,7 +1653,7 @@ function BillBookContent() {
                     <div className="font-bold uppercase font-sans">
                       for : {printProfile.companyName || "Keshri Transport"}
                     </div>
-                    <div className="pt-8 text-[11px] text-gray-600">
+                    <div className="pt-8 text-[11px] text-gray-600 dark:text-slate-300">
                       (Authorised Signatory)
                     </div>
                   </div>

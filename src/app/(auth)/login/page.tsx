@@ -86,14 +86,14 @@ const LoginPage = () => {
   };
 
   return (
-    <main className="min-h-screen lg:h-screen w-full flex flex-col lg:flex-row bg-[#FFFFFF] text-[#111827] font-sans box-border lg:overflow-hidden selection:bg-[#3a8890] selection:text-white">
+    <main className="h-[100dvh] min-h-[100dvh] lg:h-screen w-full flex flex-col lg:flex-row bg-[#FFFFFF] text-[#111827] font-sans box-border overflow-hidden selection:bg-[#3a8890] selection:text-white dark:text-white">
       {/* =========================================================================
           LEFT SECTION: Clean Logistics Authentication Console (50% on Desktop)
           ========================================================================= */}
-      <section className="w-full lg:w-1/2 h-full min-h-screen lg:min-h-full p-6 sm:p-10 lg:p-12 xl:p-16 flex flex-col justify-between overflow-y-auto box-border bg-[#FFFFFF]">
-        <div className="w-full max-w-md mx-auto my-auto py-2">
+      <section className="w-full lg:w-1/2 h-full px-5 py-4 sm:px-10 sm:py-8 lg:p-12 xl:p-16 flex flex-col justify-between box-border bg-[#FFFFFF] overflow-y-auto">
+        <div className="w-full max-w-md mx-auto my-auto py-1 sm:py-2">
           {/* Brand Logo Header */}
-          <div className="flex items-center justify-between mb-8 sm:mb-10">
+          <div className="flex items-center justify-between mb-4 sm:mb-8">
             <BrandLogo
               size="md"
               variant="auto"
@@ -101,17 +101,17 @@ const LoginPage = () => {
               name="FleetPulse"
               tagline="Enterprise Cloud TMS"
             />
-            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-[#F7F8F8] border border-[#D9E2E3] text-[11px] font-semibold text-[#6B7280]">
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-[#F7F8F8] border border-[#D9E2E3] text-[11px] font-semibold text-[#6B7280] dark:bg-slate-800 dark:border-slate-700">
               Logistics OS
             </span>
           </div>
 
           {/* Heading & Subtitle */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-snug">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-snug dark:text-white">
               Welcome Back
             </h1>
-            <p className="text-xs sm:text-sm text-[#6B7280] mt-1.5 font-normal leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#6B7280] mt-1 font-normal leading-relaxed">
               Sign in to manage your transportation operations.
             </p>
           </div>
@@ -120,7 +120,7 @@ const LoginPage = () => {
           {sessionExpired && (
             <div
               role="status"
-              className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900"
+              className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-900/60"
             >
               <Clock className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" aria-hidden="true" />
               <div className="flex-1 text-xs sm:text-sm leading-relaxed">
@@ -139,12 +139,12 @@ const LoginPage = () => {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
             {/* Username / Work Email Field */}
             <div>
               <label
                 htmlFor="login-username"
-                className="block text-[11px] font-bold uppercase tracking-wider text-[#111827] mb-1.5"
+                className="block text-[11px] font-bold uppercase tracking-wider text-[#111827] mb-1 dark:text-white"
               >
                 Username / Work Email
               </label>
@@ -160,17 +160,17 @@ const LoginPage = () => {
                   placeholder="e.g. admin or dispatch@company.com"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 bg-[#FFFFFF] border border-[#D9E2E3] rounded-xl text-sm font-medium text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#3a8890]/30 focus:border-[#3a8890] transition-all"
+                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 bg-[#FFFFFF] border border-[#D9E2E3] rounded-xl text-sm font-medium text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#3a8890]/30 focus:border-[#3a8890] transition-all dark:text-white dark:border-slate-700"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <label
                   htmlFor="login-password"
-                  className="block text-[11px] font-bold uppercase tracking-wider text-[#111827]"
+                  className="block text-[11px] font-bold uppercase tracking-wider text-[#111827] dark:text-white"
                 >
                   Password
                 </label>
@@ -193,7 +193,7 @@ const LoginPage = () => {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-2.5 sm:py-3 bg-[#FFFFFF] border border-[#D9E2E3] rounded-xl text-sm font-medium text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#3a8890]/30 focus:border-[#3a8890] transition-all"
+                  className="block w-full pl-10 pr-10 py-2.5 sm:py-3 bg-[#FFFFFF] border border-[#D9E2E3] rounded-xl text-sm font-medium text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#3a8890]/30 focus:border-[#3a8890] transition-all dark:text-white dark:border-slate-700"
                 />
                 <button
                   type="button"
@@ -214,7 +214,7 @@ const LoginPage = () => {
             {error && (
               <div
                 role="alert"
-                className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2"
+                className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
               >
                 <AlertCircle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                 <div className="leading-snug">{error}</div>
@@ -231,7 +231,7 @@ const LoginPage = () => {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-4 h-4 rounded border border-[#D9E2E3] bg-[#FFFFFF] peer-checked:bg-[#3a8890] peer-checked:border-[#3a8890] peer-focus:ring-2 peer-focus:ring-[#3a8890]/20 transition-all flex items-center justify-center">
+                  <div className="w-4 h-4 rounded border border-[#D9E2E3] bg-[#FFFFFF] peer-checked:bg-[#3a8890] peer-checked:border-[#3a8890] peer-focus:ring-2 peer-focus:ring-[#3a8890]/20 transition-all flex items-center justify-center dark:border-slate-700">
                     {rememberMe && <Check className="w-3 h-3 text-white stroke-[3]" />}
                   </div>
                 </div>
@@ -245,7 +245,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-5 bg-[#3a8890] hover:bg-[#32777e] active:bg-[#2b656b] text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs hover:shadow disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-2.5 sm:py-3 px-5 bg-[#3a8890] hover:bg-[#32777e] active:bg-[#2b656b] text-white font-bold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-xs hover:shadow disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? (
                 <>
@@ -263,7 +263,7 @@ const LoginPage = () => {
         </div>
 
         {/* Footer Security & Legal Links */}
-        <footer className="w-full max-w-md mx-auto mt-6 pt-4 border-t border-[#D9E2E3] flex items-center justify-between text-[11px] text-[#6B7280]">
+        <footer className="w-full max-w-md mx-auto mt-4 pt-3 sm:mt-6 sm:pt-4 border-t border-[#D9E2E3] flex items-center justify-between text-[11px] text-[#6B7280] shrink-0 dark:border-slate-700">
           <div className="flex items-center gap-1.5 font-medium text-[#6B7280]">
             <ShieldCheck className="w-3.5 h-3.5 text-[#3a8890] shrink-0" />
             <span>256-Bit SSL Workspace</span>

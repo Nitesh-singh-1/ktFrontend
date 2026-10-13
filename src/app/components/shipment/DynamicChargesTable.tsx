@@ -233,10 +233,10 @@ export default function DynamicChargesTable({
         <div className="flex items-center gap-2">
           <IndianRupee className="w-4 h-4 text-[#2F8E86]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">
-            5. Freight, Ancillary Charges & Settlement Ledger
+            5. Freight & Charges
           </h3>
         </div>
-        <span className="text-[11px] text-[#64748B] font-medium">Auto-calculates ledger in real-time</span>
+        <span className="text-[11px] text-[#64748B] font-medium">Auto-calculated</span>
       </div>
 
       <div className="p-5 space-y-6">
@@ -325,7 +325,7 @@ export default function DynamicChargesTable({
               <thead className="bg-[#F7F8F8] dark:bg-slate-850 border-b border-[#E5EAEB] dark:border-slate-700 text-[#64748B] dark:text-slate-400 font-semibold">
                 <tr>
                   <th className="px-4 py-2 w-12 text-center">#</th>
-                  <th className="px-4 py-2">Charge Description / Fee Type</th>
+                  <th className="px-4 py-2">Description</th>
                   <th className="px-4 py-2 w-44 text-right">Amount (₹)</th>
                   {!disabled && <th className="px-3 py-2 w-12 text-center">Action</th>}
                 </tr>

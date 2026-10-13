@@ -127,7 +127,7 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#25776F] bg-[#E7F1F2] px-2.5 py-1 rounded-md border border-[#D9E2E3]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#25776F] bg-[#E7F1F2] px-2.5 py-1 rounded-md border border-[#D9E2E3] dark:text-teal-300 dark:bg-slate-800 dark:border-slate-700">
               Overview
             </span>
           </div>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
               Total Freight Billed
             </span>
-            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm">
+            <div className="w-10 h-10 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm dark:bg-slate-800">
               <IndianRupee className="w-5 h-5 text-[#2F8E86]" />
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             </h3>
             <div className="flex items-center justify-between text-xs font-medium text-[#64748B] dark:text-slate-400 mt-2">
               <span>Gross consignment booked freight</span>
-              <span className="text-[#25776F] font-semibold">100% Value</span>
+              <span className="text-[#25776F] font-semibold dark:text-teal-300">100% Value</span>
             </div>
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
             <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400 uppercase tracking-wider">
               Total Bilties (GR)
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm">
+            <div className="w-9 h-9 rounded-xl bg-[#E7F1F2] text-[#2F8E86] flex items-center justify-center font-bold text-sm dark:bg-slate-800">
               <ClipboardList className="w-4 h-4 text-[#2F8E86]" />
             </div>
           </div>
@@ -392,40 +392,40 @@ export default function DashboardPage() {
 
         {stats?.recentBills && stats.recentBills.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-300 text-xs font-semibold uppercase border-b border-[#E5EAEB] dark:border-slate-700">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-[#F7F8F8] dark:bg-slate-800/60 text-[#64748B] dark:text-slate-300 text-xs font-semibold uppercase border-b border-[#E5EAEB] dark:border-slate-700 whitespace-nowrap">
                 <tr>
-                  <th className="px-6 py-3.5">GR Number</th>
-                  <th className="px-6 py-3.5">Consignee</th>
-                  <th className="px-6 py-3.5">Route</th>
-                  <th className="px-6 py-3.5">Delivery Status</th>
-                  <th className="px-6 py-3.5">Freight Total</th>
-                  <th className="px-6 py-3.5">Booking Date</th>
+                  <th className="px-5 py-3.5 w-36 min-w-[130px]">GR Number</th>
+                  <th className="px-5 py-3.5 min-w-[160px]">Consignee</th>
+                  <th className="px-5 py-3.5 min-w-[180px]">Route</th>
+                  <th className="px-5 py-3.5 min-w-[130px]">Delivery Status</th>
+                  <th className="px-5 py-3.5 min-w-[120px]">Freight Total</th>
+                  <th className="px-5 py-3.5 min-w-[120px]">Booking Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800 text-[#111827] dark:text-slate-300">
+              <tbody className="divide-y divide-[#E5EAEB] dark:divide-slate-800 text-[#111827] dark:text-slate-300 whitespace-nowrap">
                 {stats.recentBills.slice(0, 5).map((bill) => (
                   <tr
                     key={bill.id}
                     className="hover:bg-[#F5FAFA] dark:hover:bg-slate-800/50 transition cursor-pointer"
-                    onClick={() => router.push(`/shipments/${bill.id}`)}
+                    onClick={() => router.push(`/shipments/details?id=${bill.id}`)}
                   >
-                    <td className="px-6 py-3.5 font-mono font-bold text-[#2F8E86]">
+                    <td className="px-5 py-3.5 font-mono font-bold text-[#2F8E86] whitespace-nowrap">
                       {bill.grNo}
                     </td>
-                    <td className="px-6 py-3.5 font-semibold text-[#111827] dark:text-white">
+                    <td className="px-5 py-3.5 font-semibold text-[#111827] dark:text-white whitespace-nowrap">
                       {bill.consigneeName}
                     </td>
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-1.5 text-xs">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
                         <span className="font-medium text-[#111827] dark:text-slate-300">{bill.fromLocation}</span>
-                        <ArrowRight className="w-3 h-3 text-[#4A90E2]" />
+                        <ArrowRight className="w-3 h-3 text-[#4A90E2] shrink-0" />
                         <span className="font-medium text-[#111827] dark:text-slate-300">{bill.toLocation}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-3.5">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
                           bill.deliveryStatus === "Delivered" || bill.deliveryStatus === "Completed"
                             ? "bg-[#E7F1F2] text-[#2F9E8F] border border-[#2F9E8F]/20"
                             : "bg-[#4A90E2]/10 text-[#4A90E2] border border-[#4A90E2]/20"
@@ -434,10 +434,10 @@ export default function DashboardPage() {
                         {bill.deliveryStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 font-bold text-[#111827] dark:text-white">
+                    <td className="px-5 py-3.5 font-bold text-[#111827] dark:text-white whitespace-nowrap font-mono">
                       ₹{bill.totalAmount?.toLocaleString('en-IN')}
                     </td>
-                    <td className="px-6 py-3.5 text-xs text-[#64748B] dark:text-slate-400">
+                    <td className="px-5 py-3.5 text-xs text-[#64748B] dark:text-slate-400 whitespace-nowrap font-mono">
                       {new Date(bill.createdAt).toLocaleDateString('en-IN')}
                     </td>
                   </tr>
@@ -471,11 +471,11 @@ export default function DashboardPage() {
             href="/shipments/create"
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-slate-700">
               <Package className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F] dark:text-white">
                 New Bilty Booking
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Issue fresh consignment GR</p>
@@ -486,11 +486,11 @@ export default function DashboardPage() {
             href="/trips"
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-slate-700">
               <Truck className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F] dark:text-white">
                 Truck Challans
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Dispatch vehicle loading memo</p>
@@ -501,11 +501,11 @@ export default function DashboardPage() {
             href="/pod"
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-slate-700">
               <FileCheck className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F] dark:text-white">
                 POD Upload & Delivery
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Update proof of delivery</p>
@@ -516,11 +516,11 @@ export default function DashboardPage() {
             href="/reports"
             className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-slate-700">
               <BarChart3 className="w-5 h-5 text-[#2F8E86]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F]">
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F] dark:text-white">
                 Reports & Ledger
               </h4>
               <p className="text-[11px] text-[#64748B] dark:text-slate-400">Tax, P&L, outstanding balance</p>

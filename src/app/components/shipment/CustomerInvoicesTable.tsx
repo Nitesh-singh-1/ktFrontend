@@ -103,10 +103,10 @@ export default function CustomerInvoicesTable({
             <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm">
               <Receipt className="w-4 h-4" />
             </span>
-            Customer Commercial Bill / Paper Intake
+            Customer Invoices
           </h3>
           <p className="text-xs text-[#64748B] dark:text-slate-400 mt-0.5">
-            Record customer given tax invoices, declared value (₹), e-way bills, and upload digital photo copies of customer bills.
+            Record customer tax invoices, declared cargo value (₹), and e-way bills.
           </p>
         </div>
         <div className="flex items-center gap-3">

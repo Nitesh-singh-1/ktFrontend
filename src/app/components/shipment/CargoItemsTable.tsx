@@ -57,7 +57,7 @@ export default function CargoItemsTable({ items, onChange, disabled = false }: C
       <div className="px-5 py-3.5 bg-[#F7F8F8] dark:bg-slate-800/80 border-b border-[#E5EAEB] dark:border-slate-800 text-[#111827] dark:text-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-[#2F8E86]" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">Cargo / Goods Line Items</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-300">Cargo Items</h3>
           <span className="text-xs bg-[#E7F1F2] text-[#25776F] px-2 py-0.5 rounded-md font-semibold">
             {items.length} {items.length === 1 ? "Item" : "Items"}
           </span>

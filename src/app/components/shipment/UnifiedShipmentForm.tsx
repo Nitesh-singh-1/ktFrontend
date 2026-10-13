@@ -498,19 +498,16 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
       {/* Top Action Header */}
       <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-[#E5EAEB] dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex items-center flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
             <span className="p-1.5 bg-[#E7F1F2] text-[#2F8E86] rounded-lg text-sm font-bold shadow-2xs shrink-0">
               <Package className="w-5 h-5" />
             </span>
             <h1 className="text-lg sm:text-xl font-bold text-[#111827] dark:text-slate-100 tracking-tight">
-              {initialId ? `Edit Bilty / Consignment #${shipmentNo || initialId}` : "New Bilty / Consignment Booking (GR)"}
+              {initialId ? `Edit Consignment #${shipmentNo || initialId}` : "Consignment Booking"}
             </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-full dark:bg-slate-800 dark:text-[#2F8E86] dark:border-slate-700">
-              Step 2: Transporter Bilty
-            </span>
           </div>
           <p className="text-xs text-[#64748B] dark:text-slate-400 mt-1">
-            Fill in booking route, parties, attach customer commercial invoices with photo uploads, specify cargo items, and review charges.
+            Fill in booking route, parties, attach customer commercial invoices, cargo items, and review charges.
           </p>
         </div>
 
@@ -556,11 +553,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         </div>
       )}
 
-      {/* SECTION 1: Booking & Movement Details (Point A → Point B) */}
+      {/* SECTION 1: Booking & Route */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 p-5 shadow-xs space-y-4">
         <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 flex items-center gap-1.5 border-b border-[#E5EAEB] dark:border-slate-800 pb-2.5">
           <MapPin className="w-4 h-4 text-[#2F8E86]" />
-          <span>1. Bilty Booking & Route Details (Point A → Point B)</span>
+          <span>1. Booking & Route</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -941,11 +938,11 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
 
       {/* SECTION 6: Tax Treatment & GST Regime */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#E5EAEB] dark:border-slate-800 p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800 pb-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E5EAEB] dark:border-slate-800 pb-2.5 gap-1">
           <div className="text-xs font-bold uppercase tracking-wider text-[#111827] dark:text-slate-200 flex items-center gap-1.5">
-            <Scale className="w-3.5 h-3.5 text-[#2F8E86]" /> 6. GST Treatment & Tax Rules
+            <Scale className="w-3.5 h-3.5 text-[#2F8E86]" /> 6. GST Treatment
           </div>
-          <span className="text-[11px] text-[#64748B] font-medium">Controls GST calculation on Transporter Freight</span>
+          <span className="text-[11px] text-[#64748B] font-medium">Controls GST calculation on freight</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -988,14 +985,14 @@ export default function UnifiedShipmentForm({ initialId, initialData }: UnifiedS
         {/* GST Paid By */}
         {isGstRelevant && (
           <div className="p-3.5 bg-[#F7F8F8] dark:bg-slate-800/60 rounded-lg border border-[#E5EAEB] dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-3">
-            <div className="text-xs font-bold text-[#111827] dark:text-slate-200 flex items-center gap-1.5">
+            <div className="text-xs font-bold text-[#111827] dark:text-slate-200 flex items-center gap-1.5 shrink-0">
               <Building2 className="w-4 h-4 text-[#64748B] dark:text-slate-300" /> GST Liability & Paid By:
             </div>
-            <div className="flex items-center gap-5">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
               {[
-                { value: "Transporter", label: "1. Transporter" },
-                { value: "Consignee", label: "2. Consignee" },
-                { value: "Consignor", label: "3. Consignor" },
+                { value: "Transporter", label: "Transporter" },
+                { value: "Consignee", label: "Consignee" },
+                { value: "Consignor", label: "Consignor" },
               ].map((opt) => {
                 const s = (gstPaidBy || "").toLowerCase();
                 const isChecked =
