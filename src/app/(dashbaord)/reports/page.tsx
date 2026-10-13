@@ -1072,7 +1072,7 @@ function ReportsContent() {
 
           {/* Active Due Filter Status Indicator */}
           {dueFilter !== "ALL" && (
-            <div className="flex items-center gap-2 p-2.5 px-4 bg-slate-50 dark:bg-slate-850 rounded-xl border border-[#E5EAEB] dark:border-slate-800 text-xs">
+            <div className="flex items-center gap-2 p-2.5 px-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-[#E5EAEB] dark:border-slate-800 text-xs">
               <span className="font-semibold text-[#64748B] dark:text-slate-400">Filtered View:</span>
               {dueFilter === "RECEIVED" ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">

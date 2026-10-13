@@ -1539,7 +1539,7 @@ export default function UsersManagementPage() {
               </div>
 
               {/* Quick Preset Buttons & Search Bar */}
-              <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/60 space-y-3">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/60/60 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#2F8E86]" />

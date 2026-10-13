@@ -376,7 +376,7 @@ export default function DashboardPage() {
 
       {/* Recent Bilties Registry Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-[#F7F8F8] dark:bg-slate-850">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[#E5EAEB] dark:border-slate-800 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-[#F7F8F8] dark:bg-slate-800/60">
           <div className="min-w-0">
             <h2 className="text-base font-bold text-[#111827] dark:text-white">Recent Bilties</h2>
             <p className="text-xs text-[#64748B] dark:text-slate-400">Latest bookings across branches.</p>

@@ -822,7 +822,7 @@ function BillBookContent() {
               {/* Step 2: Bilties DataTable Checklist */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 shadow-xs overflow-hidden">
                 {/* DataTable Action Bar */}
-                <div className="p-3 sm:p-4 bg-[#F7F8F8] dark:bg-slate-850 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
+                <div className="p-3 sm:p-4 bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -970,7 +970,7 @@ function BillBookContent() {
                 )}
 
                 {/* Subtotal Sticky Bar (Clean 2-row on mobile, 1-row on desktop) */}
-                <div className="p-3 bg-[#F7F8F8] dark:bg-slate-850 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs font-mono">
+                <div className="p-3 bg-[#F7F8F8] dark:bg-slate-800/60 border-t border-[#E5EAEB] dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs font-mono">
                   <div className="text-[#64748B] dark:text-slate-400 font-sans flex items-center gap-1.5 flex-wrap">
                     <span>Selected:</span>
                     <span className="text-[#111827] dark:text-white font-bold">{selectedShipmentIds.length} Bilties</span>

@@ -322,7 +322,7 @@ export default function DynamicChargesTable({
               <span className="font-mono">Subtotal: ₹{totalOtherCharges.toFixed(2)}</span>
             </div>
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F7F8F8] dark:bg-slate-850 border-b border-[#E5EAEB] dark:border-slate-700 text-[#64748B] dark:text-slate-400 font-semibold">
+              <thead className="bg-[#F7F8F8] dark:bg-slate-800/60 border-b border-[#E5EAEB] dark:border-slate-700 text-[#64748B] dark:text-slate-400 font-semibold">
                 <tr>
                   <th className="px-4 py-2 w-12 text-center">#</th>
                   <th className="px-4 py-2">Description</th>
