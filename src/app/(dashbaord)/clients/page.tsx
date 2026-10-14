@@ -62,6 +62,19 @@ export default function ClientsManagementPage() {
     enabledReportKeys: [],
   });
   const [submittingOnboard, setSubmittingOnboard] = useState(false);
+  // Guard against the "Next → (advance) + stray second click = instant Save"
+  // footgun: the final submit is disarmed for a moment after step 3 appears, so
+  // the operator gets to review/select modules before onboarding fires.
+  const [step3Armed, setStep3Armed] = useState(false);
+
+  useEffect(() => {
+    if (onboardStep === 3) {
+      setStep3Armed(false);
+      const t = setTimeout(() => setStep3Armed(true), 650);
+      return () => clearTimeout(t);
+    }
+    setStep3Armed(false);
+  }, [onboardStep]);
 
   // TASK-046 Phase 1 — role picker + module checkboxes for the admin wizard.
   const [systemRoles, setSystemRoles] = useState<SystemRoleTemplate[]>([]);
@@ -356,6 +369,13 @@ export default function ClientsManagementPage() {
     // STRICT GUARD: If not yet on Step 3, advance step instead of submitting to API!
     if (onboardStep < 3) {
       handleNextStep();
+      return;
+    }
+
+    // Ignore a submit fired in the brief disarm window right after reaching
+    // step 3 (e.g. the tail click of a double-click on "Next Step") — the
+    // operator must consciously review/select modules before onboarding.
+    if (!step3Armed) {
       return;
     }
 
@@ -1359,12 +1379,15 @@ export default function ClientsManagementPage() {
                   ) : (
                     <button
                       type="submit"
-                      disabled={submittingOnboard}
-                      className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                      disabled={submittingOnboard || !step3Armed}
+                      title={!step3Armed ? "Review the modules below, then onboard" : undefined}
+                      className="px-6 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {submittingOnboard
                         ? "Saving..."
-                        : "Save"}
+                        : !step3Armed
+                        ? "Review modules…"
+                        : "Onboard Client"}
                     </button>
                   )}
                 </div>
