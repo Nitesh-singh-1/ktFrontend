@@ -9,8 +9,10 @@ import InvoiceDetailsModal from "@/app/components/invoice/InvoiceDetailsModal";
 import { Plus, Search, AlertTriangle, FileText, Receipt, X, CreditCard, Eye, Ban } from "lucide-react";
 import { DataTable } from "@/app/components/ui/DataTable";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+import { useNavigation } from "@/context/NavigationContext";
 
 function BillingContent() {
+  const { hasPermission } = useNavigation();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,13 +102,15 @@ function BillingContent() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create Invoice</span>
-        </button>
+        {hasPermission("billing.invoices.create") && (
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Invoice</span>
+          </button>
+        )}
       </div>
 
       {/* KPI Financial Overview Cards */}
@@ -207,9 +211,11 @@ function BillingContent() {
         emptyTitle="No Invoices Found"
         emptyMessage="Generate your first freight invoice to bill customers, link consignments, and balance receipts."
         emptyAction={
-          <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Create Invoice
-          </button>
+          hasPermission("billing.invoices.create") ? (
+            <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Create Invoice
+            </button>
+          ) : undefined
         }
         columns={[
           {
@@ -272,12 +278,12 @@ function BillingContent() {
                   <button onClick={() => setSelectedForDetails(inv.id)} className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-[#E7F1F2] text-[#25776F] font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1" title="View Invoice Breakdown">
                     <Eye className="w-3.5 h-3.5" /> View
                   </button>
-                  {!isSettled && inv.paymentStatus !== InvoicePaymentStatus.Cancelled && (
+                  {!isSettled && inv.paymentStatus !== InvoicePaymentStatus.Cancelled && hasPermission("billing.receipts.create") && (
                     <button onClick={() => setSelectedForPayment(inv)} className="px-2.5 py-1 bg-[#E7F1F2] hover:bg-[#2F9E8F] text-[#2F9E8F] hover:text-white border border-[#2F9E8F]/30 font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-1" title="Record Payment Receipt">
                       <CreditCard className="w-3.5 h-3.5" /> Receive
                     </button>
                   )}
-                  {inv.paymentStatus !== InvoicePaymentStatus.Cancelled && (
+                  {inv.paymentStatus !== InvoicePaymentStatus.Cancelled && hasPermission("billing.invoices.delete") && (
                     <button onClick={() => handleCancelInvoice(inv)} className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer" title="Cancel / Void Invoice">
                       <X className="w-4 h-4" />
                     </button>

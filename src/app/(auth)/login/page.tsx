@@ -17,6 +17,7 @@ import {
 import { authService } from "../../../../services/authService";
 import BrandLogo from "@/app/components/ui/BrandLogo";
 import LogisticsIllustration from "./components/LogisticsIllustration";
+import { sweetAlert } from "@/app/components/ui/SweetAlert";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -73,13 +74,30 @@ const LoginPage = () => {
           window.location.href = "/dashboard/";
         }
       } else {
-        setError(res.message || "Invalid credentials. Please check your username and password.");
+        // Non-2xx normally throws (handled below); this covers a 200 with success=false.
+        await sweetAlert.error({
+          title: "Sign-in failed",
+          message: res.message || "Invalid username or password. Please try again.",
+        });
       }
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError(
-        err?.message || "Failed to connect to the authentication server. Please check your network connection."
-      );
+      // A 401 here means the submitted credentials are wrong (the API layer no
+      // longer mislabels this as "session expired"). Surface the server's real
+      // message in a themed popup rather than a generic banner.
+      const status = err?.status;
+      const message =
+        err?.message ||
+        "Failed to connect to the authentication server. Please check your network connection.";
+      // A wrong password is an expected outcome, not a bug — don't spam the
+      // console with a stack trace for it. Only log genuinely unexpected failures
+      // (network errors, 5xx, etc.) so real problems stay visible.
+      if (status !== 401) {
+        console.error("Login error:", err);
+      }
+      await sweetAlert.error({
+        title: status === 401 ? "Invalid credentials" : "Sign-in failed",
+        message,
+      });
     } finally {
       setLoading(false);
     }

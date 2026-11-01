@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { TyreDto, TyreStatus } from "@/types/tms";
 import { tyreService } from "services/tyreService";
@@ -7,6 +9,7 @@ import { toast } from "@/context/ToastContext";
 import TyreModal from "@/app/components/fleet/TyreModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, CircleDot, Pencil, Trash2 } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 const STATUS_META: Record<string, { label: string; badge: string }> = {
   InStock: { label: "In Stock", badge: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -28,6 +31,15 @@ function inr(n?: number): string {
 }
 
 export default function TyresPage() {
+  return (
+    <PagePermissionGuard permission="master_data.tyres.view" moduleName="Tyres">
+      <TyresPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function TyresPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<TyreDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,12 +109,14 @@ export default function TyresPage() {
             Track each tyre from stock → fitment → retread → disposal, with cost, position and kilometres run.
           </p>
         </div>
+        {hasPermission("master_data.tyres.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Tyre</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -162,9 +176,11 @@ export default function TyresPage() {
         emptyTitle="No tyres recorded"
         emptyMessage="Add tyres to track their fitment, kilometres run, retreads and disposal across your fleet."
         emptyAction={
+          hasPermission("master_data.tyres.create") ? (
           <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Tyre
           </button>
+          ) : undefined
         }
         columns={[
           { key: "serialNo", header: "Serial No", render: (r) => <span className="font-mono font-bold text-[#111827]">{r.serialNo}</span> },
@@ -202,8 +218,12 @@ export default function TyresPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
+                {hasPermission("master_data.tyres.edit") && (
                 <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.tyres.delete") && (
                 <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

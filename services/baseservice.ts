@@ -165,11 +165,13 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
     // when supplied, so the sent-id IS the trace id.
     const serverTraceId = response.headers.get("x-request-id") || requestId;
 
-    // 401 Unauthorized: try a one-time silent refresh, then retry; otherwise sign out.
+    // 401 Unauthorized.
     if (response.status === 401) {
-      // TASK-039: exclude every /auth/* flow where a 401 means "credentials are wrong",
-      // not "session expired" — looping these through refresh+logout would ping-pong the
-      // user back to /login with a confusing banner on top of their actual auth error.
+      // TASK-039: a 401 on the /auth/* endpoints themselves means the SUBMITTED
+      // credentials/token are wrong (bad username or password, invalid refresh
+      // token) — NOT an expired session. Surface the server's real message and do
+      // NOT clear the session or redirect, otherwise a fresh failed sign-in shows
+      // a misleading "Session expired. Please log in again." banner.
       const isAuthFlow =
         endpoint.includes("/auth/login") ||
         endpoint.includes("/auth/register") ||
@@ -177,7 +179,20 @@ async function request<T>(endpoint: string, options: RequestOptions = {}, isRetr
         endpoint.includes("/auth/logout") ||
         endpoint.includes("/auth/forgot-password") ||
         endpoint.includes("/auth/accept-invite");
-      if (!isRetry && !isAuthFlow && typeof window !== "undefined") {
+
+      if (isAuthFlow) {
+        const error = await response.json().catch(() => ({} as any));
+        const message =
+          error.message ||
+          extractValidationMessage(error) ||
+          error.title ||
+          "Invalid username or password.";
+        throw new ApiError(message, { traceId: error?.traceId || serverTraceId, status: 401 });
+      }
+
+      // Authenticated request whose access token lapsed: try one silent refresh and
+      // retry, otherwise sign the user out with the real "session expired" message.
+      if (!isRetry && typeof window !== "undefined") {
         const newToken = await tryRefreshToken();
         if (newToken) {
           return request<T>(endpoint, options, true);

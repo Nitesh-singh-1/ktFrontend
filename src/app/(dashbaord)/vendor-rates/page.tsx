@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { VendorRateContractDto } from "@/types/tms";
 import { vendorRateService } from "services/vendorRateService";
@@ -7,12 +9,22 @@ import { toast } from "@/context/ToastContext";
 import VendorRateModal from "@/app/components/ratecard/VendorRateModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, Truck, Pencil, Trash2, Route } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function VendorRatesPage() {
+  return (
+    <PagePermissionGuard permission="master_data.vendor_rates.view" moduleName="Vendor Rate Contracts">
+      <VendorRatesPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function VendorRatesPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<VendorRateContractDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,12 +87,14 @@ export default function VendorRatesPage() {
             Negotiated lorry-hire rates you pay market vendors / transporters per route — the cost side that pairs with customer rate contracts.
           </p>
         </div>
-        <button
-          onClick={() => { setEditing(null); setModalOpen(true); }}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> <span>Add Vendor Rate</span>
-        </button>
+        {hasPermission("master_data.vendor_rates.create") && (
+          <button
+            onClick={() => { setEditing(null); setModalOpen(true); }}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> <span>Add Vendor Rate</span>
+          </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -124,9 +138,11 @@ export default function VendorRatesPage() {
         emptyTitle="No vendor hire rates yet"
         emptyMessage="Record negotiated lorry-hire rates so market-vehicle costs are standardised across your team."
         emptyAction={
-          <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> New Hire Rate
-          </button>
+          hasPermission("master_data.vendor_rates.create") ? (
+            <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" /> New Hire Rate
+            </button>
+          ) : undefined
         }
         columns={[
           { key: "vendorName", header: "Vendor", render: (r) => <span className="font-bold text-[#111827]">{r.vendorName || "—"}</span> },
@@ -150,8 +166,12 @@ export default function VendorRatesPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
-                <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
-                <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                {hasPermission("master_data.vendor_rates.edit") && (
+                  <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.vendor_rates.delete") && (
+                  <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

@@ -14,6 +14,7 @@ import { DataTable } from "@/app/components/ui/DataTable";
 import CustomSelect from "@/app/components/ui/CustomSelect";
 import TablePagination from "@/app/components/ui/TablePagination";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+import { useNavigation } from "@/context/NavigationContext";
 import {
   Truck,
   IndianRupee,
@@ -40,6 +41,8 @@ const STATUS_FILTER_OPTIONS = [
 ];
 
 function TripSettlementContent() {
+  const { hasPermission } = useNavigation();
+  const canSettle = hasPermission("trip_settlement.create") || hasPermission("trip_settlement.edit");
   const [trips, setTrips] = useState<TripDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -735,6 +738,11 @@ function TripSettlementContent() {
             align: "right",
             render: (t) => {
               const isCompleted = t.status === TripStatus.Completed;
+              // Completed trips expose a read-only "View Statement" button (fine for
+              // viewers); the actual "Settle" action is hidden without settle rights.
+              if (!isCompleted && !canSettle) {
+                return <span className="text-[#94A3B8] text-xs">—</span>;
+              }
               return (
                 <button
                   type="button"
@@ -943,6 +951,7 @@ function TripSettlementContent() {
                     <span className="text-xs font-bold text-[#111827] dark:text-slate-300">
                       Extra On-Road Receipts Handed by Driver
                     </span>
+                    {canSettle && (
                     <button
                       type="button"
                       onClick={handleAddExtraExpense}
@@ -950,6 +959,7 @@ function TripSettlementContent() {
                     >
                       <Plus className="w-3.5 h-3.5" /> Add Voucher
                     </button>
+                    )}
                   </div>
 
                   {extraExpenses.map((exp, idx) => (

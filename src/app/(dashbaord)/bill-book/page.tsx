@@ -42,8 +42,10 @@ import {
   Send,
 } from "lucide-react";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+import { useNavigation } from "@/context/NavigationContext";
 
 function BillBookContent() {
+  const { hasPermission } = useNavigation();
   const [parties, setParties] = useState<PartyUnbilledSummary[]>([]);
   const [selectedParty, setSelectedParty] = useState<string>("");
   const [partySearch, setPartySearch] = useState<string>("");
@@ -1217,6 +1219,7 @@ function BillBookContent() {
                 </div>
 
                 {/* Primary Action Button */}
+                {hasPermission("billing.bill_book.create") && (
                 <div className="pt-1">
                   <button
                     type="submit"
@@ -1236,6 +1239,7 @@ function BillBookContent() {
                     )}
                   </button>
                 </div>
+                )}
               </form>
             </div>
           </div>

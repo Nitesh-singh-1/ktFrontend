@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { SparePartDto } from "@/types/tms";
 import { sparePartService } from "services/sparePartService";
@@ -7,12 +9,22 @@ import { toast } from "@/context/ToastContext";
 import SparePartModal from "@/app/components/fleet/SparePartModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, Cog, Pencil, Trash2, ArrowDownUp } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 }
 
 export default function SparePartsPage() {
+  return (
+    <PagePermissionGuard permission="master_data.spares.view" moduleName="Spare Parts">
+      <SparePartsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function SparePartsPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<SparePartDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,12 +105,14 @@ export default function SparePartsPage() {
             Track workshop spare-part stock levels, reorder points and value — issue parts to vehicles or receive purchases.
           </p>
         </div>
+        {hasPermission("master_data.spares.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Part</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -150,9 +164,11 @@ export default function SparePartsPage() {
         emptyTitle="No spare parts yet"
         emptyMessage="Add workshop spare parts to track stock levels, reorder points and issue them to vehicles."
         emptyAction={
+          hasPermission("master_data.spares.create") ? (
           <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Part
           </button>
+          ) : undefined
         }
         columns={[
           {
@@ -187,9 +203,15 @@ export default function SparePartsPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
+                {hasPermission("master_data.spares.edit") && (
                 <button title="Issue / Receive stock" onClick={() => handleAdjust(r)} className="p-1.5 rounded-lg text-[#25776F] hover:bg-[#E7F1F2] transition cursor-pointer"><ArrowDownUp className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.spares.edit") && (
                 <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.spares.delete") && (
                 <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

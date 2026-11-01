@@ -7,7 +7,9 @@ import { authService } from "../../../../services/authService";
 import { Lock, Shield } from "lucide-react";
 
 interface PagePermissionGuardProps {
-  permission: string;
+  // A single permission key, or several — the user passes if they hold ANY of them
+  // (OR semantics), mirroring backend endpoints that accept multiple keys.
+  permission: string | string[];
   moduleName?: string;
   // When true, access is restricted to the PLATFORM operator only (e.g. client onboarding / multi-tenant
   // management), regardless of feature permissions. A tenant admin must never pass.
@@ -67,7 +69,10 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
     );
   }
 
-  const isAllowed = platformOnly ? isPlatformAdmin : hasPermission(permission);
+  const requiredKeys = Array.isArray(permission) ? permission : [permission];
+  const isAllowed = platformOnly
+    ? isPlatformAdmin
+    : requiredKeys.some((k) => hasPermission(k));
 
   if (!isAllowed) {
     return (
@@ -90,7 +95,7 @@ export const PagePermissionGuard: React.FC<PagePermissionGuardProps> = ({
           {isSuperUser && (
             <p className="text-[11px] text-[#94A3B8] dark:text-slate-500 max-w-md mx-auto">
               Permission key:{" "}
-              <code className="text-[#25776F] font-mono bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{permission}</code>
+              <code className="text-[#25776F] font-mono bg-[#E7F1F2] dark:bg-slate-800 px-1.5 py-0.5 rounded">{requiredKeys.join(" or ")}</code>
             </p>
           )}
         </div>

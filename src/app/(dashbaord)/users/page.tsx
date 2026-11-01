@@ -8,6 +8,8 @@ import {
   UpdateSubUserPayload,
   InviteItem,
 } from "../../../../services/userService";
+import { roleService, RoleSummary } from "../../../../services/roleService";
+import { useNavigation } from "@/context/NavigationContext";
 import {
   User,
   UserPlus,
@@ -319,7 +321,14 @@ export const expandAssignedToActions = (features: string[] = []): string[] => {
 const SYSTEM_MODULES = RBAC_MODULES.map(m => ({ key: m.key, label: m.label, category: m.category }));
 
 export default function UsersManagementPage() {
+  const { hasPermission } = useNavigation();
+  const canCreateUser = hasPermission("system.users.create");
+  const canEditUser = hasPermission("system.users.edit");
   const [users, setUsers] = useState<SubUserDetails[]>([]);
+  // The tenant's actual assignable roles (seeded system roles + any custom
+  // roles created on the /roles page). Replaces the old hardcoded 4-option
+  // dropdown so a custom role (e.g. a "create-only" role) can be assigned.
+  const [roles, setRoles] = useState<RoleSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -429,7 +438,54 @@ export default function UsersManagementPage() {
   useEffect(() => {
     loadUsers();
     loadInvites();
+    loadRoles();
   }, []);
+
+  const loadRoles = async () => {
+    const list = await roleService.getRoles();
+    // Only active roles are assignable. System roles first (getRoles already
+    // orders that way), then custom roles.
+    const active = list.filter((r) => r.isActive);
+    setRoles(active);
+    // Default a brand-new user to the lowest-privilege non-admin role so the
+    // "Add User" form starts from least privilege. Falls back to the literal
+    // SUB_USER only if the tenant somehow has no non-admin role yet.
+    const preferred =
+      active.find((r) => r.code === "viewer") ||
+      active.find((r) => !r.isSystem) ||
+      active.find((r) => r.code !== "admin");
+    if (preferred) {
+      setAddForm((prev) => ({ ...prev, role: preferred.code }));
+    }
+  };
+
+  // Renders the <option> list for a role <select>. Includes the current value
+  // as a fallback option when it isn't one of the tenant's active roles (e.g. a
+  // legacy "SUB_USER"/"accounts" string on an existing user) so editing never
+  // silently drops the user's assigned role.
+  const renderRoleOptions = (currentValue?: string) => {
+    const opts = roles.map((r) => (
+      <option key={r.id} value={r.code}>
+        {r.name}
+        {r.isSystem ? "" : " (Custom)"}
+      </option>
+    ));
+    const known = roles.some((r) => r.code.toLowerCase() === (currentValue || "").toLowerCase());
+    if (currentValue && !known) {
+      opts.unshift(
+        <option key={`__current_${currentValue}`} value={currentValue}>
+          {currentValue} (current)
+        </option>
+      );
+    }
+    return opts;
+  };
+
+  // Human-friendly label for a role code, resolved against the live role list.
+  const roleLabel = (code: string) => {
+    const r = roles.find((x) => x.code.toLowerCase() === (code || "").toLowerCase());
+    return r ? r.name : code;
+  };
 
   const showToast = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -651,9 +707,12 @@ export default function UsersManagementPage() {
         </span>
       );
     }
+    // Any other role (seeded non-legacy role like "viewer"/"accountant", or a
+    // custom role created on /roles) shows its real display name.
+    const known = roles.some((x) => x.code.toLowerCase() === r);
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#F7F8F8] text-[#64748B] dark:bg-slate-800 dark:text-slate-300 border border-[#D9E2E3] dark:border-slate-700">
-        Standard User
+        {known ? roleLabel(role) : "Standard User"}
       </span>
     );
   };
@@ -710,21 +769,25 @@ export default function UsersManagementPage() {
               <span>Refresh</span>
             </button>
 
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Mail className="w-4 h-4" />
-              <span>Invite</span>
-            </button>
+            {canCreateUser && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Invite</span>
+              </button>
+            )}
 
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Add User</span>
-            </button>
+            {canCreateUser && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Add User</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -842,10 +905,11 @@ export default function UsersManagementPage() {
               className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:border-[#2F8E86]"
             >
               <option value="all">All Roles</option>
-              <option value="sub_user">Standard User (SUB_USER)</option>
-              <option value="operator">Operator (Dispatch)</option>
-              <option value="accounts">Accounts & Billing</option>
-              <option value="admin">Administrator</option>
+              {roles.map((r) => (
+                <option key={r.id} value={r.code}>
+                  {r.name}
+                </option>
+              ))}
             </select>
 
             <select
@@ -975,6 +1039,7 @@ export default function UsersManagementPage() {
                       <td className="py-3.5 px-4 sm:px-6 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Direct Password Reset */}
+                          {canEditUser && (
                           <button
                             onClick={() => {
                               setSelectedUser(u);
@@ -987,8 +1052,10 @@ export default function UsersManagementPage() {
                           >
                             <KeyRound className="w-4 h-4" />
                           </button>
+                          )}
 
                           {/* Edit Details */}
+                          {canEditUser && (
                           <button
                             onClick={() => {
                               setSelectedUser(u);
@@ -1005,6 +1072,7 @@ export default function UsersManagementPage() {
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1188,10 +1256,11 @@ export default function UsersManagementPage() {
                     onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86]"
                   >
-                    <option value="SUB_USER">Standard User (SUB_USER) - Default</option>
-                    <option value="operator">Operator (Dispatch & Operations)</option>
-                    <option value="accounts">Accounts Manager (Billing & Receipts)</option>
-                    <option value="admin">Administrator (Full Tenant Control)</option>
+                    {roles.length === 0 ? (
+                      <option value={addForm.role}>Loading roles…</option>
+                    ) : (
+                      renderRoleOptions(addForm.role)
+                    )}
                   </select>
                   <p className="text-[11px] text-slate-400 mt-1">
                     Standard users only have access to modules explicitly permitted below.
@@ -1446,10 +1515,7 @@ export default function UsersManagementPage() {
                     onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86]"
                   >
-                    <option value="SUB_USER">Standard User (SUB_USER)</option>
-                    <option value="operator">Operator (Dispatch & Trips)</option>
-                    <option value="accounts">Accounts Manager (Billing & Invoices)</option>
-                    <option value="admin">Administrator (Tenant Admin)</option>
+                    {renderRoleOptions(editForm.role)}
                   </select>
                 </div>
 

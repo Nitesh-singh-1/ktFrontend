@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect } from "react";
 import {
   VehicleMaster,
@@ -23,11 +25,21 @@ import {
   Building2,
   CheckCircle2,
 } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 // Order requested: Station/Hub -> Driver -> Vehicle
 type MasterTab = "locations" | "drivers" | "vehicles";
 
 export default function FleetMasterPage() {
+  return (
+    <PagePermissionGuard permission="master_data.fleet.view" moduleName="Fleet">
+      <FleetMasterPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function FleetMasterPageInner() {
+  const { hasPermission } = useNavigation();
   const [activeTab, setActiveTab] = useState<MasterTab>("locations");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,7 +185,7 @@ export default function FleetMasterPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {activeTab === "locations" && (
+          {activeTab === "locations" && hasPermission("master_data.fleet.create") && (
             <button
               onClick={() => {
                 setEditingLocation(null);
@@ -186,7 +198,7 @@ export default function FleetMasterPage() {
             </button>
           )}
 
-          {activeTab === "drivers" && (
+          {activeTab === "drivers" && hasPermission("master_data.fleet.create") && (
             <button
               onClick={() => {
                 setEditingDriver(null);
@@ -199,7 +211,7 @@ export default function FleetMasterPage() {
             </button>
           )}
 
-          {activeTab === "vehicles" && (
+          {activeTab === "vehicles" && hasPermission("master_data.fleet.create") && (
             <button
               onClick={() => {
                 setEditingVehicle(null);
@@ -359,6 +371,7 @@ export default function FleetMasterPage() {
                     <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Add operational booking hubs and destination stations to enable route selection.
                     </p>
+                    {hasPermission("master_data.fleet.create") && (
                     <button
                       onClick={() => {
                         setEditingLocation(null);
@@ -368,6 +381,7 @@ export default function FleetMasterPage() {
                     >
                       + Add Station
                     </button>
+                    )}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -402,6 +416,7 @@ export default function FleetMasterPage() {
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
+                                {hasPermission("master_data.fleet.edit") && (
                                 <button
                                   onClick={() => {
                                     setEditingLocation(l);
@@ -411,6 +426,8 @@ export default function FleetMasterPage() {
                                 >
                                   Edit
                                 </button>
+                                )}
+                                {hasPermission("master_data.fleet.delete") && (
                                 <button
                                   onClick={() => handleDeleteLocation(l)}
                                   className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
@@ -418,6 +435,7 @@ export default function FleetMasterPage() {
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -441,6 +459,7 @@ export default function FleetMasterPage() {
                     <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Add commercial drivers with license details and verified mobile numbers.
                     </p>
+                    {hasPermission("master_data.fleet.create") && (
                     <button
                       onClick={() => {
                         setEditingDriver(null);
@@ -450,6 +469,7 @@ export default function FleetMasterPage() {
                     >
                       + Add Driver
                     </button>
+                    )}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -480,6 +500,7 @@ export default function FleetMasterPage() {
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
+                                {hasPermission("master_data.fleet.edit") && (
                                 <button
                                   onClick={() => {
                                     setEditingDriver(d);
@@ -489,6 +510,8 @@ export default function FleetMasterPage() {
                                 >
                                   Edit
                                 </button>
+                                )}
+                                {hasPermission("master_data.fleet.delete") && (
                                 <button
                                   onClick={() => handleDeleteDriver(d)}
                                   className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
@@ -496,6 +519,7 @@ export default function FleetMasterPage() {
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -519,6 +543,7 @@ export default function FleetMasterPage() {
                     <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       Register trucks and lorries to enable dispatch assignment in Challans.
                     </p>
+                    {hasPermission("master_data.fleet.create") && (
                     <button
                       onClick={() => {
                         setEditingVehicle(null);
@@ -528,6 +553,7 @@ export default function FleetMasterPage() {
                     >
                       + Add Vehicle
                     </button>
+                    )}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -568,6 +594,7 @@ export default function FleetMasterPage() {
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
+                                {hasPermission("master_data.fleet.edit") && (
                                 <button
                                   onClick={() => {
                                     setEditingVehicle(v);
@@ -577,6 +604,8 @@ export default function FleetMasterPage() {
                                 >
                                   Edit
                                 </button>
+                                )}
+                                {hasPermission("master_data.fleet.delete") && (
                                 <button
                                   onClick={() => handleDeleteVehicle(v)}
                                   className="p-1 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
@@ -584,6 +613,7 @@ export default function FleetMasterPage() {
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
+                                )}
                               </div>
                             </td>
                           </tr>

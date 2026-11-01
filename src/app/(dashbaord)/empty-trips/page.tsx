@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { EmptyTripLogDto } from "@/types/tms";
 import { emptyTripService } from "services/emptyTripService";
@@ -7,6 +9,7 @@ import { toast } from "@/context/ToastContext";
 import EmptyTripModal from "@/app/components/fleet/EmptyTripModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, Truck, Pencil, Trash2, Route } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -19,6 +22,15 @@ function fmtDate(iso?: string): string {
 }
 
 export default function EmptyTripsPage() {
+  return (
+    <PagePermissionGuard permission="empty_trips.view" moduleName="Empty Trips">
+      <EmptyTripsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function EmptyTripsPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<EmptyTripLogDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,12 +93,14 @@ export default function EmptyTripsPage() {
             Log empty / return runs and their fuel cost — the hidden expense that erodes trip profitability.
           </p>
         </div>
+        {hasPermission("empty_trips.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Empty Trip</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -130,9 +144,11 @@ export default function EmptyTripsPage() {
         emptyTitle="No empty trips logged"
         emptyMessage="Log deadhead / empty return runs to capture the fuel cost that reduces overall trip margins."
         emptyAction={
+          hasPermission("empty_trips.create") ? (
           <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> Log Empty Trip
           </button>
+          ) : undefined
         }
         columns={[
           { key: "tripDate", header: "Date", render: (r) => <span className="text-[#64748B]">{fmtDate(r.tripDate)}</span> },
@@ -157,8 +173,12 @@ export default function EmptyTripsPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
+                {hasPermission("empty_trips.edit") && (
                 <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("empty_trips.delete") && (
                 <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

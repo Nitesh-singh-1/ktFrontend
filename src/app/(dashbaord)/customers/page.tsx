@@ -1,10 +1,13 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { Party, PartyType, PaymentTerm } from "@/types/shipment";
 import { partyService } from "services/partyService";
 import PartyModal from "@/app/components/party/PartyModal";
 import TablePagination from "@/app/components/ui/TablePagination";
+import { useNavigation } from "@/context/NavigationContext";
 import {
   Building2,
   Landmark,
@@ -17,6 +20,15 @@ import {
 } from "lucide-react";
 
 export default function CustomersPage() {
+  return (
+    <PagePermissionGuard permission="master_data.parties.view" moduleName="Customers">
+      <CustomersPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function CustomersPageInner() {
+  const { hasPermission } = useNavigation();
   const [parties, setParties] = useState<Party[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,13 +126,15 @@ export default function CustomersPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleAddNew}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Party</span>
-        </button>
+        {hasPermission("master_data.parties.create") && (
+          <button
+            onClick={handleAddNew}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Party</span>
+          </button>
+        )}
       </div>
 
       {/* KPI Stats Cards */}
@@ -226,13 +240,15 @@ export default function CustomersPage() {
             <p className="text-xs text-[#64748B] max-w-sm mx-auto">
               Add your first customer, shipper, or receiver entity to enable instant autocomplete during consignment booking.
             </p>
-            <button
-              onClick={handleAddNew}
-              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Party</span>
-            </button>
+            {hasPermission("master_data.parties.create") && (
+              <button
+                onClick={handleAddNew}
+                className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Party</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -316,19 +332,23 @@ export default function CustomersPage() {
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(party)}
-                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(party)}
-                            className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
-                            title="Delete Party"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {hasPermission("master_data.parties.edit") && (
+                            <button
+                              onClick={() => handleEdit(party)}
+                              className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {hasPermission("master_data.parties.delete") && (
+                            <button
+                              onClick={() => handleDelete(party)}
+                              className="p-1.5 text-[#94A3B8] hover:text-[#D95C5C] rounded-lg transition cursor-pointer"
+                              title="Delete Party"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

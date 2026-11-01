@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect } from "react";
 import { TripDto, TripStatus } from "@/types/tms";
 import { tripService } from "services/tripService";
@@ -10,6 +12,14 @@ import { DataTable } from "@/app/components/ui/DataTable";
 import { useNavigation } from "@/context/NavigationContext";
 
 export default function TripsPage() {
+  return (
+    <PagePermissionGuard permission="trips.view" moduleName="Trips">
+      <TripsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function TripsPageInner() {
   const { hasPermission } = useNavigation();
   const [trips, setTrips] = useState<TripDto[]>([]);
   const [loading, setLoading] = useState(true);

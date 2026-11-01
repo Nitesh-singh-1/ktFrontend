@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, AlertTriangle, HelpCircle, Info, ShieldAlert } from "lucide-react";
 
 // =============================================================================
 // SweetAlert — centered modal alert for high-signal events.
@@ -11,7 +11,13 @@ import { AlertCircle, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-rea
 // Mount `<SweetAlertProvider>` at the app root alongside `<ToastProvider>`.
 // =============================================================================
 
-export type SweetAlertType = "error" | "success" | "warning" | "confirm";
+export type SweetAlertType =
+  | "error"
+  | "success"
+  | "warning"
+  | "info"
+  | "unauthorized"
+  | "confirm";
 
 export interface SweetAlertOptions {
   title: string;
@@ -59,6 +65,20 @@ export const sweetAlert = {
     emit("success", opts).then(() => undefined),
   warning: (opts: SweetAlertOptions): Promise<void> =>
     emit("warning", opts).then(() => undefined),
+  info: (opts: SweetAlertOptions): Promise<void> =>
+    emit("info", opts).then(() => undefined),
+  /**
+   * Preset for authentication / permission failures (401/403). Defaults the
+   * title + message so a call site can be as short as `sweetAlert.unauthorized()`.
+   */
+  unauthorized: (opts?: Partial<SweetAlertOptions>): Promise<void> =>
+    emit("unauthorized", {
+      title: opts?.title ?? "Access denied",
+      message:
+        opts?.message ??
+        "You don't have permission to perform this action, or your session is no longer valid.",
+      confirmText: opts?.confirmText,
+    }).then(() => undefined),
   confirm: (opts: SweetAlertOptions): Promise<boolean> => emit("confirm", opts),
 };
 
@@ -67,10 +87,12 @@ export const sweetAlert = {
 // =============================================================================
 
 const ICON_SPEC: Record<SweetAlertType, { bg: string; fg: string; Icon: React.ElementType }> = {
-  error:   { bg: "bg-rose-100 dark:bg-rose-500/15",       fg: "text-[#D95C5C]",  Icon: AlertCircle },
-  success: { bg: "bg-emerald-100 dark:bg-emerald-500/15", fg: "text-[#2F9E8F]",  Icon: CheckCircle2 },
-  warning: { bg: "bg-amber-100 dark:bg-amber-500/15",     fg: "text-amber-600",  Icon: AlertTriangle },
-  confirm: { bg: "bg-slate-100 dark:bg-slate-800",        fg: "text-[#2F8E86]",  Icon: HelpCircle },
+  error:        { bg: "bg-rose-100 dark:bg-rose-500/15",       fg: "text-[#D95C5C]",  Icon: AlertCircle },
+  success:      { bg: "bg-emerald-100 dark:bg-emerald-500/15", fg: "text-[#2F9E8F]",  Icon: CheckCircle2 },
+  warning:      { bg: "bg-amber-100 dark:bg-amber-500/15",     fg: "text-amber-600",  Icon: AlertTriangle },
+  info:         { bg: "bg-sky-100 dark:bg-sky-500/15",         fg: "text-sky-600",    Icon: Info },
+  unauthorized: { bg: "bg-rose-100 dark:bg-rose-500/15",       fg: "text-[#D95C5C]",  Icon: ShieldAlert },
+  confirm:      { bg: "bg-slate-100 dark:bg-slate-800",        fg: "text-[#2F8E86]",  Icon: HelpCircle },
 };
 
 // =============================================================================

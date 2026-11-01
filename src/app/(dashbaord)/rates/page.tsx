@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { RateCardDto } from "@/types/tms";
 import { rateCardService } from "services/rateCardService";
@@ -7,12 +9,22 @@ import { toast } from "@/context/ToastContext";
 import RateCardModal from "@/app/components/ratecard/RateCardModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, IndianRupee, Pencil, Trash2, Route } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function RateContractsPage() {
+  return (
+    <PagePermissionGuard permission="master_data.rates.view" moduleName="Rate Contracts">
+      <RateContractsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function RateContractsPageInner() {
+  const { hasPermission } = useNavigation();
   const [cards, setCards] = useState<RateCardDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,12 +89,14 @@ export default function RateContractsPage() {
             Define route-wise freight tariffs (per kg / MT / trip) with hamali, door-delivery and minimum charges — applied automatically during booking.
           </p>
         </div>
-        <button
-          onClick={() => { setEditing(null); setModalOpen(true); }}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> <span>Add Rate Contract</span>
-        </button>
+        {hasPermission("master_data.rates.create") && (
+          <button
+            onClick={() => { setEditing(null); setModalOpen(true); }}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> <span>Add Rate Contract</span>
+          </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -126,9 +140,11 @@ export default function RateContractsPage() {
         emptyTitle="No rate contracts yet"
         emptyMessage="Add your first route tariff so freight is priced automatically at booking time."
         emptyAction={
-          <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> New Rate Contract
-          </button>
+          hasPermission("master_data.rates.create") ? (
+            <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" /> New Rate Contract
+            </button>
+          ) : undefined
         }
         columns={[
           {
@@ -159,8 +175,12 @@ export default function RateContractsPage() {
             align: "right",
             render: (c) => (
               <div className="flex items-center justify-end gap-1.5">
-                <button title="Edit" onClick={() => { setEditing(c); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
-                <button title="Delete" onClick={() => handleDelete(c)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                {hasPermission("master_data.rates.edit") && (
+                  <button title="Edit" onClick={() => { setEditing(c); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.rates.delete") && (
+                  <button title="Delete" onClick={() => handleDelete(c)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

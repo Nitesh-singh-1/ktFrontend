@@ -11,6 +11,7 @@ import { DataTable } from "@/app/components/ui/DataTable";
 import CustomSelect from "@/app/components/ui/CustomSelect";
 import TablePagination from "@/app/components/ui/TablePagination";
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+import { useNavigation } from "@/context/NavigationContext";
 import {
   CheckCircle2,
   Search,
@@ -68,6 +69,8 @@ const DEDUCTION_REASON_OPTIONS = [
 ];
 
 function DeliverySettlementContent() {
+  const { hasPermission } = useNavigation();
+  const canSettle = hasPermission("delivery_settlement.create") || hasPermission("delivery_settlement.edit");
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -519,7 +522,7 @@ function DeliverySettlementContent() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && canSettle && (
             <button
               type="button"
               onClick={handleOpenBulkSettle}
@@ -899,6 +902,9 @@ function DeliverySettlementContent() {
             render: (s) => {
               const due = s.dueAmount > 0 ? s.dueAmount : s.grandTotal || 0;
               const isDelivered = s.status === ShipmentStatus.Delivered && s.isSettled;
+              if (!canSettle) {
+                return <span className="text-[#94A3B8] text-xs">—</span>;
+              }
               return (
                 <button
                   type="button"

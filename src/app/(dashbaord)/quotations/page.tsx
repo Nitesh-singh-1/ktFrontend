@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Quotation, QuotationStatus } from "@/types/quotation";
@@ -8,6 +10,7 @@ import { toast } from "@/context/ToastContext";
 import QuotationModal from "@/app/components/quotation/QuotationModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { printQuotation } from "@/utils/print/printQuotation";
+import { useNavigation } from "@/context/NavigationContext";
 import { Plus, Search, AlertTriangle, FileText, Pencil, Trash2, Send, CheckCircle2, ArrowRightCircle, Printer } from "lucide-react";
 
 const STATUS_META: Record<string, { label: string; badge: string }> = {
@@ -39,6 +42,15 @@ function fmtDate(iso?: string): string {
 }
 
 export default function QuotationsPage() {
+  return (
+    <PagePermissionGuard permission="quotations.view" moduleName="Quotations">
+      <QuotationsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function QuotationsPageInner() {
+  const { hasPermission } = useNavigation();
   const router = useRouter();
   const [quotes, setQuotes] = useState<Quotation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,12 +151,14 @@ export default function QuotationsPage() {
             Prepare freight rate quotes, track follow-ups, and convert accepted enquiries into bookings.
           </p>
         </div>
-        <button
-          onClick={() => { setEditing(null); setModalOpen(true); }}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> <span>Create Quotation</span>
-        </button>
+        {hasPermission("quotations.create") && (
+          <button
+            onClick={() => { setEditing(null); setModalOpen(true); }}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> <span>Create Quotation</span>
+          </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -204,9 +218,11 @@ export default function QuotationsPage() {
         emptyTitle="No quotations yet"
         emptyMessage="Create your first freight quote to track a customer enquiry through to a booking."
         emptyAction={
-          <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> New Quotation
-          </button>
+          hasPermission("quotations.create") ? (
+            <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" /> New Quotation
+            </button>
+          ) : undefined
         }
         columns={[
           { key: "quoteNo", header: "Quote No", render: (q) => <span className="font-mono font-bold text-[#111827]">{q.quoteNo}</span> },
@@ -241,18 +257,24 @@ export default function QuotationsPage() {
             align: "right",
             render: (q) => (
               <div className="flex items-center justify-end gap-1.5">
-                {q.status === QuotationStatus.Draft && (
+                {q.status === QuotationStatus.Draft && hasPermission("quotations.edit") && (
                   <button title="Mark as Sent" onClick={() => changeStatus(q, QuotationStatus.Sent)} className="p-1.5 rounded-lg text-[#2F6FBF] hover:bg-[#EAF2FB] transition cursor-pointer"><Send className="w-3.5 h-3.5" /></button>
                 )}
-                {q.status === QuotationStatus.Sent && (
+                {q.status === QuotationStatus.Sent && hasPermission("quotations.edit") && (
                   <button title="Mark as Accepted" onClick={() => changeStatus(q, QuotationStatus.Accepted)} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"><CheckCircle2 className="w-3.5 h-3.5" /></button>
                 )}
-                {(q.status === QuotationStatus.Accepted || q.status === QuotationStatus.Sent) && (
+                {(q.status === QuotationStatus.Accepted || q.status === QuotationStatus.Sent) && hasPermission("quotations.edit") && (
                   <button title="Convert to Booking" onClick={() => convertToBooking(q)} className="p-1.5 rounded-lg text-[#25776F] hover:bg-[#E7F1F2] transition cursor-pointer"><ArrowRightCircle className="w-3.5 h-3.5" /></button>
                 )}
-                <button title="Print / PDF" onClick={() => printQuotation(q)} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Printer className="w-3.5 h-3.5" /></button>
-                <button title="Edit" onClick={() => { setEditing(q); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
-                <button title="Delete" onClick={() => handleDelete(q)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                {hasPermission("quotations.print") && (
+                  <button title="Print / PDF" onClick={() => printQuotation(q)} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Printer className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("quotations.edit") && (
+                  <button title="Edit" onClick={() => { setEditing(q); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("quotations.delete") && (
+                  <button title="Delete" onClick={() => handleDelete(q)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

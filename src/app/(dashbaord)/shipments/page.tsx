@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -57,6 +59,17 @@ const STATUS_OPTIONS = [
 ];
 
 export default function ShipmentsListPage() {
+  return (
+    <PagePermissionGuard
+      permission={["consignments.all.view", "consignments.create.view", "consignments.view", "consignments.create.create"]}
+      moduleName="Consignments"
+    >
+      <ShipmentsListPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function ShipmentsListPageInner() {
   const router = useRouter();
   const { hasPermission } = useNavigation();
 

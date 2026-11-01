@@ -30,8 +30,10 @@ import {
 import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
 import { formatCurrency, formatDate } from "@/utils/configFormatter";
 import { toast } from "@/context/ToastContext";
+import { useNavigation } from "@/context/NavigationContext";
 
 function MoneyReceiptsContent() {
+  const { hasPermission } = useNavigation();
   const [receipts, setReceipts] = useState<MoneyReceiptDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -791,6 +793,7 @@ function MoneyReceiptsContent() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         {isPending ? (
+                          hasPermission("billing.receipts.create") && (
                           <button
                             type="button"
                             onClick={() => handleOpenCollectModal(r)}
@@ -799,7 +802,9 @@ function MoneyReceiptsContent() {
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>Issue MR</span>
                           </button>
+                          )
                         ) : (
+                          hasPermission("billing.receipts.print") && (
                           <button
                             type="button"
                             onClick={() => handleSelectReceipt(r)}
@@ -808,6 +813,7 @@ function MoneyReceiptsContent() {
                             <Printer className="w-3.5 h-3.5" />
                             <span>Print MR</span>
                           </button>
+                          )
                         )}
                       </td>
                     </tr>

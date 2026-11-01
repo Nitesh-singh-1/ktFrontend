@@ -20,6 +20,7 @@ import {
 } from "../../../../services/roleService";
 import { DataTable, DataTableColumn } from "../../components/ui/DataTable";
 import { useToast } from "../../../context/ToastContext";
+import { useNavigation } from "@/context/NavigationContext";
 
 // A readable label from a feature/permission key, e.g.
 // "consignments.create" -> "Consignments › Create".
@@ -53,6 +54,10 @@ const emptyEditor = (): EditorState => ({
 
 export default function RolesPage() {
   const toast = useToast();
+  const { hasPermission } = useNavigation();
+  const canCreateRole = hasPermission("system.users.create");
+  const canEditRole = hasPermission("system.users.edit");
+  const canDeleteRole = hasPermission("system.users.delete");
   const [roles, setRoles] = useState<RoleSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignable, setAssignable] = useState<AssignablePermissions>({ modules: [] });
@@ -225,6 +230,7 @@ export default function RolesPage() {
           </span>
         ) : (
           <div className="flex items-center justify-end gap-2">
+            {canEditRole && (
             <button
               onClick={() => openEdit(r)}
               className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-[#2F8E86] dark:hover:bg-slate-700"
@@ -232,7 +238,8 @@ export default function RolesPage() {
             >
               <Edit3 className="h-4 w-4" />
             </button>
-            {r.isActive && (
+            )}
+            {r.isActive && canDeleteRole && (
               <button
                 onClick={() => deactivate(r)}
                 className="rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-[#D95C5C] dark:hover:bg-slate-700"
@@ -263,12 +270,14 @@ export default function RolesPage() {
           >
             <RefreshCw className="h-4 w-4" />
           </button>
+          {canCreateRole && (
           <button
             onClick={openCreate}
             className="inline-flex items-center gap-2 rounded-lg bg-[#2F8E86] px-4 py-2 text-sm font-medium text-white hover:bg-[#25776F]"
           >
             <Plus className="h-4 w-4" /> New Role
           </button>
+          )}
         </div>
       </div>
 

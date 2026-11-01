@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { VehicleLoanDto } from "@/types/tms";
 import { vehicleLoanService } from "services/vehicleLoanService";
@@ -7,6 +9,7 @@ import { toast } from "@/context/ToastContext";
 import VehicleLoanModal from "@/app/components/fleet/VehicleLoanModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, Landmark, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -19,6 +22,15 @@ function fmtDate(iso?: string): string {
 }
 
 export default function VehicleLoansPage() {
+  return (
+    <PagePermissionGuard permission="master_data.loans.view" moduleName="Vehicle Loans">
+      <VehicleLoansPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function VehicleLoansPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<VehicleLoanDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,12 +106,14 @@ export default function VehicleLoansPage() {
             Track vehicle finance — EMI schedule, EMIs paid vs tenure, next due date and outstanding balance.
           </p>
         </div>
+        {hasPermission("master_data.loans.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Loan</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -151,9 +165,11 @@ export default function VehicleLoansPage() {
         emptyTitle="No vehicle loans yet"
         emptyMessage="Add vehicle finance records to track EMIs, tenure progress and outstanding balances."
         emptyAction={
+          hasPermission("master_data.loans.create") ? (
           <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Loan
           </button>
+          ) : undefined
         }
         columns={[
           {
@@ -197,11 +213,15 @@ export default function VehicleLoansPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
-                {!r.isClosed && (
+                {!r.isClosed && hasPermission("master_data.loans.edit") && (
                   <button title="Record EMI paid" onClick={() => handlePayEmi(r)} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"><CheckCircle2 className="w-3.5 h-3.5" /></button>
                 )}
+                {hasPermission("master_data.loans.edit") && (
                 <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.loans.delete") && (
                 <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

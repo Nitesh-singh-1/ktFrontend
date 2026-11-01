@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { DriverLedgerEntryDto, DriverOutstandingDto } from "@/types/tms";
 import { driverLedgerService } from "services/driverLedgerService";
@@ -7,6 +9,7 @@ import { toast } from "@/context/ToastContext";
 import DriverLedgerModal from "@/app/components/fleet/DriverLedgerModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, Wallet, Pencil, Trash2, User } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 function inr(n?: number): string {
   return `₹${(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -21,6 +24,15 @@ function fmtDate(iso?: string): string {
 type View = "outstanding" | "transactions";
 
 export default function DriverLedgerPage() {
+  return (
+    <PagePermissionGuard permission="master_data.driver_ledger.view" moduleName="Driver Ledger">
+      <DriverLedgerPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function DriverLedgerPageInner() {
+  const { hasPermission } = useNavigation();
   const [view, setView] = useState<View>("outstanding");
   const [entries, setEntries] = useState<DriverLedgerEntryDto[]>([]);
   const [outstanding, setOutstanding] = useState<DriverOutstandingDto[]>([]);
@@ -90,12 +102,14 @@ export default function DriverLedgerPage() {
             Track advances paid to drivers and recoveries against them — with per-driver outstanding balances.
           </p>
         </div>
+        {hasPermission("master_data.driver_ledger.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Entry</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -181,9 +195,11 @@ export default function DriverLedgerPage() {
           emptyTitle="No transactions yet"
           emptyMessage="Record your first driver advance or recovery."
           emptyAction={
+            hasPermission("master_data.driver_ledger.create") ? (
             <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
               <Plus className="w-4 h-4" /> New Entry
             </button>
+            ) : undefined
           }
           columns={[
             { key: "entryDate", header: "Date", render: (r) => <span className="text-[#64748B]">{fmtDate(r.entryDate)}</span> },
@@ -203,8 +219,13 @@ export default function DriverLedgerPage() {
               align: "right",
               render: (r) => (
                 <div className="flex items-center justify-end gap-1.5">
+                  {hasPermission("master_data.driver_ledger.edit") && (
                   <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                  )}
+                  {/* driver_ledger has no catalog 'delete' action; gate on edit so a create-only user still can't remove rows. */}
+                  {hasPermission("master_data.driver_ledger.edit") && (
                   <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                  )}
                 </div>
               ),
             },

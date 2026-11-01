@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { VehicleInsuranceClaimDto, VehicleClaimStatus } from "@/types/tms";
 import { vehicleClaimService } from "services/vehicleClaimService";
@@ -7,6 +9,7 @@ import { toast } from "@/context/ToastContext";
 import VehicleClaimModal from "@/app/components/fleet/VehicleClaimModal";
 import { DataTable } from "@/app/components/ui/DataTable";
 import { Plus, Search, AlertTriangle, ShieldAlert, Pencil, Trash2 } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 const STATUS_META: Record<string, { label: string; badge: string }> = {
   Filed: { label: "Filed", badge: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -36,6 +39,15 @@ function fmtDate(iso?: string): string {
 }
 
 export default function VehicleClaimsPage() {
+  return (
+    <PagePermissionGuard permission="master_data.vehicle_claims.view" moduleName="Vehicle Insurance Claims">
+      <VehicleClaimsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function VehicleClaimsPageInner() {
+  const { hasPermission } = useNavigation();
   const [rows, setRows] = useState<VehicleInsuranceClaimDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,12 +116,14 @@ export default function VehicleClaimsPage() {
             Register and track vehicle insurance claims — accident, own-damage, theft — from filing through to settlement.
           </p>
         </div>
+        {hasPermission("master_data.vehicle_claims.create") && (
         <button
           onClick={() => { setEditing(null); setModalOpen(true); }}
           className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span>Add Claim</span>
         </button>
+        )}
       </div>
 
       {/* KPI cards */}
@@ -169,9 +183,11 @@ export default function VehicleClaimsPage() {
         emptyTitle="No insurance claims yet"
         emptyMessage="File a vehicle insurance claim to track it from filing through to settlement."
         emptyAction={
+          hasPermission("master_data.vehicle_claims.create") ? (
           <button onClick={() => { setEditing(null); setModalOpen(true); }} className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs transition cursor-pointer inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> File Claim
           </button>
+          ) : undefined
         }
         columns={[
           {
@@ -203,8 +219,12 @@ export default function VehicleClaimsPage() {
             align: "right",
             render: (r) => (
               <div className="flex items-center justify-end gap-1.5">
+                {hasPermission("master_data.vehicle_claims.edit") && (
                 <button title="Edit" onClick={() => { setEditing(r); setModalOpen(true); }} className="p-1.5 rounded-lg text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+                )}
+                {hasPermission("master_data.vehicle_claims.delete") && (
                 <button title="Delete" onClick={() => handleDelete(r)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                )}
               </div>
             ),
           },

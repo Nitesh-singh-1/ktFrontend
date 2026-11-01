@@ -1,12 +1,24 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect } from "react";
 import { PodRecordDto, PodStatus } from "@/types/tms";
 import { podService } from "services/podService";
 import PodUploadModal from "@/app/components/pod/PodUploadModal";
 import { ClipboardList, Clock, CheckCircle2, Search, Plus, FileCheck, X, AlertTriangle } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 export default function PodPage() {
+  return (
+    <PagePermissionGuard permission="pod.view" moduleName="Proof of Delivery">
+      <PodPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function PodPageInner() {
+  const { hasPermission } = useNavigation();
   const [pods, setPods] = useState<PodRecordDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,13 +104,15 @@ export default function PodPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setUploadModalOpen(true)}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Upload POD</span>
-        </button>
+        {hasPermission("pod.create") && (
+          <button
+            onClick={() => setUploadModalOpen(true)}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Upload POD</span>
+          </button>
+        )}
       </div>
 
       {/* KPI Overview Cards */}
@@ -192,13 +206,15 @@ export default function PodPage() {
             <p className="text-xs text-[#64748B] max-w-sm mx-auto dark:text-slate-400">
               Upload delivery receipts or electronic signatures for in-transit consignments to formally verify delivery.
             </p>
-            <button
-              onClick={() => setUploadModalOpen(true)}
-              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Upload First POD</span>
-            </button>
+            {hasPermission("pod.create") && (
+              <button
+                onClick={() => setUploadModalOpen(true)}
+                className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Upload First POD</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -264,7 +280,7 @@ export default function PodPage() {
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {p.status !== PodStatus.Verified && (
+                          {p.status !== PodStatus.Verified && hasPermission("pod.edit") && (
                             <button
                               onClick={() => handleVerify(p)}
                               className="px-2.5 py-1 bg-[#2F9E8F] hover:bg-[#27867a] text-white font-bold rounded-lg text-xs transition cursor-pointer"
@@ -272,7 +288,7 @@ export default function PodPage() {
                               Verify POD
                             </button>
                           )}
-                          {p.status !== PodStatus.Rejected && p.status !== PodStatus.Verified && (
+                          {p.status !== PodStatus.Rejected && p.status !== PodStatus.Verified && hasPermission("pod.edit") && (
                             <button
                               onClick={() => handleReject(p)}
                               className="px-2.5 py-1 bg-white border border-[#D9E2E3] hover:bg-red-50 hover:border-red-200 text-[#64748B] hover:text-[#D95C5C] font-bold rounded-lg text-xs transition cursor-pointer dark:text-slate-400 dark:bg-slate-900 dark:border-slate-700"

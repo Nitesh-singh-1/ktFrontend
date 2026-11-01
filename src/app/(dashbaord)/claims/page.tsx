@@ -1,5 +1,7 @@
 "use client";
 
+import PagePermissionGuard from "@/app/components/ui/PagePermissionGuard";
+
 import React, { useState, useEffect } from "react";
 import { ClaimDto, ClaimStatus } from "@/types/tms";
 import { claimsService } from "services/claimsService";
@@ -10,8 +12,18 @@ import {
   ShieldCheck,
   Plus
 } from "lucide-react";
+import { useNavigation } from "@/context/NavigationContext";
 
 export default function ClaimsPage() {
+  return (
+    <PagePermissionGuard permission="claims.view" moduleName="Cargo Claims">
+      <ClaimsPageInner />
+    </PagePermissionGuard>
+  );
+}
+
+function ClaimsPageInner() {
+  const { hasPermission } = useNavigation();
   const [claims, setClaims] = useState<ClaimDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,13 +122,15 @@ export default function ClaimsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Claim</span>
-        </button>
+        {hasPermission("claims.create") && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Claim</span>
+          </button>
+        )}
       </div>
 
       {/* KPI Stats */}
@@ -216,13 +230,15 @@ export default function ClaimsPage() {
             <p className="text-xs text-[#64748B] max-w-sm mx-auto">
               All consignments are moving intact with 0 incident reports on record.
             </p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Report Incident / Claim</span>
-            </button>
+            {hasPermission("claims.create") && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold rounded-lg text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Report Incident / Claim</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -282,12 +298,14 @@ export default function ClaimsPage() {
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => handleUpdateStatus(c)}
-                          className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
-                        >
-                          Resolve
-                        </button>
+                        {hasPermission("claims.edit") && (
+                          <button
+                            onClick={() => handleUpdateStatus(c)}
+                            className="px-2.5 py-1 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] font-bold rounded-lg text-xs transition cursor-pointer"
+                          >
+                            Resolve
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

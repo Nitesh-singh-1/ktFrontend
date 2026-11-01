@@ -127,7 +127,7 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#25776F] bg-[#E7F1F2] px-2.5 py-1 rounded-md border border-[#D9E2E3] dark:text-teal-300 dark:bg-slate-800 dark:border-slate-700">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#B76E32] bg-[#FEF2E6] px-2.5 py-1 rounded-md border border-[#F4A261]/40 dark:text-amber-300 dark:bg-amber-950/40 dark:border-amber-900/50">
               Overview
             </span>
           </div>
@@ -149,9 +149,9 @@ export default function DashboardPage() {
           </Link>
           <Link
             href="/trips"
-            className="px-4 py-2.5 bg-white hover:bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+            className="px-4 py-2.5 bg-[#FEF2E6] hover:bg-[#FBE1C7] text-[#B76E32] border border-[#F4A261]/50 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/50 dark:hover:bg-amber-950/50"
           >
-            <Truck className="w-3.5 h-3.5 text-[#2F8E86]" />
+            <Truck className="w-3.5 h-3.5 text-[#C87B3C] dark:text-amber-400" />
             <span>Truck Challans</span>
           </Link>
         </div>
@@ -212,7 +212,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Outstanding Due */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-amber-100 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-700 transition-all">
+        <div className="bg-[#FEF2E6]/50 dark:bg-amber-950/20 rounded-2xl p-5 border border-amber-200/70 dark:border-amber-900/50 shadow-xs hover:border-amber-400 dark:hover:border-amber-700 transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
@@ -308,11 +308,14 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
             <div>
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-[#B76E32] bg-[#FEF2E6] px-2 py-0.5 rounded-md border border-[#F4A261]/40 mb-1.5 dark:text-amber-300 dark:bg-amber-950/40 dark:border-amber-900/50">
+                Payment Terms
+              </span>
               <h3 className="text-sm font-bold text-[#111827] dark:text-white uppercase tracking-wider">
                 Booking Terms Breakdown
               </h3>
               <p className="text-xs text-[#64748B] dark:text-slate-400">
-                Consignment freight classified by billing & payment agreement
+                Consignment freight classified by billing &amp; payment agreement
               </p>
             </div>
           </div>
@@ -514,16 +517,16 @@ export default function DashboardPage() {
 
           <Link
             href="/reports"
-            className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] hover:bg-[#E7F1F2] hover:border-[#D9E2E3] dark:bg-slate-800 dark:border-slate-700 transition flex items-center gap-3 group"
+            className="p-4 rounded-xl border border-amber-200/60 bg-[#FEF2E6]/60 hover:bg-[#FBE1C7] hover:border-amber-300 dark:bg-amber-950/20 dark:border-amber-900/40 dark:hover:bg-amber-950/40 transition flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#D9E2E3] flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-slate-700">
-              <BarChart3 className="w-5 h-5 text-[#2F8E86]" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-amber-200/70 flex items-center justify-center shrink-0 dark:bg-slate-900 dark:border-amber-900/40">
+              <BarChart3 className="w-5 h-5 text-[#C87B3C] dark:text-amber-400" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#25776F] dark:text-white">
-                Reports & Ledger
+              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#B76E32] dark:text-white dark:group-hover:text-amber-300">
+                Reports &amp; Ledger
               </h4>
-              <p className="text-[11px] text-[#64748B] dark:text-slate-400">Tax, P&L, outstanding balance</p>
+              <p className="text-[11px] text-[#64748B] dark:text-slate-400">Tax, P&amp;L, outstanding balance</p>
             </div>
           </Link>
         </div>
