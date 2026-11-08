@@ -265,11 +265,12 @@ export interface CreateInvoiceRequest {
 }
 
 export interface RecordPaymentRequest {
-  amount: number;
-  paymentDate?: string;
+  // Keys MUST match the backend RecordPaymentRequest DTO (InvoiceDto.cs); System.Text.Json
+  // binds case-insensitively, so a prior `amount`/`notes` shape bound PaymentAmount = 0.
+  paymentAmount: number;
   paymentMode?: string;
   referenceNo?: string;
-  notes?: string;
+  remarks?: string;
 }
 
 export interface ConsignmentInvoiceReference {
