@@ -19,32 +19,47 @@ export interface ReportEntitlementItem {
   isEnabled: boolean;
 }
 
+/**
+ * @deprecated TASK-054 transition shim. The clean canonical entitlement read
+ * shape is `TenantEntitlements` in `tenantService.ts` (API contract §B:
+ * `{ tenantId, planCode?, moduleCodes, pageRestrictions, reports }`).
+ *
+ * This legacy interface is retained ONLY so the not-yet-migrated
+ * `/settings` + `/clients` pages (owned by frontend-ui) still compile during
+ * the migration window. `enabledMenuKeys` and `planTier` are NO LONGER
+ * returned by the backend — they remain here as optional read-fallbacks until
+ * frontend-ui drops those reads, after which this interface is deleted.
+ */
 export interface TenantMenuEntitlements {
   tenantId: string;
-  planTier?: string; // Starter, Professional, Enterprise, Custom
-  // TASK-049 — `moduleCodes` is the new canonical shape (returned alongside the
-  // legacy `enabledMenuKeys` during the one-release transition window).
-  // Readers should prefer `moduleCodes` and fall back to `enabledMenuKeys`.
+  /** @deprecated use `planCode` (the plan tier string). */
+  planTier?: string;
+  planCode?: string;
   moduleCodes?: string[];
-  enabledMenuKeys: string[];
+  pageRestrictions?: Record<string, string[]>;
+  /** @deprecated no longer served by the backend; transition fallback only. */
+  enabledMenuKeys?: string[];
   reports: ReportEntitlementItem[];
-  // TASK-049b — `roleOverridesJson` and `userOverridesJson` DTO string fields
-  // deleted; the backend no longer round-trips the override maps. On save the
-  // frontend sends `roleOverrides` / `userOverrides` as `Record<string,string[]>`
-  // via `UpdateTenantEntitlementsPayload` below.
 }
 
-// TASK-049 / TASK-049b — canonical PUT shape for both
-// `/configuration/menu-entitlements` (self) and
-// `/configuration/tenants/{id}/menu-entitlements` (another tenant) as well
-// as `/tenant/{id}/entitlements` (platform-admin /clients). Backend reads
-// `moduleCodes` as the single source of truth and writes `tenant_modules`
-// rows from it. NEVER include `enabledMenuKeys`, legacy aliases (`gr`,
-// `challan`), or dotted strings (`system.settings`, `gr.list`) here.
+/**
+ * @deprecated TASK-054 transition shim. The clean canonical write shape is
+ * `UpdateTenantEntitlements` in `tenantService.ts` (API contract §B:
+ * `{ moduleCodes, pageRestrictions?, reports? }`).
+ *
+ * `roleOverrides` / `userOverrides` are REMOVED from the clean contract and are
+ * NEVER emitted on the wire — the `updateMenuEntitlements*` service functions
+ * strip them before the PUT. They remain as optional, ignored fields here only
+ * so the un-migrated `/settings` page literal still compiles. Delete once
+ * frontend-ui stops populating them.
+ */
 export interface UpdateTenantEntitlementsPayload {
   moduleCodes: string[];
+  pageRestrictions?: Record<string, string[]>;
   reports?: ReportEntitlementItem[];
+  /** @deprecated ignored/stripped before the PUT — not part of the clean contract. */
   roleOverrides?: Record<string, string[]>;
+  /** @deprecated ignored/stripped before the PUT — not part of the clean contract. */
   userOverrides?: Record<string, string[]>;
 }
 
@@ -109,8 +124,32 @@ export const navigationService = {
     baseService.get<TenantMenuEntitlements>(`/configuration/tenants/${tenantId}/menu-entitlements`),
 
   updateMenuEntitlements: (data: UpdateTenantEntitlementsPayload) =>
-    baseService.put<TenantMenuEntitlements>("/configuration/menu-entitlements", data),
+    baseService.put<TenantMenuEntitlements>(
+      "/configuration/menu-entitlements",
+      toCleanEntitlementBody(data),
+    ),
 
   updateMenuEntitlementsForTenant: (tenantId: string, data: UpdateTenantEntitlementsPayload) =>
-    baseService.put<TenantMenuEntitlements>(`/configuration/tenants/${tenantId}/menu-entitlements`, data),
+    baseService.put<TenantMenuEntitlements>(
+      `/configuration/tenants/${tenantId}/menu-entitlements`,
+      toCleanEntitlementBody(data),
+    ),
 };
+
+/**
+ * TASK-054 — strip the legacy `roleOverrides` / `userOverrides` / `enabledMenuKeys`
+ * fields from an entitlement write payload so the clean contract body
+ * (`{ moduleCodes, pageRestrictions?, reports? }`) is the ONLY thing that ever
+ * reaches the backend, regardless of what an un-migrated caller passes.
+ */
+function toCleanEntitlementBody(data: UpdateTenantEntitlementsPayload): {
+  moduleCodes: string[];
+  pageRestrictions?: Record<string, string[]>;
+  reports?: ReportEntitlementItem[];
+} {
+  return {
+    moduleCodes: data.moduleCodes,
+    ...(data.pageRestrictions ? { pageRestrictions: data.pageRestrictions } : {}),
+    ...(data.reports ? { reports: data.reports } : {}),
+  };
+}

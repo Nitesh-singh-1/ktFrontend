@@ -2,14 +2,117 @@ import { baseService } from "./baseservice";
 import { authService } from "./authService";
 import { TenantOnboardingRequest, TenantOnboardingResponse } from "@/types/shipment";
 import {
-  TenantMenuEntitlements,
+  ReportEntitlementItem,
   UpdateTenantEntitlementsPayload,
 } from "./navigationService";
 
 // TASK-049b — `UpdateTenantEntitlementsPayload` is now defined in
 // `./navigationService.ts` so both navigationService and tenantService can
 // share one source of truth. Re-exported here for existing importers.
+// @deprecated TASK-054 — new code should use `UpdateTenantEntitlements` below.
 export type { UpdateTenantEntitlementsPayload };
+
+// ────────────────────────────────────────────────────────────────────────────
+// TASK-054 — clean RBAC/menu/entitlement contract types (API contract §A/§B/§C/§G).
+// These are the canonical shapes frontend-ui consumes. The legacy
+// `TenantMenuEntitlements` / `UpdateTenantEntitlementsPayload` (navigationService)
+// are deprecated transition shims kept only until the un-migrated pages adopt these.
+// ────────────────────────────────────────────────────────────────────────────
+
+/** §A — a navigable page (menu_items row with a path, or a parent group) of a module. */
+export interface PageCatalogItem {
+  pageKey: string;
+  title: string;
+  path?: string;
+  parentKey?: string;
+  displayOrder: number;
+}
+
+/** §A — a module together with its page-level entitlement picker options. */
+export interface ModuleWithPages {
+  code: string;
+  name: string;
+  isPremium: boolean;
+  displayOrder: number;
+  pages: PageCatalogItem[];
+}
+
+/**
+ * §B — the per-tenant entitlement ceiling (platform-admin controlled).
+ * `GET /tenant/{id}/entitlements`. `planCode` is the plan TIER string
+ * (Starter / Professional / Enterprise); undefined = custom (no plan assigned).
+ * A module absent from `pageRestrictions` = ALL its pages are entitled.
+ */
+export interface TenantEntitlements {
+  tenantId: string;
+  planCode?: string;
+  moduleCodes: string[];
+  pageRestrictions: Record<string, string[]>;
+  reports: ReportEntitlementItem[];
+  /**
+   * @deprecated TASK-054 transition shim — the backend no longer returns this.
+   * Retained so the un-migrated `/clients` page's fallback read compiles; it is
+   * always undefined at runtime now. Delete once frontend-ui drops the fallback.
+   */
+  enabledMenuKeys?: string[];
+}
+
+/**
+ * §B — the ONLY entitlement write shape. `PUT /tenant/{id}/entitlements`.
+ * Omit `pageRestrictions[moduleCode]` (or pass []) = no page restriction for
+ * that module. No `enabledMenuKeys` / `roleOverrides` / `userOverrides`.
+ */
+export interface UpdateTenantEntitlements {
+  moduleCodes: string[];
+  pageRestrictions?: Record<string, string[]>;
+  reports?: ReportEntitlementItem[];
+}
+
+/** §G — platform tenant console list row. */
+export interface TenantSummary {
+  id: string;
+  code: string;
+  name: string;
+  isActive: boolean;
+  planCode?: string;
+  moduleCount: number;
+  userCount: number;
+  createdAt: string;
+}
+
+export interface TenantDetailModule {
+  code: string;
+  name: string;
+  pageRestricted: boolean;
+}
+
+export interface TenantDetailRole {
+  code: string;
+  name: string;
+  isSystem: boolean;
+  userCount: number;
+}
+
+export interface TenantDetailUser {
+  id: string;
+  username: string;
+  fullName?: string;
+  email?: string;
+  isActive: boolean;
+  roleCodes: string[];
+}
+
+/** §G — full platform tenant console drill-down. */
+export interface TenantDetail {
+  id: string;
+  code: string;
+  name: string;
+  isActive: boolean;
+  planCode?: string;
+  modules: TenantDetailModule[];
+  roles: TenantDetailRole[];
+  users: TenantDetailUser[];
+}
 
 export interface TenantAdminListItem {
   id: string;
@@ -24,7 +127,6 @@ export interface TenantAdminListItem {
   subscriptionPlanTier: string;
   subscriptionStatus: string;
   monthlyPrice: number;
-  enabledMenuKeys: string[];
   enabledReportKeys: string[];
   enabledReportsCount: number;
 }
@@ -49,6 +151,18 @@ export interface SystemRoleTemplate {
   code: string;
   name: string;
   description?: string;
+}
+
+// Phase 1 keystone follow-up: GET /api/admin/modules — the live module catalog
+// from the backend `modules` table. The /clients assign/revoke UI renders its
+// checklist from this (NOT a hardcoded frontend list), so a real module such as
+// the paid `accounting` add-on can never be silently missing / unprovisionable.
+export interface ModuleCatalogItem {
+  code: string;
+  name: string;
+  description?: string;
+  isPremium: boolean;
+  displayOrder: number;
 }
 
 export interface TenantOnboardingResult {
@@ -122,21 +236,63 @@ export const tenantService = {
   getSystemRoleTemplates: () =>
     baseService.get<SystemRoleTemplate[]>("/admin/roles/system-templates"),
 
+  // Phase 1 keystone follow-up: live module catalog for the /clients
+  // assign/revoke checklist (replaces the hardcoded ALL_MODULE_CODES).
+  getModuleCatalog: () =>
+    baseService.get<ModuleCatalogItem[]>("/admin/modules"),
+
+  // TASK-054 §A — module catalog WITH each module's navigable pages, for the
+  // page-level entitlement picker on /clients. Source of truth for what pages
+  // exist (do NOT hardcode; some modules have fewer page-restrictable pages
+  // than menu rows — e.g. accounting).
+  getCatalog: () =>
+    baseService.get<ModuleWithPages[]>("/admin/catalog"),
+
+  // TASK-054 §A — the navigable pages of a single module.
+  getModulePages: (code: string) =>
+    baseService.get<PageCatalogItem[]>(`/admin/modules/${code}/pages`),
+
   // Toggle active/inactive status
   updateStatus: (id: string, isActive: boolean) =>
     baseService.put<{ success: boolean; message: string }>(`/tenant/${id}/status`, { isActive }),
 
-  // Update subscription plan tier
+  // Update subscription plan tier.
+  // @deprecated TASK-054 — kept for ManagePlanModal (expects { success, message }
+  // from the legacy `{ planTier }` body). New code should use `assignPlan`, which
+  // speaks the clean `{ planCode }` contract. Both hit PUT /tenant/{id}/plan.
   updatePlan: (id: string, planTier: string) =>
     baseService.put<{ success: boolean; message: string }>(`/tenant/${id}/plan`, { planTier }),
 
-  // Get menu entitlements for a tenant
-  getEntitlements: (id: string) =>
-    baseService.get<TenantMenuEntitlements>(`/tenant/${id}/entitlements`),
+  // TASK-054 §B — assign a plan: seeds tenant_modules(+pages) from the plan,
+  // replacing the current ceiling. `planCode` is the plan TIER string
+  // (Starter/Professional/Enterprise). Caller then re-loads entitlements.
+  assignPlan: (id: string, planCode: string) =>
+    baseService.put<void>(`/tenant/${id}/plan`, { planCode }),
 
-  // Update menu entitlements for a tenant (TASK-049: moduleCodes payload shape).
-  updateEntitlements: (id: string, data: UpdateTenantEntitlementsPayload) =>
-    baseService.put<TenantMenuEntitlements>(`/tenant/${id}/entitlements`, data),
+  // TASK-054 §B — the per-tenant entitlement ceiling (clean shape).
+  getEntitlements: (id: string) =>
+    baseService.get<TenantEntitlements>(`/tenant/${id}/entitlements`),
+
+  // TASK-054 §B — write the entitlement ceiling. Emits ONLY the clean contract
+  // body { moduleCodes, pageRestrictions?, reports? }; any legacy field a caller
+  // passes is stripped. Caller then fires navigationService.refreshMenu().
+  updateEntitlements: (id: string, data: UpdateTenantEntitlements) =>
+    baseService.put<void>(`/tenant/${id}/entitlements`, {
+      moduleCodes: data.moduleCodes,
+      ...(data.pageRestrictions ? { pageRestrictions: data.pageRestrictions } : {}),
+      ...(data.reports ? { reports: data.reports } : {}),
+    }),
+
+  // TASK-054 §G — platform tenant console: list every tenant (traceability).
+  getTenants: () => baseService.get<TenantSummary[]>("/admin/tenants"),
+
+  // TASK-054 §G — platform tenant console: one tenant's modules/roles/users.
+  getTenantDetail: (id: string) =>
+    baseService.get<TenantDetail>(`/admin/tenants/${id}`),
+
+  // TASK-054 §G — platform-admin: set a tenant user's assigned role codes.
+  setTenantUserRoles: (id: string, userId: string, roleCodes: string[]) =>
+    baseService.put<void>(`/admin/tenants/${id}/users/${userId}/roles`, { roleCodes }),
 
   // Platform-operator: list a tenant's users
   getTenantUsers: (id: string) =>

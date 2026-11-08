@@ -8,6 +8,7 @@ import {
   TenantUsageDto,
   ResourceUsageDto,
 } from "../../../../services/tenantService";
+import { navigationService } from "../../../../services/navigationService";
 
 interface ManagePlanModalProps {
   isOpen: boolean;
@@ -71,18 +72,20 @@ export default function ManagePlanModal({ isOpen, client, onClose, onSaved }: Ma
     try {
       setSaving(true);
       setError("");
-      const res = await tenantService.updatePlan(client.id, selectedTier);
-      if (res.success) {
-        setSavedMsg(res.message || `Plan updated to ${selectedTier}.`);
-        onSaved();
-        // Refresh usage so the new limits show through immediately.
-        try {
-          const refreshed = await tenantService.getUsageFor(client.id);
-          setUsage(refreshed);
-        } catch { /* refresh failure is non-fatal — the save already succeeded */ }
-      } else {
-        setError(res.message || "Failed to update plan.");
-      }
+      // TASK-054 — clean contract: PUT /tenant/{id}/plan with { planCode }
+      // (planCode IS the tier string). Reseeds the tenant's module/page ceiling
+      // from the plan, so refresh the menu afterwards.
+      await tenantService.assignPlan(client.id, selectedTier);
+      setSavedMsg(`Plan updated to ${selectedTier}.`);
+      onSaved();
+      try {
+        await navigationService.refreshMenu();
+      } catch { /* non-fatal — sidebar refreshes on next route transition */ }
+      // Refresh usage so the new limits show through immediately.
+      try {
+        const refreshed = await tenantService.getUsageFor(client.id);
+        setUsage(refreshed);
+      } catch { /* refresh failure is non-fatal — the save already succeeded */ }
     } catch (err: any) {
       setError(err?.message || "Failed to update plan.");
     } finally {

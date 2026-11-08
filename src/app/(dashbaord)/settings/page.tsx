@@ -9,19 +9,14 @@ import {
 } from "../../../../services/configService";
 import {
   navigationService,
-  TenantMenuEntitlements,
   TenantListItem,
-  TenantUserItem,
-  UpdateTenantEntitlementsPayload,
 } from "../../../../services/navigationService";
 import {
-  ALL_MODULE_CODES,
-  ALL_MODULE_CODE_LIST,
-  ALL_MODULE_CODE_SET,
-  MENU_KEY_TO_MODULE_CODE,
-  PRESET_MODULE_CODES,
-} from "@/app/config/moduleCatalog";
-import { userService, SubUserDetails } from "../../../../services/userService";
+  tenantService,
+  ModuleWithPages,
+  TenantEntitlements,
+} from "../../../../services/tenantService";
+import { ALL_MODULE_CODES } from "@/app/config/moduleCatalog";
 import { authService } from "../../../../services/authService";
 import { downloadTenantExport } from "../../../../services/exportService";
 import { useTenantConfig } from "@/context/TenantConfigContext";
@@ -37,7 +32,6 @@ import {
   Crown,
   Plug,
   ClipboardList,
-  User,
   BarChart3,
   Check,
   X,
@@ -64,182 +58,18 @@ import {
 } from "lucide-react";
 
 type TabKey = "general" | "menu_entitlements" | "billing" | "sequences" | "workflows" | "modules" | "integrations";
-type MatrixMode = "subscriptions" | "menus" | "roles" | "users" | "reports";
 
-// Roles the backend (NavigationService.GetDynamicMenuAsync) treats as a tenant super-user:
-// they always get every organization-subscribed module and NEVER consult UserOverridesJson —
-// the "Sub-User Management & Feature Permissions" checklist below has zero effect on them by
-// design (an admin restricting their own admin access would be a lockout footgun). Keep this
-// list in sync with the equivalent checks in Sidebar.tsx / Navbar.tsx.
-const ADMIN_EQUIVALENT_ROLES = ["SUPER_USER", "ADMIN", "TENANTADMIN", "TENANT_OWNER", "SUPERADMIN"];
-const isAdminEquivalentRole = (role?: string): boolean =>
-  ADMIN_EQUIVALENT_ROLES.includes((role || "").toUpperCase());
-
-export interface MenuItemDefinition {
-  key: string;
-  title: string;
-  desc: string;
-  iconName: string;
-  category: "Core Operations" | "Fleet & Dispatch" | "Financial & Billing" | "Master Data" | "Analytics & SaaS" | "System";
-  subItems?: { key: string; title: string; desc: string; iconName: string }[];
-}
-
-export const fullMenuCatalog: MenuItemDefinition[] = [
-  {
-    key: "dashboard",
-    title: "Dashboard Home",
-    desc: "Overview cards, live metric charts, revenue summary",
-    iconName: "dashboard",
-    category: "Core Operations",
-  },
-  {
-    key: "consignments",
-    title: "Bilty / GR Booking Module",
-    desc: "Goods receipt booking, consignment printing, and registry",
-    iconName: "consignments",
-    category: "Core Operations",
-    subItems: [
-      { key: "consignments.create", title: "New Bilty (GR Booking Entry)", desc: "Issue new consignment note with consignor/consignee", iconName: "plus" },
-      { key: "consignments.all", title: "All Bilties (GR Registry)", desc: "Search, filter, edit, and print consignment bilties", iconName: "file" },
-    ],
-  },
-  {
-    key: "delivery_settlement",
-    title: "Delivery Settlement",
-    desc: "Consignment delivery settlement, ToPay freight collections & shortage deductions",
-    iconName: "check",
-    category: "Core Operations",
-  },
-  {
-    key: "quotations",
-    title: "Quotations & Enquiries",
-    desc: "Freight rate quotes, follow-up tracking, and conversion into bookings",
-    iconName: "quotations",
-    category: "Core Operations",
-  },
-  {
-    key: "trips",
-    title: "LR / Truck Challan & Manifest",
-    desc: "Vehicle loading memo, driver hire contract, and dispatch trips",
-    iconName: "trips",
-    category: "Fleet & Dispatch",
-    subItems: [
-      { key: "trips.all", title: "Manifest & Dispatch (Challans)", desc: "Manage loading challans, vehicle dispatch and transit", iconName: "truck" },
-    ],
-  },
-  {
-    key: "trip_settlement",
-    title: "Trip Settlement",
-    desc: "Reconcile driver advances, fuel, toll, ToPay cash collections, and net driver settlement",
-    iconName: "trips",
-    category: "Fleet & Dispatch",
-  },
-  {
-    key: "empty_trips",
-    title: "Empty Trip Log",
-    desc: "Deadhead / empty return runs and their fuel cost",
-    iconName: "trips",
-    category: "Fleet & Dispatch",
-  },
-  {
-    key: "pod",
-    title: "POD & Deliveries Management",
-    desc: "Proof of delivery upload, physical slip acknowledgment, settlement",
-    iconName: "pod",
-    category: "Fleet & Dispatch",
-  },
-  {
-    key: "billing",
-    title: "Freight Invoicing & Billing",
-    desc: "Generate corporate GST freight invoices and Money Receipts (MR)",
-    iconName: "billing",
-    category: "Financial & Billing",
-    subItems: [
-      { key: "billing.bill_book", title: "Bill Book (Consolidated Freight Bill)", desc: "Party-wise multi-Bilty consolidated billing with authentic printable Freight Bill", iconName: "file" },
-      { key: "billing.invoices", title: "Freight Invoices", desc: "Create, view, and send freight tax invoices", iconName: "file" },
-      { key: "billing.receipts", title: "Money Receipts (MR)", desc: "Collect customer payments and issue MR vouchers", iconName: "card" },
-    ],
-  },
-  {
-    key: "bill_book",
-    title: "Bill Book (Consolidated Freight Bill)",
-    desc: "Party-wise multi-Bilty consolidated billing with authentic printable Freight Bill",
-    iconName: "billing",
-    category: "Financial & Billing",
-  },
-  {
-    key: "master_data",
-    title: "Master Data Management",
-    desc: "Parties directory, customer GSTINs, fleet registry, and stations",
-    iconName: "database",
-    category: "Master Data",
-    subItems: [
-      { key: "master_data.parties", title: "Party Directory", desc: "Consignors, consignees, billing parties ledger", iconName: "users" },
-      { key: "master_data.fleet", title: "Fleet & Stations Directory", desc: "Owned & attached vehicles, driver details, branches", iconName: "truck" },
-      { key: "master_data.compliance", title: "Fleet Compliance & Expiry", desc: "Insurance, fitness, permit, PUC, road-tax & licence expiry alerts", iconName: "compliance" },
-      { key: "master_data.tyres", title: "Tyre Management", desc: "Tyre stock, fitment, kilometres run, retreads and disposal", iconName: "truck" },
-      { key: "master_data.spares", title: "Spare Parts Stock", desc: "Workshop spare-part inventory, reorder levels, issue & receive stock", iconName: "cog" },
-      { key: "master_data.loans", title: "Vehicle EMI / Loans", desc: "Vehicle finance: EMI schedule, tenure progress, next due & outstanding", iconName: "reports" },
-      { key: "master_data.driverledger", title: "Driver Ledger", desc: "Driver advances, recoveries and per-driver outstanding balances", iconName: "users" },
-      { key: "master_data.vehicleclaims", title: "Vehicle Insurance Claims", desc: "Vehicle accident / own-damage / theft claims, filing to settlement", iconName: "claims" },
-      { key: "master_data.rates", title: "Rate Contracts & Tariffs", desc: "Route-wise freight tariffs, hamali & delivery charges applied at booking", iconName: "rates" },
-      { key: "master_data.vendorrates", title: "Vendor Hire Rates", desc: "Negotiated lorry-hire rates paid to market vendors/transporters per route", iconName: "truck" },
-    ],
-  },
-  {
-    key: "vendors",
-    title: "Market Vendors & Lorry Hire",
-    desc: "Market truck brokers, lorry hire agreements, advance payables",
-    iconName: "vendors",
-    category: "Fleet & Dispatch",
-  },
-  {
-    key: "claims",
-    title: "Cargo Damage & Claims",
-    desc: "Shortage, transit damage claims, settlement approval workflow",
-    iconName: "claims",
-    category: "Core Operations",
-  },
-  {
-    key: "analytics",
-    title: "Business Analytics & KPIs",
-    desc: "Sales-vs-recovery, gross margin, monthly revenue trend, top customers",
-    iconName: "analytics",
-    category: "Analytics & SaaS",
-  },
-  {
-    key: "reports",
-    title: "Reports & Business Intelligence",
-    desc: "Financial summaries, booking registers, customer outstanding, P&L",
-    iconName: "reports",
-    category: "Analytics & SaaS",
-  },
-  {
-    key: "tracking",
-    title: "Live GPS Vehicle Tracker",
-    desc: "Real-time GPS vehicle location, speed, and geofence tracking",
-    iconName: "tracking",
-    category: "Fleet & Dispatch",
-  },
-  {
-    key: "clients",
-    title: "Multi-Client Management",
-    desc: "Multi-tenant client provisioning, billing status, tenant isolation",
-    iconName: "clients",
-    category: "Analytics & SaaS",
-  },
-  {
-    key: "system",
-    title: "System & Administration",
-    desc: "SaaS settings, document sequences, tenant onboarding, security",
-    iconName: "system",
-    category: "System",
-    subItems: [
-      { key: "system.settings", title: "SaaS Configuration & Matrix", desc: "Company branding, menus, and permission engine", iconName: "sliders" },
-      { key: "system.onboard", title: "Tenant Onboarding", desc: "Provision new client organizations and branches", iconName: "rocket" },
-    ],
-  },
-];
+// TASK-054 — offline/first-render fallback for the read-only entitlement
+// display. The authoritative module + page catalog comes live from
+// tenantService.getCatalog(); dotted "menu keys" and the role/user override
+// catalog have been removed (entitlement + role editing moved to /clients + /roles).
+const FALLBACK_CATALOG: ModuleWithPages[] = ALL_MODULE_CODES.map((m, i) => ({
+  code: m.code,
+  name: m.label,
+  isPremium: false,
+  displayOrder: i,
+  pages: [],
+}));
 
 export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
   switch (keyOrName) {
@@ -308,7 +138,6 @@ export function renderCatalogIcon(keyOrName: string, className = "w-4 h-4") {
   }
 }
 
-const standardRoles = ["admin", "dispatcher", "billing_operator", "fleet_manager", "viewer"];
 
 export default function SettingsPage() {
   const { config: globalConfig, updateConfig: updateGlobalConfig, refreshConfig } = useTenantConfig();
@@ -322,7 +151,6 @@ export default function SettingsPage() {
   // than blanking the SaaS Configuration tabs for the actual platform operator.
   const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean>(() => authService.isPlatformAdminSync());
   const [exporting, setExporting] = useState<boolean>(false);
-  const [matrixMode, setMatrixMode] = useState<MatrixMode>("menus");
 
   const handleExportData = async () => {
     try {
@@ -337,6 +165,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [uploadingLogo, setUploadingLogo] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
@@ -345,66 +174,16 @@ export default function SettingsPage() {
   const [tenantsList, setTenantsList] = useState<TenantListItem[]>([]);
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
 
-  // Users list for User-Dedicated Page Assignment
-  const [tenantUsers, setTenantUsers] = useState<TenantUserItem[]>([
-    { id: 1, username: "admin", fullName: "System Admin", role: "admin" },
-    { id: 2, username: "nitesh", fullName: "Nitesh (Sub User)", role: "SUB_USER" },
-    { id: 3, username: "billing_clerk", fullName: "Ramesh (Billing Clerk)", role: "billing_operator" },
-    { id: 4, username: "dispatcher_user", fullName: "Suresh (Fleet Dispatcher)", role: "dispatcher" },
-  ]);
-  const [selectedUserId, setSelectedUserId] = useState<string>("nitesh");
+  // TASK-054 — the Menu & Permission matrix is now a READ-ONLY display of the
+  // selected tenant's entitlement ceiling (entitled modules + page restrictions
+  // + reports). Entitlement editing moved to /clients (platform-admin only);
+  // role/permission editing lives on /roles. No more editable module/role state,
+  // no `enabledMenuKeys` / `planTier` / `roleOverrides` reads.
+  const [entitlements, setEntitlements] = useState<TenantEntitlements | null>(null);
 
-  // Sub-User Creation Modal State
-  const [showCreateUserModal, setShowCreateUserModal] = useState<boolean>(false);
-  const [newUsername, setNewUsername] = useState<string>("");
-  const [newPassword, setNewPassword] = useState<string>("");
-  const [newFullName, setNewFullName] = useState<string>("");
-  const [newMobile, setNewMobile] = useState<string>("");
-  const [newAssignedFeatures, setNewAssignedFeatures] = useState<string[]>(["dashboard", "consignments", "consignments.all", "tracking"]);
-  const [creatingUser, setCreatingUser] = useState<boolean>(false);
-  const [createUserError, setCreateUserError] = useState<string | null>(null);
-
-  // User Overrides map: Record<userId, string[]>
-  const [userOverrides, setUserOverrides] = useState<Record<string, string[]>>({
-    nitesh: ["dashboard", "consignments", "consignments.create", "consignments.all", "trips", "tracking"],
-    billing_clerk: ["dashboard", "consignments", "consignments.create", "consignments.all", "billing", "billing.invoices", "billing.receipts"],
-    dispatcher_user: ["dashboard", "consignments", "consignments.all", "trips", "pod", "master_data", "master_data.fleet", "vendors", "tracking"],
-  });
-
-  // Role Overrides map: Record<role, string[]>
-  const [roleOverrides, setRoleOverrides] = useState<Record<string, string[]>>({
-    admin: fullMenuCatalog.flatMap((m) => [m.key, ...(m.subItems ? m.subItems.map((s) => s.key) : [])]),
-    dispatcher: ["dashboard", "consignments", "consignments.all", "trips", "pod", "master_data", "master_data.fleet", "vendors", "tracking", "system"],
-    billing_operator: ["dashboard", "consignments", "consignments.create", "consignments.all", "quotations", "billing", "billing.invoices", "billing.receipts", "system"],
-    fleet_manager: ["dashboard", "trips", "pod", "master_data", "master_data.fleet", "master_data.compliance", "vendors", "tracking", "claims", "system"],
-    viewer: ["dashboard", "consignments.all", "analytics", "reports", "system"],
-  });
-
-  // TASK-049b — authoritative selected-modules state is a Set of canonical
-  // module codes (matches backend `modules.code` 1:1). All toggles, presets
-  // and the "menus" matrix read/write this Set; the PUT payload is
-  // `Array.from(moduleCodes)`. The legacy dotted `enabledMenuKeys` array on
-  // `menuEntitlements` is only used as a read-only fallback seed during the
-  // one-release transition window (filtered through ALL_MODULE_CODE_SET).
-  // TODO: Phase B — drop the fallback seed once backend always returns
-  // `moduleCodes`, and remove `enabledMenuKeys` from `TenantMenuEntitlements`.
-  const [moduleCodes, setModuleCodes] = useState<Set<string>>(
-    new Set(PRESET_MODULE_CODES.enterprise)
-  );
-
-  const [menuEntitlements, setMenuEntitlements] = useState<TenantMenuEntitlements>({
-    tenantId: "",
-    planTier: "Enterprise",
-    moduleCodes: ALL_MODULE_CODE_LIST,
-    enabledMenuKeys: ALL_MODULE_CODE_LIST,
-    reports: [
-      { reportKey: "booking_register", title: "Consignment Booking Register", description: "Comprehensive log of all booked goods receipts", category: "Operational", path: "/reports?tab=booking_register", isEnabled: true },
-      { reportKey: "tax_summary", title: "GST & Tax Summary Report", description: "Taxable amounts, CGST, SGST, IGST, and RCM breakdowns", category: "Financial", path: "/reports?tab=tax_summary", isEnabled: true },
-      { reportKey: "party_outstanding", title: "Customer Outstanding Ledger", description: "Real-time receivables, billed vs settled balance", category: "Financial", path: "/reports?tab=party_outstanding", isEnabled: true },
-      { reportKey: "trip_profitability", title: "Trip Profitability & P&L", description: "Trip revenue vs diesel, toll, and expense margin", category: "Operational", path: "/reports?tab=trip_profitability", isEnabled: true },
-      { reportKey: "vendor_payables", title: "Vendor & Lorry Hire Payables", description: "Vehicle hiring dues, advances, and pending dues", category: "Financial", path: "/reports?tab=vendor_payables", isEnabled: true },
-    ],
-  });
+  // Live module + page catalog (GET /admin/catalog) for module/page NAMES in the
+  // read-only display. FALLBACK_CATALOG keeps names showing if the fetch fails.
+  const [catalog, setCatalog] = useState<ModuleWithPages[]>(FALLBACK_CATALOG);
 
   // Local form state
   const [formData, setFormData] = useState<TenantConfiguration>({
@@ -509,13 +288,18 @@ export default function SettingsPage() {
         setLoading(true);
         setErrorMessage(null);
 
-        const [cfgRes, subRes, menuRes, tenantsRes, usersRes] = await Promise.allSettled([
+        const [cfgRes, subRes, tenantsRes, catalogRes] = await Promise.allSettled([
           configService.getConfiguration(),
           configService.getSubscription(),
-          navigationService.getMenuEntitlements(),
           navigationService.getAllTenants(),
-          navigationService.getTenantUsers(),
+          tenantService.getCatalog(),
         ]);
+
+        // Live module + page catalog — used for module/page NAMES in the
+        // read-only entitlement display (kept in lock-step with /clients).
+        if (catalogRes.status === "fulfilled" && catalogRes.value && catalogRes.value.length > 0) {
+          setCatalog(catalogRes.value);
+        }
 
         if (cfgRes.status === "fulfilled" && cfgRes.value) {
           setFormData((prev) => ({
@@ -539,40 +323,19 @@ export default function SettingsPage() {
           setSubscription(subRes.value);
         }
 
-        if (menuRes.status === "fulfilled" && menuRes.value) {
-          setMenuEntitlements(menuRes.value);
-          if (menuRes.value.tenantId) {
-            setSelectedTenantId(menuRes.value.tenantId);
-          }
-          // TASK-049b — seed moduleCodes Set from the canonical response field.
-          // Fallback (one-release transition only): filter legacy
-          // `enabledMenuKeys` through ALL_MODULE_CODE_SET so only exact
-          // module-code matches survive. TODO: Phase B — delete fallback.
-          const seedCodes =
-            menuRes.value.moduleCodes && menuRes.value.moduleCodes.length > 0
-              ? menuRes.value.moduleCodes
-              : (menuRes.value.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
-          setModuleCodes(new Set(seedCodes));
-          // NOTE: `roleOverridesJson` / `userOverridesJson` DTO fields were
-          // removed in TASK-049b. The frontend keeps the local defaults for
-          // the override maps and sends them as objects on save.
-        }
-
         if (tenantsRes.status === "fulfilled" && tenantsRes.value && tenantsRes.value.length > 0) {
           setTenantsList(tenantsRes.value);
-        }
-
-        if (usersRes.status === "fulfilled" && usersRes.value && usersRes.value.length > 0) {
-          setTenantUsers(usersRes.value);
-          // Default to the first NON-admin user — admin-role users always have full access
-          // (see isAdminEquivalentRole) so their override checklist is a no-op. Defaulting to
-          // one was exactly the trap this fix closes: the operator configures "admin"'s
-          // checklist believing it restricts them, saves, and nothing changes for that user.
-          const firstAssignable = usersRes.value.find((u) => !isAdminEquivalentRole(u.role));
-          if (firstAssignable?.username) {
-            setSelectedUserId(firstAssignable.username);
-          } else if (usersRes.value[0]?.username) {
-            setSelectedUserId(usersRes.value[0].username);
+          // TASK-054 — the read-only entitlement display is platform-admin only.
+          // Default to the first tenant and load its entitlement ceiling.
+          if (authService.isPlatformAdminSync()) {
+            const firstId = tenantsRes.value[0].id;
+            setSelectedTenantId(firstId);
+            try {
+              const ent = await tenantService.getEntitlements(firstId);
+              setEntitlements(ent);
+            } catch {
+              /* non-fatal — display shows "unavailable" banner */
+            }
           }
         }
       } catch (err: any) {
@@ -584,21 +347,28 @@ export default function SettingsPage() {
     }
 
     loadData();
-  }, [globalConfig]);
+    // Run ONCE on mount. Previously this depended on [globalConfig], but
+    // `globalConfig` is a fresh object on every TenantConfig refresh/update
+    // (see TenantConfigContext.fetchConfig/updateConfig), so the effect re-fired
+    // on mount→fetch, on save→updateConfig, and on save→refreshConfig. Each
+    // re-run re-issued all 5 load APIs (the "same API firing many times") AND
+    // reset `moduleCodes`/`selectedTenantId` to server state — wiping an admin's
+    // in-progress checkbox edits before save and snapping the selected tenant
+    // back to the operator's own org after save. The config form is seeded from
+    // this effect's own getConfiguration() call (and from handleSave directly),
+    // so it does not need to re-run when the context object changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Handle tenant switch to edit another client's entitlements
+  // TASK-054 — read-only: switching tenant reloads that tenant's entitlement
+  // ceiling for display. No editing here (entitlement editing is on /clients).
   const handleTenantSelect = async (tenantId: string) => {
     setSelectedTenantId(tenantId);
+    setEntitlements(null);
     try {
       setLoading(true);
-      const res = await navigationService.getMenuEntitlementsForTenant(tenantId);
-      setMenuEntitlements(res);
-      // TASK-049b — same canonical-with-fallback seed as the initial load.
-      const seedCodes =
-        res.moduleCodes && res.moduleCodes.length > 0
-          ? res.moduleCodes
-          : (res.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
-      setModuleCodes(new Set(seedCodes));
+      const ent = await tenantService.getEntitlements(tenantId);
+      setEntitlements(ent);
     } catch (err: any) {
       console.error("Error fetching entitlements for tenant:", err);
     } finally {
@@ -606,222 +376,19 @@ export default function SettingsPage() {
     }
   };
 
-  // TASK-049b — Subscription Plan Presets rewritten to canonical module code
-  // sets. Preset == pre-selected moduleCodes before admin clicks save; the
-  // backend infers nothing. Report defaults are a UI concern only.
-  const applyStarterPlan = () => {
-    setModuleCodes(new Set(PRESET_MODULE_CODES.starter));
-    setMenuEntitlements({
-      ...menuEntitlements,
-      planTier: "Starter",
-      reports: menuEntitlements.reports.map((r) => ({
-        ...r,
-        isEnabled: r.reportKey === "booking_register",
-      })),
-    });
-  };
-
-  const applyProfessionalPlan = () => {
-    setModuleCodes(new Set(PRESET_MODULE_CODES.professional));
-    setMenuEntitlements({
-      ...menuEntitlements,
-      planTier: "Professional",
-      reports: menuEntitlements.reports.map((r) => ({
-        ...r,
-        isEnabled:
-          r.reportKey === "booking_register" ||
-          r.reportKey === "tax_summary" ||
-          r.reportKey === "party_outstanding",
-      })),
-    });
-  };
-
-  const applyEnterprisePlan = () => {
-    setModuleCodes(new Set(PRESET_MODULE_CODES.enterprise));
-    setMenuEntitlements({
-      ...menuEntitlements,
-      planTier: "Enterprise",
-      reports: menuEntitlements.reports.map((r) => ({ ...r, isEnabled: true })),
-    });
-  };
-
-  const applyClientAPreset = () => {
-    setModuleCodes(new Set(PRESET_MODULE_CODES.client_a));
-    setMenuEntitlements({
-      ...menuEntitlements,
-      planTier: "Custom",
-      reports: menuEntitlements.reports.map((r) => ({ ...r, isEnabled: false })),
-    });
-  };
-
-  const applyClientBPreset = () => {
-    setModuleCodes(new Set(PRESET_MODULE_CODES.client_b));
-    setMenuEntitlements({
-      ...menuEntitlements,
-      planTier: "Custom",
-      reports: menuEntitlements.reports.map((r) => ({
-        ...r,
-        isEnabled:
-          r.reportKey === "tax_summary" ||
-          r.reportKey === "party_outstanding" ||
-          r.reportKey === "booking_register",
-      })),
-    });
-  };
-
-  // TASK-049b — toggle one canonical module code in the Global Matrix. No
-  // alias normalization, no parent/child magic. Checkbox value is literally
-  // `moduleCodes.has(code)`.
-  const toggleModuleCode = (code: string) => {
-    setModuleCodes((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
-    });
-  };
-
-  // Phase A helper: given a dotted menu key from the override UI, is the
-  // parent canonical module code currently enabled for the tenant?
-  const isMenuKeyAvailable = (menuKey: string): boolean => {
-    const code = MENU_KEY_TO_MODULE_CODE[menuKey];
-    return !!code && moduleCodes.has(code);
-  };
-
-  // Toggle Dedicated User Page
-  const toggleUserPage = (userId: string, pageKey: string) => {
-    const currentPages = userOverrides[userId] || [];
-    const exists = currentPages.includes(pageKey);
-    const updated = exists ? currentPages.filter((k) => k !== pageKey) : [...currentPages, pageKey];
-    setUserOverrides({ ...userOverrides, [userId]: updated });
-  };
-
-  // Toggle Role Page
-  const toggleRolePage = (role: string, pageKey: string) => {
-    const currentPages = roleOverrides[role] || [];
-    const exists = currentPages.includes(pageKey);
-    const updated = exists ? currentPages.filter((k) => k !== pageKey) : [...currentPages, pageKey];
-    setRoleOverrides({ ...roleOverrides, [role]: updated });
-  };
-
-  // Toggle Report Item
-  const toggleReportItem = (reportKey: string) => {
-    const updatedReports = menuEntitlements.reports.map((r) =>
-      r.reportKey === reportKey ? { ...r, isEnabled: !r.isEnabled } : r
-    );
-    setMenuEntitlements({ ...menuEntitlements, reports: updatedReports });
-  };
-
-  // Handle creating a new Sub User
-  const handleCreateSubUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUsername.trim() || !newPassword.trim() || !newFullName.trim()) {
-      setCreateUserError("Username, Password, and Full Name are required.");
-      return;
-    }
-
-    try {
-      setCreatingUser(true);
-      setCreateUserError(null);
-
-      const res = await userService.createSubUser({
-        username: newUsername.trim(),
-        password: newPassword.trim(),
-        fullName: newFullName.trim(),
-        mobile: newMobile.trim() || undefined,
-        role: "SUB_USER",
-        assignedFeatures: newAssignedFeatures,
-      });
-
-      if (res.success && res.data) {
-        // Refresh users list
-        const updatedUsers = await userService.getUsers();
-        if (updatedUsers && updatedUsers.length > 0) {
-          setTenantUsers(updatedUsers.map((u) => ({ id: u.id, username: u.username, fullName: u.fullName, role: u.role, mobile: u.mobile, isActive: u.isActive })));
-        } else {
-          setTenantUsers((prev) => [...prev, { id: res.data!.id, username: res.data!.username, fullName: res.data!.fullName, role: res.data!.role, mobile: res.data!.mobile, isActive: res.data!.isActive }]);
-        }
-
-        // Update user overrides
-        setUserOverrides((prev) => ({
-          ...prev,
-          [res.data!.username]: newAssignedFeatures,
-          [res.data!.id.toString()]: newAssignedFeatures,
-        }));
-
-        setSelectedUserId(res.data.username);
-        setShowCreateUserModal(false);
-        setNewUsername("");
-        setNewPassword("");
-        setNewFullName("");
-        setNewMobile("");
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      } else {
-        setCreateUserError(res.message || "Failed to create sub-user.");
-      }
-    } catch (err: any) {
-      setCreateUserError(err?.message || "Failed to create sub-user.");
-    } finally {
-      setCreatingUser(false);
-    }
-  };
-
-  const handleToggleUserStatus = async (username: string) => {
-    const targetUser = tenantUsers.find((u) => u.username === username);
-    if (!targetUser) return;
-
-    const newStatus = !(targetUser.isActive ?? true);
-    try {
-      const res = await userService.toggleStatus(targetUser.id, newStatus);
-      if (res.success) {
-        setTenantUsers((prev) => prev.map((u) => (u.id === targetUser.id ? { ...u, isActive: newStatus } : u)));
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      }
-    } catch (err) {
-      console.error("Failed to toggle status:", err);
-    }
-  };
-
-  // Handle saving configuration & matrix
+  // Handle saving configuration
   const handleSave = async () => {
     try {
       setSaving(true);
       setErrorMessage(null);
       setSaveSuccess(false);
 
-      const targetTenantId = selectedTenantId || formData.tenantId;
-
-      // Every admin can save their OWN organization config (branding/logo, numbering, tax, workflows).
+      // TASK-054 — this page only saves the tenant's OWN organization config
+      // (branding/logo, numbering, tax, workflows). Entitlement editing is NO
+      // LONGER performed here — it is platform-admin-only on /clients. The
+      // Menu & Permission matrix tab is a read-only ceiling display.
       const updatedConfig = await updateGlobalConfig(formData);
       setFormData((prev) => ({ ...prev, ...updatedConfig }));
-
-      // Entitlement changes are platform-operator only (the endpoint is locked); tenant admins skip it,
-      // so saving branding never fails with a 403 from the entitlement matrix.
-      if (isPlatformAdmin) {
-        // TASK-049b — canonical payload shape. `moduleCodes` is the single
-        // source of truth; backend writes `tenant_modules` from it and
-        // reseeds admin-role permissions. NEVER send `enabledMenuKeys` or
-        // legacy dotted strings. Override maps travel as plain objects.
-        const payload: UpdateTenantEntitlementsPayload = {
-          moduleCodes: Array.from(moduleCodes),
-          reports: menuEntitlements.reports,
-          roleOverrides,
-          userOverrides,
-        };
-        const updatedEntitlements = selectedTenantId
-          ? await navigationService.updateMenuEntitlementsForTenant(targetTenantId, payload)
-          : await navigationService.updateMenuEntitlements(payload);
-        setMenuEntitlements(updatedEntitlements);
-        // Re-seed moduleCodes from the fresh response so the UI reflects what
-        // the backend actually persisted.
-        const freshCodes =
-          updatedEntitlements.moduleCodes && updatedEntitlements.moduleCodes.length > 0
-            ? updatedEntitlements.moduleCodes
-            : (updatedEntitlements.enabledMenuKeys || []).filter((k) => ALL_MODULE_CODE_SET.has(k));
-        setModuleCodes(new Set(freshCodes));
-      }
 
       // TASK-048/049b — push the fresh menu to the sidebar without a hard
       // reload. `navigationService.refreshMenu()` dispatches the shared
@@ -851,7 +418,6 @@ export default function SettingsPage() {
       setSaving(true);
       const resetConfig = await configService.resetToDefaults();
       setFormData((prev) => ({ ...prev, ...resetConfig }));
-      applyEnterprisePlan();
       await Promise.all([refreshConfig(), refreshNavigation()]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
@@ -888,33 +454,33 @@ export default function SettingsPage() {
           <div className="w-12 h-12 rounded-xl bg-[#2F8E86] flex items-center justify-center shadow-xs text-white font-bold text-xl shrink-0">
             <Settings className="w-6 h-6" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
-                {isPlatformAdmin ? "Platform Settings" : "Settings"}
+                {isPlatformAdmin ? "SaaS Configuration & Permission Engine" : "Organization Settings"}
               </h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#E7F1F2] text-[#25776F] border border-[#D9E2E3] rounded-md dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700">
-                {menuEntitlements.planTier || "Enterprise"}
+                {entitlements?.planCode || "Custom"}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400">
-              Branding, tax, sequences and integrations.
+              Manage client menus, subscription plan tiers, dedicated user pages, document sequences, and tax policies
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleResetDefaults}
             disabled={saving}
-            className="flex-1 md:flex-none px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
+            className="px-4 py-2 text-xs font-semibold text-[#64748B] dark:text-slate-300 hover:text-[#111827] bg-[#F7F8F8] hover:bg-[#E7F1F2] dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl transition cursor-pointer"
           >
             Reset
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#2F8E86] hover:bg-[#25776F] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -978,25 +544,25 @@ export default function SettingsPage() {
         })}
       </div>
 
-      {/* TAB: MENU & PERMISSION MATRIX (COMPREHENSIVE MULTI-TIER ENGINE) — PLATFORM OPERATOR ONLY */}
+      {/* TAB: MENU & PERMISSION MATRIX — READ-ONLY entitlement ceiling display (platform operator only).
+          TASK-054 — entitlement editing moved to /clients (platform-admin); role editing to /roles. */}
       {activeTab === "menu_entitlements" && isPlatformAdmin && (
         <div className="space-y-6">
-          {/* Tenant Selector & Sub-Matrix Mode Switcher Bar */}
+          {/* Tenant selector + guidance */}
           <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F8E86] dark:text-teal-400 bg-[#E7F1F2] dark:bg-slate-800 px-2 py-0.5 rounded border border-[#D9E2E3] dark:border-slate-700">
-                  Client & User Permission Engine
+                  Entitlement Ceiling (Read-Only)
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Multi-Client Organization & Dedicated User Matrix
+                  Tenant Entitled Modules &amp; Pages
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Control exact page access per client organization, subscription tier, role, or dedicated individual user
+                  What the selected tenant is entitled to. To <strong>change</strong> entitlements use the platform-admin Clients page; to edit roles &amp; permissions use Roles.
                 </p>
               </div>
 
-              {/* Client Tenant Selector */}
               <div className="w-full md:w-80">
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
                   Active Client Tenant:
@@ -1019,730 +585,151 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Matrix View Mode Tabs */}
-            <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 overflow-x-auto">
-              {[
-                { id: "menus", label: "Global Page Matrix", icon: ClipboardList },
-                { id: "users", label: "Dedicated User Pages", icon: User },
-                { id: "subscriptions", label: "Subscription Tier Presets", icon: Crown },
-                { id: "roles", label: "Role-Based Matrix (RBAC)", icon: Shield },
-                { id: "reports", label: "Reports Catalog", icon: BarChart3 },
-              ].map((mode) => {
-                const Icon = mode.icon;
-                return (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    onClick={() => setMatrixMode(mode.id as MatrixMode)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                      matrixMode === mode.id
-                        ? "bg-[#E7F1F2] text-[#25776F] border border-[#2F8E86]/30 dark:bg-slate-800 dark:text-teal-300 dark:border-slate-700 shadow-2xs"
-                        : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{mode.label}</span>
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <a
+                href="/clients"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#E7F1F2] text-[#25776F] border border-[#2F8E86]/30 hover:bg-[#D5EFEA] transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                <span>Manage entitlements on Clients →</span>
+              </a>
+              <a
+                href="/roles"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>Edit roles &amp; permissions on Roles →</span>
+              </a>
             </div>
           </div>
 
-          {/* SUB-VIEW 1: SUBSCRIPTION TIER PRESETS */}
-          {matrixMode === "subscriptions" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  1-Click Subscription Tier & Client Presets
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Instantly configure allowed menus and reports according to the client&apos;s active subscription package
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* Starter Plan */}
-                <div className="p-5 rounded-2xl border-2 border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-800/60 dark:border-slate-800 space-y-4 hover:border-[#2F8E86] transition">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-[#2F8E86] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-2 py-0.5 rounded flex items-center gap-1">
-                      <Rocket className="w-3.5 h-3.5" />
-                      <span>Starter Tier</span>
-                    </span>
-                    <span className="text-xs font-semibold text-slate-500">Basic Transport</span>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white">Bilty Entry & Registry</h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Ideal for single-branch booking counters who only need GR consignment booking and register
-                    </p>
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300">
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Consignment Booking (GR)</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Booking Register Report</span>
-                    </li>
-                    <li className="flex items-center gap-1.5 text-slate-400">
-                      <X className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>Truck Challans (Locked)</span>
-                    </li>
-                    <li className="flex items-center gap-1.5 text-slate-400">
-                      <X className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>GPS Tracking (Locked)</span>
-                    </li>
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={applyStarterPlan}
-                    className="w-full py-2 bg-white hover:bg-[#E7F1F2] text-[#2F8E86] border border-[#D9E2E3] font-bold text-xs rounded-xl transition cursor-pointer shadow-2xs dark:bg-slate-800 dark:border-slate-700 dark:text-teal-300"
-                  >
-                    Apply Starter Preset
-                  </button>
-                </div>
-
-                {/* Professional Plan */}
-                <div className="p-5 rounded-2xl border-2 border-[#2F8E86] bg-[#E7F1F2]/40 dark:bg-slate-800/60 dark:border-teal-700 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-white bg-[#2F8E86] px-2 py-0.5 rounded flex items-center gap-1">
-                      <Star className="w-3.5 h-3.5" />
-                      <span>Professional Tier</span>
-                    </span>
-                    <span className="text-xs font-bold text-[#2F8E86] dark:text-teal-300">Most Popular</span>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white">Bilties + Challans + Billing</h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Full operational dispatch workflow with Invoicing, Money Receipts, and GST Reports
-                    </p>
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-700 dark:text-slate-200">
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>GR Consignments & Challans</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>POD Deliveries & Settlements</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Freight Invoicing & Money Receipts</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>GST Tax Summary & Ledger</span>
-                    </li>
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={applyProfessionalPlan}
-                    className="w-full py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs"
-                  >
-                    Apply Professional Preset
-                  </button>
-                </div>
-
-                {/* Enterprise Plan */}
-                <div className="p-5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-slate-800/60 dark:border-slate-700 space-y-4 hover:border-[#2F8E86] transition">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-emerald-800 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded flex items-center gap-1">
-                      <Crown className="w-3.5 h-3.5" />
-                      <span>Enterprise Suite</span>
-                    </span>
-                    <span className="text-xs font-semibold text-slate-500">Full Platform</span>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white">Uncapped TMS Platform</h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                      All 15+ modules: GPS Tracking, Vendor Hire, Claims, Multi-Client Manager, and all 5 Reports
-                    </p>
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300">
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Full Suite + GPS Live Tracking</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Vendor Lorry Hire & Claims</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Multi-Client Tenant Manager</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>All 5 Financial & P&L Reports</span>
-                    </li>
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={applyEnterprisePlan}
-                    className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-xs dark:bg-[#2F8E86] dark:hover:bg-[#25776F]"
-                  >
-                    Apply Enterprise Preset
-                  </button>
-                </div>
-              </div>
-
-              {/* Custom Client Presets */}
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3">
-                <span className="text-xs font-bold text-slate-500 uppercase">Quick Client Presets:</span>
-                <button
-                  type="button"
-                  onClick={applyClientAPreset}
-                  className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition cursor-pointer dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 flex items-center gap-1.5"
-                >
-                  <Package className="w-3.5 h-3.5" />
-                  <span>Client A: Bill Making Only (No Reports)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={applyClientBPreset}
-                  className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-bold transition cursor-pointer dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 flex items-center gap-1.5"
-                >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  <span>Client B: Billing + Tax Reports Only</span>
-                </button>
-              </div>
+          {!entitlements ? (
+            <div className="p-4 bg-[#FFF7ED] border border-[#F4A261]/40 rounded-xl text-[#7C2D12] text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>Entitlement data unavailable for this tenant — select a tenant above, or try again later.</span>
             </div>
-          )}
-
-          {/* SUB-VIEW 2: DEDICATED USER PAGE ASSIGNMENT MATRIX */}
-          {matrixMode === "users" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5EAEB] dark:border-slate-800">
-                <div>
-                  <div className="flex items-center gap-2.5">
+          ) : (
+            <>
+              {/* Entitled Modules & Pages (read-only) */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E5EAEB] dark:border-slate-800">
+                  <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                      Sub-User Management & Feature Permissions
+                      Entitled Modules &amp; Pages
                     </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E7F1F2] dark:bg-slate-800 text-[#2F8E86] dark:text-teal-300 border border-[#D9E2E3]">
-                      Dual-Tier Security
-                    </span>
+                    <p className="text-xs text-slate-500">Read-only ceiling. A module shows its restricted pages, or &ldquo;All pages&rdquo; when unrestricted.</p>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Create sub-users and assign dedicated modules strictly filtered to your organization's subscribed features.
-                    Admin-role users are excluded below — they always have full access to every subscribed module by design.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCreateUserError(null);
-                      setShowCreateUserModal(true);
-                    }}
-                    className="px-4 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Sub-User</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* User Selection and Status Controls */}
-              {(() => {
-                const assignableSubUsers = tenantUsers.filter((u) => !isAdminEquivalentRole(u.role));
-                const selectedIsAdmin = isAdminEquivalentRole(
-                  tenantUsers.find((u) => u.username === selectedUserId)?.role
-                );
-
-                if (assignableSubUsers.length === 0) {
-                  return (
-                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-start gap-2.5">
-                      <Zap className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>
-                        No standard sub-users found for this organization yet. Every current user has an admin-equivalent
-                        role, which always grants full access to every subscribed module — there's nothing to restrict.
-                        Click <strong>Create Sub-User</strong> above to add a role-limited account you can configure here.
-                      </span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <>
-                    {selectedIsAdmin && (
-                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-[11px] font-semibold flex items-center gap-2">
-                        <Zap className="w-3.5 h-3.5 shrink-0" />
-                        <span>
-                          "{selectedUserId}" has an admin-equivalent role — the checklist below is saved but has NO effect
-                          on their menu; admins always see every subscribed module. Select a standard sub-user instead.
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#2F8E86] flex items-center justify-center text-white font-black text-sm">
-                          {selectedUserId.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                            Selected Sub-User:
-                          </label>
-                          <select
-                            value={selectedUserId}
-                            onChange={(e) => setSelectedUserId(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg px-3 py-1 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86]"
-                          >
-                            {assignableSubUsers.map((u) => (
-                              <option key={u.id} value={u.username}>
-                                {u.fullName || u.username} ({u.role || "SUB_USER"}) {u.isActive === false ? "[Inactive]" : ""}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {selectedUserId !== "admin" && (
-                          <button
-                            type="button"
-                            onClick={() => handleToggleUserStatus(selectedUserId)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
-                              tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
-                                : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:border-red-800"
-                            }`}
-                          >
-                            {tenantUsers.find((u) => u.username === selectedUserId)?.isActive === false
-                              ? "Activate User"
-                              : "Deactivate User"}
-                          </button>
-                        )}
-                        <span className="text-xs font-bold text-[#2F8E86] bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-[#D9E2E3] dark:border-slate-700 shadow-2xs">
-                          {(userOverrides[selectedUserId] || []).length} Assigned
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-
-              {/* Organization Subscribed Features Notice */}
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>
-                    <strong className="text-slate-800 dark:text-white">Subscription Filter:</strong> Showing only modules included in your organization's <strong className="text-[#2F8E86] dark:text-teal-400">{menuEntitlements.planTier || "Active"} Plan</strong>. Unsubscribed modules cannot be assigned.
-                  </span>
-                </span>
-                <span className="font-bold text-[#2F8E86] dark:text-teal-400 shrink-0 ml-2">
-                  {moduleCodes.size} Subscribed Features
-                </span>
-              </div>
-
-              {/* Assignable Features Checklist (Filtered to Organization Subscription) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {fullMenuCatalog
-                  .filter(
-                    (menu) =>
-                      menu.key !== "system" &&
-                      menu.key !== "system.settings" &&
-                      menu.key !== "clients" &&
-                      (isMenuKeyAvailable(menu.key) ||
-                        (menu.subItems && menu.subItems.some((s) => isMenuKeyAvailable(s.key))))
-                  )
-                  .map((menu) => {
-                    const activeUserPages = userOverrides[selectedUserId] || [];
-                    const isChecked = activeUserPages.includes(menu.key);
-
-                    // Filter sub items to only subscribed ones
-                    const assignableSubItems = (menu.subItems || []).filter(
-                      (sub) =>
-                        sub.key !== "system.settings" &&
-                        sub.key !== "system.onboard" &&
-                        isMenuKeyAvailable(sub.key)
-                    );
-
-                    return (
-                      <div
-                        key={menu.key}
-                        className={`p-3.5 rounded-xl border transition-all ${
-                          isChecked
-                            ? "bg-[#E7F1F2]/40 dark:bg-slate-800/60 border-[#2F8E86]/30 dark:border-slate-700"
-                            : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800"
-                        }`}
-                      >
-                        <div
-                          onClick={() => toggleUserPage(selectedUserId, menu.key)}
-                          className="flex items-center justify-between gap-3 cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            {renderCatalogIcon(menu.key, "w-4 h-4 text-[#2F8E86] dark:text-teal-400 shrink-0")}
-                            <div>
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-white">{menu.title}</h4>
-                              <p className="text-[11px] text-slate-500">{menu.desc}</p>
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {}}
-                            className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer shrink-0"
-                          />
-                        </div>
-
-                        {/* Sub-items for this menu */}
-                        {assignableSubItems.length > 0 && (
-                          <div className="ml-6 pl-3 border-l border-[#E5EAEB] dark:border-slate-700 space-y-1.5 pt-2 mt-2">
-                            {assignableSubItems.map((sub) => {
-                              const isSubChecked = activeUserPages.includes(sub.key);
-                              return (
-                                <div
-                                  key={sub.key}
-                                  onClick={() => toggleUserPage(selectedUserId, sub.key)}
-                                  className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-[#E7F1F2] dark:hover:bg-slate-800 cursor-pointer"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    {renderCatalogIcon(sub.key, "w-3.5 h-3.5 text-[#2F8E86] shrink-0")}
-                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                      {sub.title}
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="checkbox"
-                                    checked={isSubChecked}
-                                    onChange={() => {}}
-                                    className="w-3.5 h-3.5 accent-[#2F8E86] rounded cursor-pointer shrink-0"
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-
-              {/* Create Sub-User Modal */}
-              {showCreateUserModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#E5EAEB] dark:border-slate-800 max-w-lg w-full p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#E7F1F2] dark:bg-slate-800 text-[#2F8E86] dark:text-teal-400 flex items-center justify-center">
-                          <User className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create New Sub-User</h3>
-                          <p className="text-[11px] text-slate-500">Add an operator account and assign organization-subscribed features</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowCreateUserModal(false)}
-                        className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {createUserError && (
-                      <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-                        {createUserError}
-                      </div>
-                    )}
-
-                    <form onSubmit={handleCreateSubUser} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                            Username *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. nitesh"
-                            value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                            Password *
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            placeholder="••••••••"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                            Full Name *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Nitesh Sharma"
-                            value={newFullName}
-                            onChange={(e) => setNewFullName(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                            Mobile No
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g. 9876543210"
-                            value={newMobile}
-                            onChange={(e) => setNewMobile(e.target.value)}
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#2F8E86] focus:ring-2 focus:ring-[#2F8E86]/15"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Subscribed Feature Checklist for New User */}
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          Assign Subscribed Features ({newAssignedFeatures.length} selected):
-                        </label>
-                        <div className="max-h-48 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-[#D9E2E3] dark:border-slate-700 space-y-2">
-                          {fullMenuCatalog
-                            .filter(
-                              (m) =>
-                                m.key !== "system" &&
-                                m.key !== "system.settings" &&
-                                m.key !== "clients" &&
-                                (isMenuKeyAvailable(m.key) ||
-                                  (m.subItems && m.subItems.some((s) => isMenuKeyAvailable(s.key))))
-                            )
-                            .map((m) => {
-                              const checked = newAssignedFeatures.includes(m.key);
-                              return (
-                                <label key={m.key} className="flex items-center justify-between p-1 text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                    {renderCatalogIcon(m.key, "w-3.5 h-3.5 text-[#2F8E86] dark:text-teal-400")}
-                                    <span>{m.title}</span>
-                                  </span>
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => {
-                                      setNewAssignedFeatures((prev) =>
-                                        checked ? prev.filter((k) => k !== m.key) : [...prev, m.key]
-                                      );
-                                    }}
-                                    className="w-3.5 h-3.5 accent-[#2F8E86] rounded"
-                                  />
-                                </label>
-                              );
-                            })}
-                        </div>
-                      </div>
-
-                      <div className="pt-2 flex items-center justify-end gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => setShowCreateUserModal(false)}
-                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={creatingUser}
-                          className="px-5 py-2 bg-[#2F8E86] hover:bg-[#25776F] text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
-                        >
-                          {creatingUser ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SUB-VIEW 3: GLOBAL MENU & ROUTE MATRIX */}
-          {matrixMode === "menus" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E5EAEB] dark:border-slate-800">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Tenant Navigation & Module Entitlements
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Enable or disable specific modules and navigation sub-links across the entire client tenant
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#2F8E86] bg-[#E7F1F2] dark:bg-slate-800 dark:text-teal-300 px-3 py-1 rounded-lg border border-[#D9E2E3] dark:border-slate-700">
-                    {moduleCodes.size} Modules Active
+                    {entitlements.moduleCodes.length} Modules
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setModuleCodes(new Set(ALL_MODULE_CODE_LIST));
-                    }}
-                    className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg cursor-pointer"
-                  >
-                    Select All
-                  </button>
                 </div>
+
+                {entitlements.moduleCodes.length === 0 ? (
+                  <div className="text-xs text-slate-400">No modules entitled for this tenant.</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {entitlements.moduleCodes.map((code) => {
+                      const mod = catalog.find((m) => m.code === code);
+                      const name = mod ? mod.name : code;
+                      const restrictedKeys = entitlements.pageRestrictions
+                        ? entitlements.pageRestrictions[code]
+                        : undefined;
+                      const isRestricted = restrictedKeys !== undefined;
+                      const pageTitle = (pk: string) => {
+                        const pg = mod?.pages.find((p) => p.pageKey === pk);
+                        return pg ? pg.title : pk;
+                      };
+                      return (
+                        <div
+                          key={code}
+                          className="p-4 rounded-2xl border border-[#E5EAEB] dark:border-slate-700 bg-slate-50/60 dark:bg-slate-850"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              {renderCatalogIcon(code, "w-5 h-5 text-[#2F8E86] dark:text-teal-400 shrink-0")}
+                              <div className="min-w-0">
+                                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{name}</h4>
+                                <span className="text-[10px] font-mono text-slate-400 uppercase">Code: {code}</span>
+                              </div>
+                            </div>
+                            {isRestricted ? (
+                              <span className="px-2 py-0.5 bg-[#FEF6EE] border border-[#FBD38D] text-[#B45309] text-[10px] font-bold rounded-md shrink-0">
+                                Page-restricted
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-[#E8F6F4] border border-[#C2E9E3] text-[#2F9E8F] text-[10px] font-bold rounded-md shrink-0">
+                                All pages
+                              </span>
+                            )}
+                          </div>
+                          {isRestricted && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {restrictedKeys!.length === 0 ? (
+                                <span className="text-[10px] text-slate-400">No pages entitled.</span>
+                              ) : (
+                                restrictedKeys!.map((pk) => (
+                                  <span
+                                    key={pk}
+                                    className="px-1.5 py-0.5 bg-white dark:bg-slate-900 border border-[#D9E2E3] dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-300 rounded"
+                                  >
+                                    {pageTitle(pk)}
+                                  </span>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Categorized Module Catalog */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {ALL_MODULE_CODES.map((mod) => {
-                  const isChecked = moduleCodes.has(mod.code);
+              {/* Entitled Reports (read-only) */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E5EAEB] dark:border-slate-800">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Entitled Reports</h3>
+                    <p className="text-xs text-slate-500">Read-only. Report entitlements are managed on the Clients page.</p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
+                    {entitlements.reports.filter((r) => r.isEnabled).length} / {entitlements.reports.length} Active
+                  </span>
+                </div>
 
-                  return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {entitlements.reports.map((report) => (
                     <div
-                      key={mod.code}
-                      onClick={() => toggleModuleCode(mod.code)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                        isChecked
-                          ? "bg-white dark:bg-slate-800/60 border-[#2F8E86]/40 dark:border-slate-700 shadow-2xs"
-                          : "bg-slate-50/60 dark:bg-slate-900 border-slate-200/60 dark:border-slate-800 opacity-60"
+                      key={report.reportKey}
+                      className={`p-4 rounded-2xl border flex items-start justify-between gap-4 ${
+                        report.isEnabled
+                          ? "bg-white dark:bg-slate-850 border-emerald-300 dark:border-emerald-800 shadow-2xs"
+                          : "bg-slate-50 border-slate-200 opacity-60 dark:bg-slate-900"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          {renderCatalogIcon(mod.code, "w-5 h-5 text-[#2F8E86] dark:text-teal-400 shrink-0")}
-                          <div>
-                            <h4 className="text-xs font-bold text-slate-900 dark:text-white">{mod.label}</h4>
-                            <span className="text-[10px] font-mono text-slate-400 uppercase">
-                              Code: {mod.code}
-                            </span>
-                          </div>
-                        </div>
-
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => {}}
-                          className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer shrink-0"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* SUB-VIEW 4: ROLE-BASED PERMISSION MATRIX (RBAC) */}
-          {matrixMode === "roles" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Role-Based Access Control (RBAC) Matrix
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Assign module permissions across standard operational roles (Admin, Dispatcher, Billing Operator, Fleet Manager, Viewer)
-                </p>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-[#F7F8F8] dark:bg-slate-800 text-[#64748B] dark:text-slate-300 uppercase font-bold border-b border-[#E5EAEB] dark:border-slate-700">
-                    <tr>
-                      <th className="px-4 py-3">Module / Route</th>
-                      {standardRoles.map((role) => (
-                        <th key={role} className="px-4 py-3 text-center capitalize">
-                          {role.replace("_", " ")}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {fullMenuCatalog.map((menu) => (
-                      <tr key={menu.key} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                          <span className="inline-flex items-center gap-2">
-                            {renderCatalogIcon(menu.key, "w-4 h-4 text-[#2F8E86] dark:text-teal-400")}
-                            <span>{menu.title}</span>
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{report.title}</h4>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                            {report.category}
                           </span>
-                        </td>
-                        {standardRoles.map((role) => {
-                          const isAssigned = (roleOverrides[role] || []).includes(menu.key);
-                          return (
-                            <td key={role} className="px-4 py-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={isAssigned}
-                                onChange={() => toggleRolePage(role, menu.key)}
-                                className="w-4 h-4 accent-[#2F8E86] rounded cursor-pointer"
-                              />
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* SUB-VIEW 5: GRANULAR REPORTS CATALOG */}
-          {matrixMode === "reports" && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-[#E5EAEB] dark:border-slate-800 shadow-xs space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E5EAEB] dark:border-slate-800">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Granular Sub-Report Entitlements
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Enable or revoke specific individual business reports and financial ledgers for this tenant
-                  </p>
-                </div>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
-                  {menuEntitlements.reports.filter((r) => r.isEnabled).length} / {menuEntitlements.reports.length} Reports Active
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {menuEntitlements.reports.map((report) => (
-                  <div
-                    key={report.reportKey}
-                    onClick={() => toggleReportItem(report.reportKey)}
-                    className={`p-4 rounded-2xl border flex items-start justify-between gap-4 cursor-pointer transition ${
-                      report.isEnabled
-                        ? "bg-white dark:bg-slate-800/60 border-emerald-300 dark:border-emerald-800 shadow-2xs"
-                        : "bg-slate-50 border-slate-200 opacity-50 dark:bg-slate-900"
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">{report.title}</h4>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
-                          {report.category}
-                        </span>
+                        </div>
+                        <p className="text-xs text-slate-500">{report.description}</p>
                       </div>
-                      <p className="text-xs text-slate-500">{report.description}</p>
-                      <span className="inline-block font-mono text-[10px] text-[#2F8E86] dark:text-teal-400">
-                        Path: {report.path}
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
+                          report.isEnabled
+                            ? "bg-[#E8F6F4] text-[#2F9E8F] border border-[#C2E9E3]"
+                            : "bg-[#F7F8F8] text-[#94A3B8] border border-[#E5EAEB]"
+                        }`}
+                      >
+                        {report.isEnabled ? "Enabled" : "Off"}
                       </span>
                     </div>
-
-                    <input
-                      type="checkbox"
-                      checked={report.isEnabled}
-                      onChange={() => {}}
-                      className="w-4 h-4 accent-emerald-600 rounded mt-1 shrink-0 cursor-pointer"
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -1829,7 +816,7 @@ export default function SettingsPage() {
                   />
                   <p className="text-[11px] text-slate-400 mt-1">This logo will automatically appear on all printed Bilties, GR Consignment notes, and Challans for this organization.</p>
 
-                  {/* Or upload a logo file directly (stored inline, so it prints without external hosting) */}
+                  {/* Or upload a logo file — stored in object storage (MinIO/S3); the serve URL is filled in above */}
                   <div className="mt-3 flex items-center gap-3 flex-wrap">
                     {formData.general.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -1837,39 +824,57 @@ export default function SettingsPage() {
                     ) : (
                       <div className="h-14 w-14 rounded-lg border border-dashed border-[#D9E2E3] dark:border-slate-700 flex items-center justify-center text-[#94A3B8] text-[10px] text-center">No logo</div>
                     )}
-                    <label className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold cursor-pointer transition">
+                    <label className={`inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 hover:bg-[#E7F1F2] dark:hover:bg-slate-700 text-[#25776F] dark:text-teal-300 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-xs font-bold transition ${uploadingLogo ? "opacity-60 cursor-wait" : "cursor-pointer"}`}>
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/svg+xml,image/webp"
                         className="hidden"
-                        onChange={(e) => {
+                        disabled={uploadingLogo}
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          if (file.size > 400 * 1024) {
-                            setErrorMessage("Logo image must be under 400 KB. Please upload a smaller file.");
+                          if (file.size > 2 * 1024 * 1024) {
+                            setErrorMessage("Logo image must be under 2 MB. Please upload a smaller file.");
                             e.target.value = "";
                             return;
                           }
-                          const reader = new FileReader();
-                          reader.onload = () =>
-                            setFormData((prev) => ({ ...prev, general: { ...prev.general, logoUrl: String(reader.result) } }));
-                          reader.readAsDataURL(file);
-                          e.target.value = "";
+                          try {
+                            setUploadingLogo(true);
+                            setErrorMessage(null);
+                            const { logoUrl } = await configService.uploadLogo(file);
+                            setFormData((prev) => ({ ...prev, general: { ...prev.general, logoUrl } }));
+                          } catch (err) {
+                            setErrorMessage(err instanceof Error ? err.message : "Failed to upload logo.");
+                          } finally {
+                            setUploadingLogo(false);
+                            e.target.value = "";
+                          }
                         }}
                       />
-                      Upload Logo
+                      {uploadingLogo ? "Uploading…" : "Upload Logo"}
                     </label>
                     {formData.general.logoUrl && (
                       <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, general: { ...formData.general, logoUrl: "" } })}
-                        className="text-xs text-[#D95C5C] font-semibold hover:underline cursor-pointer"
+                        disabled={uploadingLogo}
+                        onClick={async () => {
+                          try {
+                            setUploadingLogo(true);
+                            await configService.deleteLogo();
+                          } catch {
+                            /* clear locally regardless of the server result */
+                          } finally {
+                            setFormData((prev) => ({ ...prev, general: { ...prev.general, logoUrl: "" } }));
+                            setUploadingLogo(false);
+                          }
+                        }}
+                        className="text-xs text-[#D95C5C] font-semibold hover:underline cursor-pointer disabled:opacity-50"
                       >
                         Remove
                       </button>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Upload a PNG/JPG/SVG (max 400 KB). Uploading sets the logo above automatically. Remember to click Save.</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Upload a PNG/JPG/SVG/WEBP (max 2 MB). The file is saved to object storage immediately and its URL is filled in above — click Save to persist the rest of your branding.</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -2005,7 +1010,7 @@ export default function SettingsPage() {
               <h3 className="text-sm font-bold text-[#111827] dark:text-white uppercase tracking-wider">
                 Live Branding Preview
               </h3>
-              <div className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-800/60 space-y-3">
+              <div className="p-4 rounded-xl border border-[#E5EAEB] bg-[#F7F8F8] dark:bg-slate-850 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#2F8E86] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                     {formData.general.companyName ? formData.general.companyName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "FP"}
@@ -2180,7 +1185,7 @@ export default function SettingsPage() {
             {formData.documentSequences.map((seq, idx) => (
               <div
                 key={seq.docType}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/60 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
+                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
               >
                 <div>
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">{seq.docType}</span>
@@ -2274,7 +1279,7 @@ export default function SettingsPage() {
                   }
                   className={`p-4 rounded-xl border flex items-center justify-between gap-4 cursor-pointer transition ${
                     isChecked
-                      ? "bg-[#E7F1F2]/40 border-[#2F8E86]/30 dark:bg-slate-800/60 dark:border-slate-700"
+                      ? "bg-[#E7F1F2]/40 border-[#2F8E86]/30 dark:bg-slate-850 dark:border-slate-700"
                       : "bg-white border-slate-200 dark:bg-slate-900"
                   }`}
                 >
@@ -2309,7 +1314,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Vehicles Quota</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentVehicles || 8} / {subscription?.maxVehicles || 25}
@@ -2324,7 +1329,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Active Users</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentUsers || 3} / {subscription?.maxUsers || 10}
@@ -2339,7 +1344,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-800/60 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-[#F7F8F8] dark:bg-slate-850 border border-[#E5EAEB] dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Monthly Shipments</span>
               <h3 className="text-2xl font-black text-[#2F8E86] dark:text-teal-400">
                 {subscription?.currentMonthlyShipments || 120} / {subscription?.maxMonthlyShipments || 1000}
