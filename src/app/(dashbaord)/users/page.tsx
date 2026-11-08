@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   userService,
   SubUserDetails,
@@ -42,6 +42,8 @@ import {
   FileText,
 } from "lucide-react";
 import { PagePermissionGuard } from "@/app/components/ui/PagePermissionGuard";
+import CustomSelect, { SelectOption } from "@/app/components/ui/CustomSelect";
+import { roleService, RoleSummary } from "../../../../services/roleService";
 import { sanitizeMobile, validateMobile, validateEmail, firstError } from "@/utils/validation";
 import { useUsernameAvailability } from "@/utils/useUsernameAvailability";
 
@@ -320,6 +322,7 @@ const SYSTEM_MODULES = RBAC_MODULES.map(m => ({ key: m.key, label: m.label, cate
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<SubUserDetails[]>([]);
+  const [roles, setRoles] = useState<RoleSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -429,6 +432,7 @@ export default function UsersManagementPage() {
   useEffect(() => {
     loadUsers();
     loadInvites();
+    loadRoles();
   }, []);
 
   const showToast = (type: "success" | "error", message: string) => {
@@ -446,6 +450,44 @@ export default function UsersManagementPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadRoles = async () => {
+    try {
+      const data = await roleService.getRoles();
+      setRoles(data || []);
+    } catch {
+      // Non-fatal: the role dropdowns fall back to the Standard User option.
+    }
+  };
+
+  // Dynamic role options for the assignment dropdowns — the "Standard User"
+  // sentinel (no role bundle) plus every active role defined in Roles & Permissions.
+  const roleOptions: SelectOption[] = useMemo(() => {
+    const defined = roles
+      .filter((r) => r.isActive)
+      .map((r) => ({
+        value: r.code,
+        label: r.name,
+        description: r.isSystem ? "System role" : "Custom role",
+        badge: r.isSystem ? undefined : "Custom",
+      }));
+    return [
+      {
+        value: "SUB_USER",
+        label: "Standard User",
+        description: "No role bundle — only explicitly granted pages",
+      },
+      ...defined,
+    ];
+  }, [roles]);
+
+  // Keep a user's current role visible in the dropdown even if it is inactive
+  // or a legacy value not present in the roles table.
+  const withCurrentRole = (opts: SelectOption[], current?: string): SelectOption[] => {
+    if (!current) return opts;
+    if (opts.some((o) => String(o.value).toLowerCase() === current.toLowerCase())) return opts;
+    return [...opts, { value: current, label: current, description: "Legacy / inactive role" }];
   };
 
   // Filtered list
@@ -687,24 +729,24 @@ export default function UsersManagementPage() {
 
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-          <div className="min-w-0">
+          <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#2F8E86] dark:text-teal-400 mb-1">
               <ShieldCheck className="w-4 h-4" />
-              <span>Admin</span>
+              <span>Superadmin Control Center</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] dark:text-white tracking-tight">
-              Users &amp; Roles
+              User Accounts & Role Permissions
             </h1>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-slate-400 mt-1">
-              Create users, reset passwords, and manage feature access.
+              Create sub-users with default standard rights, reset user passwords, and manage granular feature access.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={loadUsers}
               disabled={loading}
-              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] dark:hover:bg-slate-700/60 shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh</span>
@@ -712,18 +754,18 @@ export default function UsersManagementPage() {
 
             <button
               onClick={() => setShowInviteModal(true)}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-[#2F8E86] hover:bg-[#25776F] text-white text-xs font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-              <span>Invite</span>
+              <span>Invite by Email</span>
             </button>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center justify-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 text-[#111827] dark:text-slate-200 text-xs font-semibold hover:bg-[#F5FAFA] shadow-2xs transition flex items-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add User</span>
+              <span>Add Directly</span>
             </button>
           </div>
         </div>
@@ -836,27 +878,26 @@ export default function UsersManagementPage() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <select
+            <CustomSelect
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:border-[#2F8E86]"
-            >
-              <option value="all">All Roles</option>
-              <option value="sub_user">Standard User (SUB_USER)</option>
-              <option value="operator">Operator (Dispatch)</option>
-              <option value="accounts">Accounts & Billing</option>
-              <option value="admin">Administrator</option>
-            </select>
+              onChange={(v) => setRoleFilter(String(v))}
+              options={[{ value: "all", label: "All Roles" }, ...roleOptions]}
+              searchable
+              size="sm"
+              className="w-full sm:w-48"
+            />
 
-            <select
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#111827] dark:text-slate-200 focus:outline-none focus:border-[#2F8E86]"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
+              onChange={(v) => setStatusFilter(String(v))}
+              options={[
+                { value: "all", label: "All Status" },
+                { value: "active", label: "Active Only" },
+                { value: "inactive", label: "Inactive Only" },
+              ]}
+              size="sm"
+              className="w-full sm:w-40"
+            />
           </div>
         </div>
 
@@ -1044,14 +1085,13 @@ export default function UsersManagementPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#64748B] mb-1">Role</label>
-                  <select
+                  <CustomSelect
                     value={inviteForm.role}
-                    onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-lg text-sm text-[#111827] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2F8E86]/20 focus:border-[#2F8E86]"
-                  >
-                    <option value="SUB_USER">Standard User</option>
-                    <option value="admin">Administrator (Full Org Control)</option>
-                  </select>
+                    onChange={(v) => setInviteForm({ ...inviteForm, role: String(v) })}
+                    options={withCurrentRole(roleOptions, inviteForm.role)}
+                    searchable
+                    className="w-full"
+                  />
                 </div>
               </div>
               <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[#E5EAEB] dark:border-slate-800">
@@ -1183,16 +1223,13 @@ export default function UsersManagementPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     System Role *
                   </label>
-                  <select
-                    value={addForm.role}
-                    onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86]"
-                  >
-                    <option value="SUB_USER">Standard User (SUB_USER) - Default</option>
-                    <option value="operator">Operator (Dispatch & Operations)</option>
-                    <option value="accounts">Accounts Manager (Billing & Receipts)</option>
-                    <option value="admin">Administrator (Full Tenant Control)</option>
-                  </select>
+                  <CustomSelect
+                    value={addForm.role || "SUB_USER"}
+                    onChange={(v) => setAddForm({ ...addForm, role: String(v) })}
+                    options={withCurrentRole(roleOptions, addForm.role || "SUB_USER")}
+                    searchable
+                    className="w-full"
+                  />
                   <p className="text-[11px] text-slate-400 mt-1">
                     Standard users only have access to modules explicitly permitted below.
                   </p>
@@ -1441,16 +1478,13 @@ export default function UsersManagementPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     System Role
                   </label>
-                  <select
+                  <CustomSelect
                     value={editForm.role || "SUB_USER"}
-                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-[#D9E2E3] dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:border-[#2F8E86]"
-                  >
-                    <option value="SUB_USER">Standard User (SUB_USER)</option>
-                    <option value="operator">Operator (Dispatch & Trips)</option>
-                    <option value="accounts">Accounts Manager (Billing & Invoices)</option>
-                    <option value="admin">Administrator (Tenant Admin)</option>
-                  </select>
+                    onChange={(v) => setEditForm({ ...editForm, role: String(v) })}
+                    options={withCurrentRole(roleOptions, editForm.role || "SUB_USER")}
+                    searchable
+                    className="w-full"
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-[#D9E2E3] dark:border-slate-700">
@@ -1539,7 +1573,7 @@ export default function UsersManagementPage() {
               </div>
 
               {/* Quick Preset Buttons & Search Bar */}
-              <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/60/60 space-y-3">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/60 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#2F8E86]" />

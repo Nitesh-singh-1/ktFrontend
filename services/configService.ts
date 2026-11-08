@@ -1,5 +1,19 @@
 import { baseService } from "./baseservice";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
+// Minimal auth headers for the multipart upload — baseService always forces a JSON
+// content type, which would break the multipart boundary, so the upload does its own fetch.
+function authHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  const tenantId = localStorage.getItem("tenantId");
+  return {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
+  };
+}
+
 export interface PublicTenantConfig {
   tenantId: string;
   tenantName: string;
@@ -135,4 +149,29 @@ export const configService = {
 
   resetToDefaults: () =>
     baseService.post<TenantConfiguration>("/configuration/reset", {}),
+
+  // Upload the tenant logo to object storage (MinIO/S3). Returns the absolute serve
+  // URL to store in general.logoUrl — no more base64 blobs in the config.
+  uploadLogo: async (file: File): Promise<{ logoUrl: string }> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/configuration/logo`, {
+      method: "POST",
+      headers: authHeaders(), // never set Content-Type: the browser sets the multipart boundary
+      body: form,
+    });
+    if (!res.ok) {
+      let message = "Failed to upload logo.";
+      try {
+        const body = await res.json();
+        message = body?.message || message;
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new Error(message);
+    }
+    return res.json();
+  },
+
+  deleteLogo: () => baseService.delete<{ success: boolean }>("/configuration/logo"),
 };

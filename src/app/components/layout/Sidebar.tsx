@@ -130,7 +130,20 @@ export default function Sidebar({
   //   The platform operator onboards clients from the Multi-Client Manager (/clients) instead.
   const HIDDEN_IDS = new Set(["system.forgot_password", "system.onboard"]);
 
-  const filterMenu = (items: any[]): any[] =>
+  // TASK-053: trust the API menu. `trustContent` = these items came from the backend DYNAMIC
+  // menu (GET /api/navigation/menu), which is now AUTHORITATIVE — visibility is a structural
+  // join on menu_items.module_id ∈ enabled tenant_modules (per menu.md §5.4 / TASK-053 backend),
+  // further gated per sub-user by role_permissions ∩ user_permission_overrides. The API emits
+  // only rows the user may see, so we do NOT re-filter them client-side through hasPermission:
+  // that second filter was the long-standing cause of "a provisioned module is missing from the
+  // sidebar" — any skew between a menu row's permission_key and the SEPARATELY-fetched
+  // /navigation/permissions list silently dropped valid items. The only client-side trims we
+  // still apply to the dynamic menu are ROLE-based (not permission-based): PLATFORM_ONLY_IDS and
+  // HIDDEN_IDS, plus hiding a parent group once it has zero children. hasPermission now gates
+  // ONLY the STATIC fallback menu (sidebarItems), rendered when the API is unreachable.
+  // Page-level access is still enforced by PagePermissionGuard, so trusting the API menu removes
+  // no real guard.
+  const filterMenu = (items: any[], trustContent: boolean): any[] =>
     (items || [])
       .filter((it) => !HIDDEN_IDS.has(it.id))
       .filter((it) => isPlatformAdmin || !PLATFORM_ONLY_IDS.has(it.id))
@@ -139,12 +152,12 @@ export default function Sidebar({
           it.id === "system.settings"
             ? (isPlatformAdmin ? "SaaS Configuration" : "Organization Settings")
             : it.title;
-        const filteredChildren = it.children && it.children.length > 0 ? filterMenu(it.children) : undefined;
+        const filteredChildren = it.children && it.children.length > 0 ? filterMenu(it.children, trustContent) : undefined;
         return { ...it, title, children: filteredChildren };
       })
       // Keep item if:
       // 1. It has filtered children remaining (parent group with visible items)
-      // 2. OR it is a navigable route / leaf item AND satisfies permission (or has no permissionKey)
+      // 2. It is a navigable leaf — trusted (dynamic menu) or permission-satisfied (static fallback)
       .filter((it) => {
         if (it.children && it.children.length > 0) {
           return true;
@@ -152,15 +165,21 @@ export default function Sidebar({
         if (!it.path && (!it.children || it.children.length === 0)) {
           return false;
         }
+        if (trustContent) {
+          return true;
+        }
         return !it.permissionKey || hasPermission(it.permissionKey);
       });
 
-  // Fallback to the trimmed static sidebar items only when the API-driven menu
-  // is empty AND the context reported an error (TASK-045). Otherwise render
-  // whatever the API returned, even if it's briefly empty during load.
-  const displayItems = filterMenu(
-    dynamicMenu.length > 0 ? dynamicMenu : isFallbackMode ? sidebarItems : []
-  );
+  // Render the backend dynamic menu as authoritative (trustContent = true). Fall back to the
+  // trimmed static sidebar items only when the API-driven menu is empty AND the context
+  // reported an error (TASK-045); that static list IS gated client-side by hasPermission.
+  const displayItems =
+    dynamicMenu.length > 0
+      ? filterMenu(dynamicMenu, true)
+      : isFallbackMode
+      ? filterMenu(sidebarItems, false)
+      : [];
 
   const handleLogout = () => {
     authService.logout();
