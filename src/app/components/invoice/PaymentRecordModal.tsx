@@ -51,12 +51,20 @@ export default function PaymentRecordModal({
       setLoading(true);
       setError("");
 
+      // Field names MUST match the backend RecordPaymentRequest DTO
+      // (KTransport.API/DTOs/InvoiceDto.cs: PaymentAmount / Remarks). System.Text.Json
+      // binds case-insensitively, so `amount`/`notes` silently bound PaymentAmount = 0 —
+      // every receipt was recorded as ₹0. The backend has no payment-date field, so the
+      // date is folded into remarks for a human-readable trail.
+      const trimmedNotes = notes.trim();
+      const remarks = [trimmedNotes, paymentDate ? `Received on ${paymentDate}` : ""]
+        .filter(Boolean)
+        .join(" • ");
       const payload: RecordPaymentRequest = {
-        amount: Number(amount),
-        paymentDate,
+        paymentAmount: Number(amount),
         paymentMode,
         referenceNo: referenceNo.trim() || undefined,
-        notes: notes.trim() || undefined,
+        remarks: remarks || undefined,
       };
 
       await invoiceService.recordPayment(invoice.id, payload);
